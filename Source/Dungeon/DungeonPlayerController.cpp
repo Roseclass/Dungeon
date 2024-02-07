@@ -1,11 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DungeonPlayerController.h"
+#include "Global.h"
 #include "GameFramework/Pawn.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-#include "DungeonCharacter.h"
+#include "Characters/DungeonCharacter.h"
 #include "Engine/World.h"
 
 ADungeonPlayerController::ADungeonPlayerController()
@@ -36,11 +37,18 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		HitLocation = Hit.Location;
 
 		// Direct the Pawn towards that location
-		APawn* const MyPawn = GetPawn();
+		ADungeonCharacter* const MyPawn = Cast<ADungeonCharacter>(GetPawn());
 		if(MyPawn)
 		{
 			FVector WorldDirection = (HitLocation - MyPawn->GetActorLocation()).GetSafeNormal();
 			MyPawn->AddMovementInput(WorldDirection, 1.f, false);
+
+			ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+
+			if (other && MyPawn->GetGenericTeamId() != other->GetGenericTeamId())
+			{
+				CLog::Print("IN");
+			}
 		}
 	}
 	else
