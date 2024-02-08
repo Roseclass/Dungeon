@@ -69,9 +69,11 @@ public:
 	bool CanUse();
 	bool CanMove();
 
-	//Status
+	//for notify
 	UFUNCTION(BlueprintCallable)void SetUse();
 	UFUNCTION(BlueprintCallable)void SetMove();
+	UFUNCTION(BlueprintCallable)void UnsetSkill();
+	UFUNCTION(BlueprintCallable)void SpawnProjectile();
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

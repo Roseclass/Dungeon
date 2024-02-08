@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "DungeonCharacter.h"
 #include "Global.h"
 #include "UObject/ConstructorHelpers.h"
@@ -15,6 +13,7 @@
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StatusComponent.h"
+#include "Objects/Projectile.h"
 
 ADungeonCharacter::ADungeonCharacter()
 {
@@ -36,7 +35,6 @@ ADungeonCharacter::ADungeonCharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	//scene
-
 	CHelpers::CreateComponent(this, &CameraBoom, "CameraBoom", RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 800.f;
@@ -68,6 +66,7 @@ void ADungeonCharacter::UseSkill(FSkillData* InData)
 	Status->SetCannotUse();
 	if(!InData->bCanMove)Status->SetStop();
 	if(InData->Montage)PlayAnimMontage(InData->Montage, InData->PlayRate, InData->StartSection);
+	Skill->SetSkill(InData);
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)
@@ -137,4 +136,25 @@ void ADungeonCharacter::SetUse()
 void ADungeonCharacter::SetMove()
 {
 	Status->SetMove();
+}
+
+void ADungeonCharacter::UnsetSkill()
+{
+	Skill->UnsetSkill();
+}
+
+void ADungeonCharacter::SpawnProjectile()
+{
+	FSkillData* cur = Skill->GetCurrentSkill();
+	CheckNull(cur->ProjectileClass);
+
+	FVector loc = GetMesh()->GetSocketLocation(cur->SocketName);
+	FRotator rot = GetMesh()->GetSocketRotation(cur->SocketName);
+	if (!cur->bUseSocketRotation)
+		rot = GetActorForwardVector().Rotation();
+
+	FActorSpawnParameters f;
+	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	GetWorld()->SpawnActor(cur->ProjectileClass, &loc, &rot, f);
 }
