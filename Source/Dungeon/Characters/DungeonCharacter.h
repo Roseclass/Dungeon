@@ -12,6 +12,10 @@
 class UCameraComponent;
 class USpringArmComponent;
 class USkillComponent;
+class UMontageComponent;
+class UStatusComponent;
+
+struct FSkillData;
 
 UCLASS(Blueprintable)
 class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface
@@ -30,6 +34,12 @@ private:
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillComponent* Skill;
 
+	UPROPERTY(VisibleDefaultsOnly)
+		UMontageComponent* Montage;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UStatusComponent* Status;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 		uint8 TeamID = 1;
 protected:
@@ -45,8 +55,24 @@ public:
 
 	//function
 private:
+	void UseSkill(FSkillData* InData);
 protected:
 public:
+	//Skill
+	void UseSkill(int32 Idx);
+	void UseLeft();
+	void UseRight();
+	void UseQ();
+	void UseW();
+	void UseE();
+	void UseR();
+	bool CanUse();
+	bool CanMove();
+
+	//Status
+	UFUNCTION(BlueprintCallable)void SetUse();
+	UFUNCTION(BlueprintCallable)void SetMove();
+
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 };

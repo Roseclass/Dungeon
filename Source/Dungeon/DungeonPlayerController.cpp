@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "DungeonPlayerController.h"
 #include "Global.h"
 #include "GameFramework/Pawn.h"
@@ -8,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/DungeonCharacter.h"
 #include "Engine/World.h"
+#include "AIController.h"
 
 ADungeonPlayerController::ADungeonPlayerController()
 {
@@ -19,36 +18,50 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+
+	if (Target)
+	{		
+		float dist = UKismetMathLibrary::Vector_Distance(myPawn->GetActorLocation(), Target->GetActorLocation());
+		if (dist < 500)
+		{
+			StopMovement();
+			if (myPawn->CanUse())
+			{
+				myPawn->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), Target->GetActorLocation()));
+				myPawn->UseLeft();
+			}
+			Target = nullptr;
+		}
+		return;
+	}
+
 	if(bInputPressed)
 	{
 		FollowTime += DeltaTime;
 
-		// Look for the touch location
 		FVector HitLocation = FVector::ZeroVector;
 		FHitResult Hit;
-		if(bIsTouch)
-		{
-			GetHitResultUnderFinger(ETouchIndex::Touch1, ECC_Visibility, true, Hit);
-		}
-		else
-		{
-			GetHitResultUnderCursor(ECC_Visibility, true, Hit);
-		}
+		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 		HitLocation = Hit.Location;
 
-		// Direct the Pawn towards that location
-		ADungeonCharacter* const MyPawn = Cast<ADungeonCharacter>(GetPawn());
-		if(MyPawn)
+		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+		float dist = 1e9;
+		if (other)
 		{
-			FVector WorldDirection = (HitLocation - MyPawn->GetActorLocation()).GetSafeNormal();
-			MyPawn->AddMovementInput(WorldDirection, 1.f, false);
-
-			ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
-
-			if (other && MyPawn->GetGenericTeamId() != other->GetGenericTeamId())
-			{
-				CLog::Print("IN");
-			}
+			dist = UKismetMathLibrary::Vector_Distance(myPawn->GetActorLocation(), other->GetActorLocation());
+		}
+		if (other && dist < 500 && myPawn->CanUse())
+		{
+			//dist는 좌클릭 스킬 데이터에서 사거리를 받아와야함
+			myPawn->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), other->GetActorLocation()));
+			myPawn->UseLeft();
+		}
+		else if(myPawn && myPawn->CanMove())
+		{
+			FVector WorldDirection = (HitLocation - myPawn->GetActorLocation()).GetSafeNormal();
+			myPawn->AddMovementInput(WorldDirection, 1.f, false);
 		}
 	}
 	else
@@ -59,23 +72,16 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 
 void ADungeonPlayerController::SetupInputComponent()
 {
-	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ADungeonPlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &ADungeonPlayerController::OnSetDestinationReleased);
-
-	// support touch devices 
-	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADungeonPlayerController::OnTouchPressed);
-	InputComponent->BindTouch(EInputEvent::IE_Released, this, &ADungeonPlayerController::OnTouchReleased);
-
 }
 
 void ADungeonPlayerController::OnSetDestinationPressed()
 {
-	// We flag that the input is being pressed
+	Target = nullptr;
 	bInputPressed = true;
-	// Just in case the character was moving because of a previous short press we stop it
 	StopMovement();
 }
 
@@ -84,29 +90,26 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 	// Player is no longer pressing the input
 	bInputPressed = false;
 
-	// If it was a short press
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+
+	if(!myPawn->CanMove())return;
+
 	if(FollowTime <= ShortPressThreshold)
 	{
-		// We look for the location in the world where the player has pressed the input
-		FVector HitLocation = FVector::ZeroVector;
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
-		HitLocation = Hit.Location;
 
-		// We move there and spawn some particles
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, HitLocation);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, HitLocation, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+		if (other)
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, other);
+			Target = other;
+		}
+		else
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Hit.Location);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+		}
 	}
-}
-
-void ADungeonPlayerController::OnTouchPressed(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	bIsTouch = true;
-	OnSetDestinationPressed();
-}
-
-void ADungeonPlayerController::OnTouchReleased(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	bIsTouch = false;
-	OnSetDestinationReleased();
 }

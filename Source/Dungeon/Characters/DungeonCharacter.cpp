@@ -13,6 +13,8 @@
 #include "Engine/World.h"
 
 #include "Components/SkillComponent.h"
+#include "Components/MontageComponent.h"
+#include "Components/StatusComponent.h"
 
 ADungeonCharacter::ADungeonCharacter()
 {
@@ -36,20 +38,18 @@ ADungeonCharacter::ADungeonCharacter()
 	//scene
 
 	CHelpers::CreateComponent(this, &CameraBoom, "CameraBoom", RootComponent);
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 800.f;
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	CHelpers::CreateComponent(this, &TopDownCameraComponent, "TopDownCamera", CameraBoom);
-	//TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	//TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	//actor
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
+	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
+	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 
 }
 
@@ -61,4 +61,80 @@ void ADungeonCharacter::Tick(float DeltaSeconds)
 FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+void ADungeonCharacter::UseSkill(FSkillData* InData)
+{
+	Status->SetCannotUse();
+	if(!InData->bCanMove)Status->SetStop();
+	if(InData->Montage)PlayAnimMontage(InData->Montage, InData->PlayRate, InData->StartSection);
+}
+
+void ADungeonCharacter::UseSkill(int32 Idx)
+{
+	FSkillData* data = Skill->GetSkillData(Idx);
+	CheckNull(data);
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseLeft()
+{
+	FSkillData* data = Skill->GetLeft();
+	CheckNull(data);
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseRight()
+{
+	FSkillData* data = Skill->GetRight();
+	CheckNull(data);
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseQ()
+{
+	FSkillData* data = Skill->GetQ();
+	CheckNull(data); 
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseW()
+{
+	FSkillData* data = Skill->GetW();
+	CheckNull(data);
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseE()
+{
+	FSkillData* data = Skill->GetE();
+	CheckNull(data);
+	UseSkill(data);
+}
+
+void ADungeonCharacter::UseR()
+{
+	FSkillData* data = Skill->GetR();
+	CheckNull(data);
+	UseSkill(data);
+}
+
+bool ADungeonCharacter::CanUse()
+{
+	return Status->CanUse();
+}
+
+bool ADungeonCharacter::CanMove()
+{
+	return Status->CanMove();
+}
+
+void ADungeonCharacter::SetUse()
+{
+	Status->SetUse();
+}
+
+void ADungeonCharacter::SetMove()
+{
+	Status->SetMove();
 }

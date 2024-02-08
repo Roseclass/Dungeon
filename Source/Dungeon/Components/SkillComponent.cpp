@@ -16,37 +16,12 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillComponent::UseSkill(int32 Idx)
+void USkillComponent::SetSkill(FSkillData* Data)
 {
-	CheckFalse(SkillDatas.IsValidIndex(Idx));
+	CurrentSkill = Data;
 }
 
-void USkillComponent::UseLeft()
+void USkillComponent::UnsetSkill()
 {
-	UseSkill(0);
-}
-
-void USkillComponent::UseRight()
-{
-	UseSkill(1);
-}
-
-void USkillComponent::UseQ()
-{
-	UseSkill(2);
-}
-
-void USkillComponent::UseW()
-{
-	UseSkill(3);
-}
-
-void USkillComponent::UseE()
-{
-	UseSkill(4);
-}
-
-void USkillComponent::UseR()
-{
-	UseSkill(5);
+	CurrentSkill = nullptr;
 }

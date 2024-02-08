@@ -5,10 +5,8 @@
 #include "SkillComponent.generated.h"
 
 /**
- * 캐릭터가 스킬을 사용할 수 있게 해주는 컴포넌트
- * 정해진 프리셋에 스킬 데이터를 넣어 스킬 사용을 명령
- * ex)skill01(whirlwind)->use->if(canuse)->PlayAnimMontage
- * 플레이어와 몬스터 공용으로 사용됨
+ * 정해진 프리셋에 스킬 데이터를 저장해 보관
+ * 캐릭터에서 스킬 사용시 필요한 데이터를 받아감
  */
 
 USTRUCT(BlueprintType)
@@ -16,8 +14,20 @@ struct FSkillData
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 		UAnimMontage* Montage;
+
+	UPROPERTY(EditAnywhere)
+		float PlayRate = 1.0f;
+
+	UPROPERTY(EditAnywhere)
+		FName StartSection;
+
+	UPROPERTY(EditAnywhere)
+		FName RepeatSection;
+
+	UPROPERTY(EditAnywhere)
+		bool bCanMove = false;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -28,6 +38,8 @@ class DUNGEON_API USkillComponent : public UActorComponent
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "array order : left, right, q, w, e, r....."))
 		TArray<FSkillData> SkillDatas;
+
+	FSkillData* CurrentSkill;
 protected:
 public:
 
@@ -43,11 +55,14 @@ public:
 private:
 protected:
 public:
-	void UseSkill(int32 Idx);
-	void UseLeft();
-	void UseRight();
-	void UseQ();
-	void UseW();
-	void UseE();
-	void UseR();
+	void SetSkill(FSkillData* Data);
+	void UnsetSkill();
+
+	FORCEINLINE FSkillData* GetSkillData(int32 Idx) { return SkillDatas.IsValidIndex(Idx) ? &SkillDatas[Idx] : nullptr; };
+	FORCEINLINE FSkillData* GetLeft() { return SkillDatas.IsValidIndex(0) ? &SkillDatas[0] : nullptr; };
+	FORCEINLINE FSkillData* GetRight() { return SkillDatas.IsValidIndex(1) ? &SkillDatas[1] : nullptr; };
+	FORCEINLINE FSkillData* GetQ() { return SkillDatas.IsValidIndex(2) ? &SkillDatas[2] : nullptr; };
+	FORCEINLINE FSkillData* GetW() { return SkillDatas.IsValidIndex(3) ? &SkillDatas[3] : nullptr; };
+	FORCEINLINE FSkillData* GetE() { return SkillDatas.IsValidIndex(4) ? &SkillDatas[4] : nullptr; };
+	FORCEINLINE FSkillData* GetR() { return SkillDatas.IsValidIndex(5) ? &SkillDatas[5] : nullptr; };
 };
