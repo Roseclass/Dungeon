@@ -21,6 +21,16 @@ UCLASS(Blueprintable)
 class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
+
+public:
+	ADungeonCharacter();
+protected:
+	virtual void BeginPlay() override;
+public:
+	virtual void Tick(float DeltaSeconds) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual FGenericTeamId GetGenericTeamId() const;
+
 	//property
 private:
 	//scene
@@ -44,14 +54,6 @@ private:
 		uint8 TeamID = 1;
 protected:
 public:
-
-	//engine
-private:
-protected:
-public:
-	ADungeonCharacter();
-	virtual void Tick(float DeltaSeconds) override;
-	virtual FGenericTeamId GetGenericTeamId() const;
 
 	//function
 private:

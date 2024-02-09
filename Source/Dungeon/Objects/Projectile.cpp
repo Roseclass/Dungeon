@@ -3,6 +3,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/ShapeComponent.h"
 
+#include "Characters/DungeonCharacter.h"
+
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -14,6 +16,12 @@ AProjectile::AProjectile()
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	FindCollision();
+}
+
+void AProjectile::OnProjectileDestroyed(AActor* DestroyedActor)
+{
+
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -21,26 +29,84 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+FGenericTeamId AProjectile::GetGenericTeamId() const
+{
+	return TeamID;
+}
+
 void AProjectile::FindCollision()
 {
 	TArray<UShapeComponent*> shapeComponents;
-	//GetComponents<UShapeComponent>(shapeComponents);
-	//for (UShapeComponent* component : shapeComponents)
+	GetComponents<UShapeComponent>(shapeComponents);
+	for (UShapeComponent* component : shapeComponents)
+	{
+		for (auto i : component->ComponentTags)
+		{
+			if (i == FName("OverlapCollision"))
+			{
+				CollisionComponents.Add(component);
+				break;
+			}
+		}
+	}
+	for (UShapeComponent* component : CollisionComponents)
+	{
+		component->OnComponentBeginOverlap.Clear();
+		component->OnComponentHit.Clear();
+		component->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnComponentBeginOverlap);
+		component->OnComponentHit.AddDynamic(this, &AProjectile::OnComponentHit);
+	}
+}
+
+void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
+	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
+	if (!other && !otherCh)
+		return;
+
+	//ignore alliance
+	CheckTrue(other->GetGenericTeamId() == TeamID);
+
+	SendDamage(Damage, OtherActor, SweepResult);
+}
+
+void AProjectile::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	//FVector loc = OverlapTransform.GetLocation() + Hit.Location;
+	//FRotator rot = FRotator(OverlapTransform.GetRotation()) + Hit.Normal.Rotation();
+	//FVector scale = OverlapTransform.GetScale3D();
+	//float actDamage = Damage;
+
+	////overlap with non-character or non-TeamActor
+	//IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
+	//ACharacter* otherCh = Cast<ACharacter>(OtherActor);
+	//if (!other && !otherCh)
 	//{
-	//	for (auto i : component->ComponentTags)
-	//	{
-	//		if (i == AttackCollisionTag)
-	//		{
-	//			CollisionComponents.Add(component);
-	//			break;
-	//		}
-	//	}
+	//	if (!bAOE)
+	//		Destroy();
+	//	return;
 	//}
-	//for (UShapeComponent* component : CollisionComponents)
-	//{
-	//	component->OnComponentBeginOverlap.Clear();
-	//	component->OnComponentEndOverlap.Clear();
-	//	component->OnComponentBeginOverlap.AddDynamic(this, &ACAttachment::OnComponentBeginOverlap);
-	//	component->OnComponentEndOverlap.AddDynamic(this, &ACAttachment::OnComponentEndOverlap);
-	//}
+
+	////ignore alliance
+	//CheckTrue(other->GetGenericTeamId() == TeamID);
+
+	//// Is Hitted?
+	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(otherCh);
+	//if (state && !state->IsHitable())return;
+
+	//SendDamage(actDamage, OtherActor, Hit);
+
+	//if (!bAOE)
+	//	Destroy();
+}
+
+void AProjectile::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult)
+{
+	ACharacter* ch = Cast<ACharacter>(GetOwner());
+	AController* inst = nullptr;
+	if (ch)inst = ch->GetController();
+
+	FDamageEvent f;
+	OtherActor->TakeDamage(InDamage, f, inst, this);
 }

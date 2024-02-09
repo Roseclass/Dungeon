@@ -52,7 +52,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		{
 			dist = UKismetMathLibrary::Vector_Distance(myPawn->GetActorLocation(), other->GetActorLocation());
 		}
-		if (other && dist < 500 && myPawn->CanUse())
+		if (other && dist < 500 && myPawn->CanUse() && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			//dist는 좌클릭 스킬 데이터에서 사거리를 받아와야함
 			myPawn->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), other->GetActorLocation()));
@@ -101,7 +101,7 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 
 		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
-		if (other)
+		if (other && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, other);
 			Target = other;

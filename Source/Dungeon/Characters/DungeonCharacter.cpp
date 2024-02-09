@@ -51,9 +51,23 @@ ADungeonCharacter::ADungeonCharacter()
 
 }
 
+void ADungeonCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void ADungeonCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+}
+
+float ADungeonCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	CLog::Print(DamageAmount);
+
+	return result;
 }
 
 FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
@@ -153,8 +167,19 @@ void ADungeonCharacter::SpawnProjectile()
 	if (!cur->bUseSocketRotation)
 		rot = GetActorForwardVector().Rotation();
 
+	FTransform trans;
+	trans.SetLocation(loc);
+	trans.SetRotation(FQuat4d(rot));
+
 	FActorSpawnParameters f;
 	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	GetWorld()->SpawnActor(cur->ProjectileClass, &loc, &rot, f);
+	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(cur->ProjectileClass, trans, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+
+	projectile->SetTeamID(TeamID);
+	projectile->SetDamage(10);//TODO::
+	//projectile->SetTarget(InActor);
+
+	UGameplayStatics::FinishSpawningActor(projectile, trans);
+
 }
