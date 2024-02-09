@@ -14,6 +14,7 @@ class USpringArmComponent;
 class USkillComponent;
 class UMontageComponent;
 class UStatusComponent;
+class UInventoryComponent;
 
 struct FSkillData;
 
@@ -50,6 +51,9 @@ private:
 	UPROPERTY(VisibleDefaultsOnly)
 		UStatusComponent* Status;
 
+	UPROPERTY(VisibleDefaultsOnly)
+		UInventoryComponent* Inventory;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 		uint8 TeamID = 1;
 protected:
@@ -76,6 +80,9 @@ public:
 	UFUNCTION(BlueprintCallable)void SetMove();
 	UFUNCTION(BlueprintCallable)void UnsetSkill();
 	UFUNCTION(BlueprintCallable)void SpawnProjectile();
+	UFUNCTION(BlueprintCallable)void OnCollision();
+	UFUNCTION(BlueprintCallable)void OffCollision();
+	UFUNCTION(BlueprintCallable)void ResetHittedActors();
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

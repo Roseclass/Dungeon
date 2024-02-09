@@ -48,6 +48,14 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API USkillComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+public:
+	USkillComponent();
+protected:
+	virtual void BeginPlay() override;
+public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	//property
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "array order : left, right, q, w, e, r....."))
@@ -56,14 +64,6 @@ private:
 	FSkillData* CurrentSkill;
 protected:
 public:
-
-	//engine
-public:
-	USkillComponent();
-protected:
-	virtual void BeginPlay() override;
-public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//function
 private:

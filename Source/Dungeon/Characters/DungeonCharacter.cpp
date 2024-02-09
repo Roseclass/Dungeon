@@ -13,6 +13,7 @@
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StatusComponent.h"
+#include "Components/InventoryComponent.h"
 #include "Objects/Projectile.h"
 
 ADungeonCharacter::ADungeonCharacter()
@@ -48,6 +49,7 @@ ADungeonCharacter::ADungeonCharacter()
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
+	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 
 }
 
@@ -182,4 +184,19 @@ void ADungeonCharacter::SpawnProjectile()
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
 
+}
+
+void ADungeonCharacter::OnCollision()
+{
+	Inventory->OnCollision();
+}
+
+void ADungeonCharacter::OffCollision()
+{
+	Inventory->OffCollision();
+}
+
+void ADungeonCharacter::ResetHittedActors()
+{
+	Inventory->ResetHittedActors();
 }
