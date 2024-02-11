@@ -7,11 +7,13 @@
 
 /**
  * 캐릭터 기본 베이스(플레이어,몬스터)
+ * TODO::분리가 필요할듯?
  */
 
 class UCameraComponent;
 class USpringArmComponent;
 class USkillComponent;
+class USkillTreeComponent;
 class UMontageComponent;
 class UStatusComponent;
 class UInventoryComponent;
@@ -46,6 +48,9 @@ private:
 		USkillComponent* Skill;
 
 	UPROPERTY(VisibleDefaultsOnly)
+		USkillTreeComponent* SkillTree;
+
+	UPROPERTY(VisibleDefaultsOnly)
 		UMontageComponent* Montage;
 
 	UPROPERTY(VisibleDefaultsOnly)
@@ -61,7 +66,6 @@ public:
 
 	//function
 private:
-	void UseSkill(FSkillData* InData);
 protected:
 public:
 	//Skill
@@ -77,7 +81,9 @@ public:
 
 	//for notify
 	UFUNCTION(BlueprintCallable)void SetUse();
+	UFUNCTION(BlueprintCallable)void SetCannotUse();
 	UFUNCTION(BlueprintCallable)void SetMove();
+	UFUNCTION(BlueprintCallable)void SetStop();
 	UFUNCTION(BlueprintCallable)void UnsetSkill();
 	UFUNCTION(BlueprintCallable)void SpawnProjectile();
 	UFUNCTION(BlueprintCallable)void OnCollision();

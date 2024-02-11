@@ -1,6 +1,9 @@
 #include "Components/SkillComponent.h"
 #include "Global.h"
 
+#include "Characters/DungeonCharacter.h"
+#include "Objects/SkillActor.h"
+
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -9,6 +12,7 @@ USkillComponent::USkillComponent()
 void USkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	SpawnSkillActors();
 }
 
 void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -16,12 +20,24 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillComponent::SetSkill(FSkillData* Data)
+void USkillComponent::SpawnSkillActors()
 {
-	CurrentSkill = Data;
+	for (auto i : SkillActorClasses)
+		SkillActors.Add(GetWorld()->SpawnActor<ASkillActor>(i));
+	for (auto i : SkillActors)
+		i->SetOwnerCharacter(Cast<ADungeonCharacter>(GetOwner()));
 }
 
-void USkillComponent::UnsetSkill()
+void USkillComponent::UseSkill(int32 Idx)
 {
-	CurrentSkill = nullptr;
+	CheckFalse(SkillActors.IsValidIndex(Idx));
+	CurrentSkill = SkillActors[Idx];
+	CheckNull(CurrentSkill);
+	CurrentSkill->Use();
+}
+
+void USkillComponent::SpawnProjectile()
+{
+	CheckNull(CurrentSkill);
+	CurrentSkill->SpawnProjectile();
 }

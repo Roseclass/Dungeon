@@ -11,6 +11,7 @@
 #include "Engine/World.h"
 
 #include "Components/SkillComponent.h"
+#include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
@@ -47,6 +48,7 @@ ADungeonCharacter::ADungeonCharacter()
 
 	//actor
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
+	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
@@ -77,61 +79,39 @@ FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 	return TeamID;
 }
 
-void ADungeonCharacter::UseSkill(FSkillData* InData)
-{
-	Status->SetCannotUse();
-	if(!InData->bCanMove)Status->SetStop();
-	if(InData->Montage)PlayAnimMontage(InData->Montage, InData->PlayRate, InData->StartSection);
-	Skill->SetSkill(InData);
-}
-
 void ADungeonCharacter::UseSkill(int32 Idx)
 {
-	FSkillData* data = Skill->GetSkillData(Idx);
-	CheckNull(data);
-	UseSkill(data);
+	Skill->UseSkill(Idx);
 }
 
 void ADungeonCharacter::UseLeft()
 {
-	FSkillData* data = Skill->GetLeft();
-	CheckNull(data);
-	UseSkill(data);
+	UseSkill(0);
 }
 
 void ADungeonCharacter::UseRight()
 {
-	FSkillData* data = Skill->GetRight();
-	CheckNull(data);
-	UseSkill(data);
+	UseSkill(1);
 }
 
 void ADungeonCharacter::UseQ()
 {
-	FSkillData* data = Skill->GetQ();
-	CheckNull(data); 
-	UseSkill(data);
+	UseSkill(2);
 }
 
 void ADungeonCharacter::UseW()
 {
-	FSkillData* data = Skill->GetW();
-	CheckNull(data);
-	UseSkill(data);
+	UseSkill(3);
 }
 
 void ADungeonCharacter::UseE()
 {
-	FSkillData* data = Skill->GetE();
-	CheckNull(data);
-	UseSkill(data);
+	UseSkill(4);
 }
 
 void ADungeonCharacter::UseR()
 {
-	FSkillData* data = Skill->GetR();
-	CheckNull(data);
-	UseSkill(data);
+	UseSkill(5);
 }
 
 bool ADungeonCharacter::CanUse()
@@ -149,41 +129,29 @@ void ADungeonCharacter::SetUse()
 	Status->SetUse();
 }
 
+void ADungeonCharacter::SetCannotUse()
+{
+	Status->SetCannotUse();
+}
+
 void ADungeonCharacter::SetMove()
 {
 	Status->SetMove();
 }
 
+void ADungeonCharacter::SetStop()
+{
+	Status->SetStop();
+}
+
 void ADungeonCharacter::UnsetSkill()
 {
-	Skill->UnsetSkill();
+
 }
 
 void ADungeonCharacter::SpawnProjectile()
 {
-	FSkillData* cur = Skill->GetCurrentSkill();
-	CheckNull(cur->ProjectileClass);
-
-	FVector loc = GetMesh()->GetSocketLocation(cur->SocketName);
-	FRotator rot = GetMesh()->GetSocketRotation(cur->SocketName);
-	if (!cur->bUseSocketRotation)
-		rot = GetActorForwardVector().Rotation();
-
-	FTransform trans;
-	trans.SetLocation(loc);
-	trans.SetRotation(FQuat4d(rot));
-
-	FActorSpawnParameters f;
-	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(cur->ProjectileClass, trans, this, this, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-	projectile->SetTeamID(TeamID);
-	projectile->SetDamage(10);//TODO::
-	//projectile->SetTarget(InActor);
-
-	UGameplayStatics::FinishSpawningActor(projectile, trans);
-
+	Skill->SpawnProjectile();
 }
 
 void ADungeonCharacter::OnCollision()
