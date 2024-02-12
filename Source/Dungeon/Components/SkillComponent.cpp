@@ -12,7 +12,7 @@ USkillComponent::USkillComponent()
 void USkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnSkillActors();
+	if(bAutoGenerate)SpawnSkillActors();
 }
 
 void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -26,6 +26,16 @@ void USkillComponent::SpawnSkillActors()
 		SkillActors.Add(GetWorld()->SpawnActor<ASkillActor>(i));
 	for (auto i : SkillActors)
 		i->SetOwnerCharacter(Cast<ADungeonCharacter>(GetOwner()));
+
+	for (auto i : SkillActors)
+		for (auto j : SkillActors)
+		{
+			if (i->GetSkillData()->PannelPosition == j->GetSkillData()->ParentPosition)
+			{
+				i->AddChild(j);
+				j->SetParent(i);
+			}
+		}
 }
 
 void USkillComponent::UseSkill(int32 Idx)

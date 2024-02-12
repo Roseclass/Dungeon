@@ -10,6 +10,13 @@
 
 class AProjectile;
 class ADungeonCharacter;
+class UImage;
+
+UENUM(BlueprintType)
+enum class ESkillTreeSkillState : uint8
+{
+	Locked, Unlocked, Acquired
+};
 
 USTRUCT(BlueprintType)
 struct FSkillData
@@ -42,6 +49,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 		bool bUseSocketRotation = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		UObject* SkillImage;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		FVector2D PannelPosition;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		FVector2D ParentPosition;
 };
 
 UCLASS()
@@ -59,18 +75,39 @@ public:
 	//property
 private:
 	ADungeonCharacter* OwnerCharacter;
+	ASkillActor* Parent;
+	TArray<ASkillActor*> Children;
 protected:
 	//트리형태로 스킬트리가될 예정
 	UPROPERTY(EditDefaultsOnly)
 		FSkillData Data;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		ESkillTreeSkillState SkillTreeState;
+
 public:
 
 	//function
 private:
 protected:
+	FORCEINLINE ADungeonCharacter* GetOwnerCharacter() { return OwnerCharacter; }
 public:
-	void Use();
-	void SpawnProjectile();
+	virtual void Use();
+	virtual void SpawnProjectile();
 
-	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) {OwnerCharacter = InCharacter;}
+	//getter
+
+	FORCEINLINE FSkillData* GetSkillData() { return &Data; } const
+	FORCEINLINE ASkillActor* GetParent() { return Parent; } const
+	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return Children; };
+	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() { return SkillTreeState; } const
+
+	//setter
+	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };
+	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { Parent = InSkillActor; };
+	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { Children.Add(InSkillActor); };
+	FORCEINLINE void SetLocked() { SkillTreeState = ESkillTreeSkillState::Locked; };
+	FORCEINLINE void SetUnlocked() { SkillTreeState = ESkillTreeSkillState::Unlocked; };
+	FORCEINLINE void SetAcquired() { SkillTreeState = ESkillTreeSkillState::Acquired; };
+
 };

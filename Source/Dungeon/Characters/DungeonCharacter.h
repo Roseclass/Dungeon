@@ -66,6 +66,7 @@ public:
 
 	//function
 private:
+	void Init();
 protected:
 public:
 	//Skill

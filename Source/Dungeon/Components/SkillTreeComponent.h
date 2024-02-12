@@ -8,6 +8,9 @@
  * 스킬트리를 제어하는 컴포넌트
  */
 
+class ASkillActor;
+class UUW_SkillTree;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API USkillTreeComponent : public UActorComponent
 {
@@ -22,6 +25,11 @@ public:
 
 	//property
 private:
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<UUW_SkillTree> WidgetClass;
+	
+	TArray<ASkillActor*>RootActors;
+	UUW_SkillTree* Widget;
 protected:
 public:
 
@@ -29,4 +37,8 @@ public:
 private:
 protected:
 public:
+	void Init(const TArray<ASkillActor*>& Array);
+	void AddPoints();
+	void Unlock();
+	void Acquire();
 };

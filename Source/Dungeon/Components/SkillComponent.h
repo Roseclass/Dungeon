@@ -26,6 +26,9 @@ public:
 
 	//property
 private:
+	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "If SkillActors using with another comp, control generate order in OwnerActor"))
+		bool bAutoGenerate = 1;
+		
 	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "array order : left, right, q, w, e, r....."))
 		TArray<TSubclassOf<ASkillActor>> SkillActorClasses;
 		
@@ -36,9 +39,9 @@ public:
 
 	//function
 private:
-	void SpawnSkillActors();
 protected:
 public:
+	void SpawnSkillActors();
 	void UseSkill(int32 Idx);
 	void SpawnProjectile();
 

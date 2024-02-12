@@ -58,6 +58,7 @@ ADungeonCharacter::ADungeonCharacter()
 void ADungeonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Init();
 }
 
 void ADungeonCharacter::Tick(float DeltaSeconds)
@@ -77,6 +78,12 @@ float ADungeonCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+void ADungeonCharacter::Init()
+{
+	Skill->SpawnSkillActors();
+	SkillTree->Init(Skill->GetSkillActors());
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)
