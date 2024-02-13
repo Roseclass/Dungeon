@@ -11,6 +11,7 @@
 class UCanvasPanel;
 class UBorder;
 class UScaleBox;
+class USkillButton;
 class ASkillActor;
 
 UCLASS()
@@ -42,12 +43,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Size")
 		float IconSize = 0.05;
 
-	TArray<UScaleBox*> Icons;
+	TMap<FVector2D,UScaleBox*> Icons;
 public:
 
 	//function
 private:
+	UFUNCTION() void OnButtonClicked(USkillButton* InButton);
 protected:
 public:
 	void Init(const TArray<ASkillActor*>& Array);
 };
+

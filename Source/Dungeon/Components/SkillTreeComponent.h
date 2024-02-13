@@ -39,6 +39,5 @@ protected:
 public:
 	void Init(const TArray<ASkillActor*>& Array);
 	void AddPoints();
-	void Unlock();
-	void Acquire();
+	void Acquire(ASkillActor* SkillActor);
 };

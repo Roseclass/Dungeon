@@ -1,14 +1,15 @@
 #include "Widgets/UW_SkillTree.h"
 #include "Global.h"
-#include "Components/Image.h"
 #include "Components/ScaleBox.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/ScaleBoxSlot.h"
 #include "Components/CanvasPanel.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
 
 #include "Objects/SkillActor.h"
+#include "Widgets/SkillButton.h"
 
 void UUW_SkillTree::NativeOnInitialized()
 {
@@ -20,18 +21,67 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 	int32 result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	FPaintContext context = FPaintContext(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 
-	for(auto i : RootActors)
+	for (auto i : RootActors)
 	{
-		//while (1)
-		//{
-		//	for (auto child : i->GetSkillData()->Children)
-		//	{
-		//		//UWidgetBlueprintLibrary::DrawLine(context, topleft + i.Start, topleft + i.End, FLinearColor(0.5, 0.5, 0.5, 0.5));
-		//	}
-		//} 부모를 향해 선그리기
+		TQueue<ASkillActor*> q;
+		q.Enqueue(i);
+		while (!q.IsEmpty())
+		{
+			ASkillActor* parent;
+			q.Dequeue(parent);
+			for (auto child : parent->GetChildren())
+			{
+				q.Enqueue(child);
+				FVector2D parentPos = parent->GetSkillData()->PannelPosition;
+				FVector2D childPos = child->GetSkillData()->PannelPosition;
+				UScaleBox* a = Icons[parentPos];
+				UScaleBox* b = Icons[childPos];
+				//x가 크면 우짝
+				if (parentPos.X < childPos.X && parentPos.Y >= childPos.Y)
+				{
+					parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
+					parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X;
+					parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y * 0.5;
+
+					childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
+					childPos.Y += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).Y * 0.5;
+				}
+				//y가 크면 밑으로
+				else if (parentPos.X >= childPos.X && parentPos.Y < childPos.Y)
+				{
+					parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
+					parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X * 0.5;
+					parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y;
+
+					childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
+					childPos.X += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).X * 0.5;
+				}
+				else
+					continue;
+				UWidgetBlueprintLibrary::DrawLine(context, parentPos, childPos, FLinearColor::White, 1, 3);
+			}
+		}
 	}
 
 	return result;
+}
+
+void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
+{
+
+	//팝업,배우기 등등..
+
+	ASkillActor* skill = InButton->GetSkillActor();
+	CheckNull(skill);
+	if (skill->GetSkillTreeState() == ESkillTreeSkillState::Unlocked)
+	{
+		//조건이 더 필요함 ex)스킬포인트..
+		skill->SetAcquired();
+	}
+	else if (skill->GetSkillTreeState() == ESkillTreeSkillState::Acquired)
+	{
+		CLog::Print("NeedPopup");
+	}
 }
 
 void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array)
@@ -55,14 +105,15 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array)
 	//레이아웃 배치
 	for (auto i : Array)
 	{
+		USkillButton* button = NewObject<USkillButton>(GetOwningPlayer(), USkillButton::StaticClass());
+		button->Init(i);
+		button->OnSkillButtonClicked.BindUFunction(this, "OnButtonClicked");
+
 		UScaleBox* scale = NewObject<UScaleBox>(GetOwningPlayer(), UScaleBox::StaticClass());
-		UImage* image = NewObject<UImage>(GetOwningPlayer(), UImage::StaticClass());
-		image->SetBrushResourceObject(i->GetSkillData()->SkillImage);
-		scale->AddChild(image);
+		scale->AddChild(button);
 		BaseCanvasPanel->AddChild(scale);
-		Icons.Add(scale);
 		
-		UScaleBoxSlot* scaleslot = UWidgetLayoutLibrary::SlotAsScaleBoxSlot(image);
+		UScaleBoxSlot* scaleslot = UWidgetLayoutLibrary::SlotAsScaleBoxSlot(button);
 		scaleslot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
 		scaleslot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
 
@@ -74,6 +125,8 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array)
 		anch += FVector2D(IconSize, IconSize * 1.77777) * FVector2D(pos.X - 1, pos.Y - 1);
 		slot->SetAnchors(FAnchors(anch.X, anch.Y, anch.X + IconSize, anch.Y + (IconSize * 1.77777)));
 		slot->SetOffsets(FMargin(0));//기본 오프셋 존재를 모르고 한참 걸림;
-	}
 
+		Icons.Add(i->GetSkillData()->PannelPosition, scale);
+		i->Load();
+	}
 }

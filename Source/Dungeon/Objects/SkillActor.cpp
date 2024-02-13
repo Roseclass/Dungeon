@@ -11,12 +11,28 @@ ASkillActor::ASkillActor()
 
 void ASkillActor::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 void ASkillActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ASkillActor::Load()
+{
+	if (SkillTreeState == ESkillTreeSkillState::Locked)
+	{
+		SetLocked();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
+	{
+		SetUnlocked();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Acquired)
+	{
+		SetAcquired();
+	}
 }
 
 void ASkillActor::Use()
@@ -49,4 +65,33 @@ void ASkillActor::SpawnProjectile()
 	//projectile->SetTarget(InActor);
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
+}
+
+void ASkillActor::SetLocked() 
+{ 
+	SkillTreeState = ESkillTreeSkillState::Locked;
+	if(OnLocked.IsBound())
+		OnLocked.Broadcast();
+}
+
+void ASkillActor::SetUnlocked() 
+{ 
+	SkillTreeState = ESkillTreeSkillState::Unlocked;
+	if (OnUnlocked.IsBound())
+		OnUnlocked.Broadcast();
+}
+
+void ASkillActor::SetAcquired() 
+{
+	SkillTreeState = ESkillTreeSkillState::Acquired;
+	if (OnAcquired.IsBound())
+		OnAcquired.Broadcast();
+
+	for (auto child : Children)
+	{
+		if (child->GetSkillTreeState() == ESkillTreeSkillState::Locked)
+		{
+			child->SetUnlocked();
+		}
+	}
 }

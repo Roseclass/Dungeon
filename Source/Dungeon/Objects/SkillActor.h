@@ -12,6 +12,8 @@ class AProjectile;
 class ADungeonCharacter;
 class UImage;
 
+DECLARE_MULTICAST_DELEGATE(FSkillTreeSkillStateChanged);
+
 UENUM(BlueprintType)
 enum class ESkillTreeSkillState : uint8
 {
@@ -86,28 +88,30 @@ protected:
 		ESkillTreeSkillState SkillTreeState;
 
 public:
-
+	FSkillTreeSkillStateChanged OnLocked;
+	FSkillTreeSkillStateChanged OnUnlocked;
+	FSkillTreeSkillStateChanged OnAcquired;
 	//function
-private:
+private:	
 protected:
 	FORCEINLINE ADungeonCharacter* GetOwnerCharacter() { return OwnerCharacter; }
 public:
+	virtual void Load();
 	virtual void Use();
 	virtual void SpawnProjectile();
 
 	//getter
-
-	FORCEINLINE FSkillData* GetSkillData() { return &Data; } const
-	FORCEINLINE ASkillActor* GetParent() { return Parent; } const
+	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }
+	FORCEINLINE ASkillActor* GetParent() const { return Parent; }
 	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return Children; };
-	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() { return SkillTreeState; } const
+	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() const { return SkillTreeState; }
 
 	//setter
 	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };
 	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { Parent = InSkillActor; };
 	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { Children.Add(InSkillActor); };
-	FORCEINLINE void SetLocked() { SkillTreeState = ESkillTreeSkillState::Locked; };
-	FORCEINLINE void SetUnlocked() { SkillTreeState = ESkillTreeSkillState::Unlocked; };
-	FORCEINLINE void SetAcquired() { SkillTreeState = ESkillTreeSkillState::Acquired; };
+	void SetLocked();
+	void SetUnlocked();
+	void SetAcquired();
 
 };

@@ -48,19 +48,7 @@ void USkillTreeComponent::AddPoints()
 
 }
 
-void USkillTreeComponent::Unlock()
+void USkillTreeComponent::Acquire(ASkillActor* SkillActor)
 {
-	for (auto i : RootActors)
-	{
-		for (auto child : i->GetChildren())
-		{
-			//자식순회하면서 언락
-		}
-	}
+	SkillActor->SetAcquired();
 }
-
-void USkillTreeComponent::Acquire()
-{
-	//특정 액터 습득
-}
-
