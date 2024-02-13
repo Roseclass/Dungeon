@@ -5,7 +5,7 @@
 #include "UW_SkillTree.generated.h"
 
 /**
- * 
+ * 스킬을 배우고 퀵슬롯에 배치 가능
  */
 
 class UCanvasPanel;
@@ -13,6 +13,7 @@ class UBorder;
 class UScaleBox;
 class USkillButton;
 class ASkillActor;
+class UUW_SkillTreePopup;
 
 UCLASS()
 class DUNGEON_API UUW_SkillTree : public UUserWidget
@@ -34,6 +35,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_SkillTreePopup* Popup;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Size")
 		FVector2D BackgroundLeftTopAnchor = FVector2D(0.2, 0.2);
 
@@ -51,6 +55,6 @@ private:
 	UFUNCTION() void OnButtonClicked(USkillButton* InButton);
 protected:
 public:
-	void Init(const TArray<ASkillActor*>& Array);
+	void Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
 };
 

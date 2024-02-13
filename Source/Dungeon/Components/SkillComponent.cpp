@@ -51,3 +51,8 @@ void USkillComponent::SpawnProjectile()
 	CheckNull(CurrentSkill);
 	CurrentSkill->SpawnProjectile();
 }
+
+void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
+{
+	CLog::Print(InSkillActor->GetName() + " is in");
+}

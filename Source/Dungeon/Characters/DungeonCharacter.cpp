@@ -83,7 +83,12 @@ FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 void ADungeonCharacter::Init()
 {
 	Skill->SpawnSkillActors();
-	SkillTree->Init(Skill->GetSkillActors());
+	TFunction<void(int32, ASkillActor*)> func;
+	func = [this](int32 Idx, ASkillActor* Actor)
+	{
+		ChangeQuickSlotData(Idx, Actor);
+	};
+	SkillTree->Init(Skill->GetSkillActors(), func);
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)
@@ -119,6 +124,11 @@ void ADungeonCharacter::UseE()
 void ADungeonCharacter::UseR()
 {
 	UseSkill(5);
+}
+
+void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
+{
+	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
 bool ADungeonCharacter::CanUse()

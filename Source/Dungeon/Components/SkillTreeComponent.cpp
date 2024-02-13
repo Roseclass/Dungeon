@@ -22,7 +22,7 @@ void USkillTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array)
+void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
 {
 	for (auto i : Array)
 	{
@@ -38,7 +38,7 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array)
 		CheckNull(controller);
 
 		Widget = CreateWidget<UUW_SkillTree, ADungeonPlayerController>(controller, WidgetClass);
-		Widget->Init(Array);
+		Widget->Init(Array, OnPopupClicked);
 		Widget->AddToViewport();
 	}
 }

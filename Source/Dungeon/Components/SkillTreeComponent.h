@@ -37,7 +37,7 @@ public:
 private:
 protected:
 public:
-	void Init(const TArray<ASkillActor*>& Array);
+	void Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
 	void AddPoints();
 	void Acquire(ASkillActor* SkillActor);
 };

@@ -17,6 +17,7 @@ class USkillTreeComponent;
 class UMontageComponent;
 class UStatusComponent;
 class UInventoryComponent;
+class ASkillActor;
 
 struct FSkillData;
 
@@ -77,6 +78,9 @@ public:
 	void UseW();
 	void UseE();
 	void UseR();
+	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
+
+	//getter
 	bool CanUse();
 	bool CanMove();
 

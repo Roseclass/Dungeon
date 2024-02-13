@@ -10,6 +10,7 @@
 
 #include "Objects/SkillActor.h"
 #include "Widgets/SkillButton.h"
+#include "Widgets/UW_SkillTreePopup.h"
 
 void UUW_SkillTree::NativeOnInitialized()
 {
@@ -21,6 +22,7 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 	int32 result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	FPaintContext context = FPaintContext(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 
+	//트리구조에 맞게 선그리기
 	for (auto i : RootActors)
 	{
 		TQueue<ASkillActor*> q;
@@ -68,9 +70,6 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 
 void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 {
-
-	//팝업,배우기 등등..
-
 	ASkillActor* skill = InButton->GetSkillActor();
 	CheckNull(skill);
 	if (skill->GetSkillTreeState() == ESkillTreeSkillState::Unlocked)
@@ -80,11 +79,18 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 	}
 	else if (skill->GetSkillTreeState() == ESkillTreeSkillState::Acquired)
 	{
-		CLog::Print("NeedPopup");
+		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
+		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+		mousePos /= geo.GetLocalSize();
+		UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Popup);
+		FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
+		slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
+		Popup->SetSkillActor(skill);
+		Popup->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
-void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array)
+void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
 {
 	//가로세로 최대수, 루트구하기
 	int32 h = 0, v = 0;
@@ -129,4 +135,7 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array)
 		Icons.Add(i->GetSkillData()->PannelPosition, scale);
 		i->Load();
 	}
+
+	//팝업 버튼 클릭 함수 바인딩
+	Popup->OnPopupButtonClicked.AddLambda([&OnPopupClicked](int32 idx, ASkillActor* SkillActor) {OnPopupClicked(idx, SkillActor); });
 }

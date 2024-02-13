@@ -5,7 +5,7 @@
 #include "SkillButton.generated.h"
 
 /**
- * 
+ * 스킬슬롯, 스킬트리 위젯에 사용되는 버튼
  */
 
 class ASkillActor;
@@ -37,4 +37,6 @@ public:
 	FORCEINLINE ASkillActor* GetSkillActor() const { return SkillActor; }
 	FORCEINLINE FVector2D GetPosition() const { return Position; }
 
+
+	//호버시설명문
 };
