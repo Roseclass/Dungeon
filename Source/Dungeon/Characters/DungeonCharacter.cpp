@@ -10,12 +10,16 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
+#include "DungeonPlayerController.h"
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/Projectile.h"
+
+#include "Widgets/UW_Main.h"
+#include "Widgets/UW_QuickSlot.h"
 
 ADungeonCharacter::ADungeonCharacter()
 {
@@ -82,13 +86,26 @@ FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 
 void ADungeonCharacter::Init()
 {
+	//Skillcomp
 	Skill->SpawnSkillActors();
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
+	if (controller)
+	{
+		UUW_Main* mainWidget = controller->GetMainWidget();
+		if (mainWidget)
+		{
+			mainWidget->GetQuickSlot()->ConnectComponent(Skill);
+		}
+	}
+
+	//SkillTreecomp
 	TFunction<void(int32, ASkillActor*)> func;
 	func = [this](int32 Idx, ASkillActor* Actor)
 	{
 		ChangeQuickSlotData(Idx, Actor);
 	};
 	SkillTree->Init(Skill->GetSkillActors(), func);
+
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)

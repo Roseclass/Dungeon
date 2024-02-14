@@ -137,5 +137,5 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, TFunction<void(int32
 	}
 
 	//팝업 버튼 클릭 함수 바인딩
-	Popup->OnPopupButtonClicked.AddLambda([&OnPopupClicked](int32 idx, ASkillActor* SkillActor) {OnPopupClicked(idx, SkillActor); });
+	Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
 }

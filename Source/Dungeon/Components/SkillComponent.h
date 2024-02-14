@@ -12,6 +12,8 @@
 class ASkillActor;
 struct FSkillData;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotDataChanged, int32, ASkillActor*);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API USkillComponent : public UActorComponent
 {
@@ -26,16 +28,18 @@ public:
 
 	//property
 private:
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "If SkillActors using with another comp, control generate order in OwnerActor"))
+	UPROPERTY(EditDefaultsOnly, Category = "Init", meta = (ToolTip = "If SkillActors using with another comp, control generate order in OwnerActor"))
 		bool bAutoGenerate = 1;
 		
-	UPROPERTY(EditDefaultsOnly, meta = (ToolTip = "array order : left, right, q, w, e, r....."))
+	UPROPERTY(EditDefaultsOnly, Category = "Init", meta = (ToolTip = "array order : left, right, q, w, e, r....."))
 		TArray<TSubclassOf<ASkillActor>> SkillActorClasses;
 		
 	ASkillActor* CurrentSkill;
 	TArray<ASkillActor*> SkillActors;
+	TArray<ASkillActor*> QuickSlotSkillActors;
 protected:
 public:
+	FQuickSlotDataChanged OnQuickSlotDataChanged;
 
 	//function
 private:

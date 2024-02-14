@@ -7,6 +7,8 @@
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	QuickSlotSkillActors.Init(nullptr, 6);
 }
 
 void USkillComponent::BeginPlay()
@@ -54,5 +56,21 @@ void USkillComponent::SpawnProjectile()
 
 void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
 {
-	CLog::Print(InSkillActor->GetName() + " is in");
+	CheckFalse(QuickSlotSkillActors.IsValidIndex(Index));
+
+	if (!InSkillActor)
+	{
+		OnQuickSlotDataChanged.Broadcast(Index, InSkillActor);
+		return;
+	}
+
+	if (QuickSlotSkillActors.Contains(InSkillActor))
+	{
+		for (int32 i = 0; i < QuickSlotSkillActors.Num(); ++i)
+			if (QuickSlotSkillActors[i] == InSkillActor)
+				ChangeQuickSlotData(i, nullptr);
+	}
+
+	OnQuickSlotDataChanged.Broadcast(Index, InSkillActor);
+	QuickSlotSkillActors[Index] = InSkillActor;
 }

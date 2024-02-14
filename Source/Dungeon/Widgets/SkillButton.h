@@ -37,6 +37,5 @@ public:
 	FORCEINLINE ASkillActor* GetSkillActor() const { return SkillActor; }
 	FORCEINLINE FVector2D GetPosition() const { return Position; }
 
-
 	//호버시설명문
 };

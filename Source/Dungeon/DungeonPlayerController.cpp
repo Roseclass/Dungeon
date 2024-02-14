@@ -4,14 +4,28 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Characters/DungeonCharacter.h"
 #include "Engine/World.h"
 #include "AIController.h"
+
+#include "Characters/DungeonCharacter.h"
+#include "Widgets/UW_Main.h"
 
 ADungeonPlayerController::ADungeonPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+}
+
+void ADungeonPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (MainWidgetClass)
+	{
+		MainWidget = CreateWidget<UUW_Main, ADungeonPlayerController>(this, MainWidgetClass);
+		MainWidget->AddToViewport();
+	}
+
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)
