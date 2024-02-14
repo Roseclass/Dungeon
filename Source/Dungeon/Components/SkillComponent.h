@@ -49,6 +49,8 @@ public:
 	void UseSkill(int32 Idx);
 	void SpawnProjectile();
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
+	void GetQuickSlotCoolTime(int32 Index, float& Current, float& Max);
+	bool IsQuickSlotCoolTime(int32 Index);
 
 	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
 	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };

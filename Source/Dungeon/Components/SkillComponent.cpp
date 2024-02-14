@@ -42,10 +42,10 @@ void USkillComponent::SpawnSkillActors()
 
 void USkillComponent::UseSkill(int32 Idx)
 {
-	CheckFalse(SkillActors.IsValidIndex(Idx));
-	CurrentSkill = SkillActors[Idx];
-	CheckNull(CurrentSkill);
-	CurrentSkill->Use();
+	CheckFalse(QuickSlotSkillActors.IsValidIndex(Idx));
+	CheckNull(QuickSlotSkillActors[Idx]);
+	CurrentSkill = QuickSlotSkillActors[Idx];
+	QuickSlotSkillActors[Idx]->Use();
 }
 
 void USkillComponent::SpawnProjectile()
@@ -61,6 +61,7 @@ void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor
 	if (!InSkillActor)
 	{
 		OnQuickSlotDataChanged.Broadcast(Index, InSkillActor);
+		QuickSlotSkillActors[Index] = nullptr;
 		return;
 	}
 
@@ -73,4 +74,19 @@ void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor
 
 	OnQuickSlotDataChanged.Broadcast(Index, InSkillActor);
 	QuickSlotSkillActors[Index] = InSkillActor;
+}
+
+void USkillComponent::GetQuickSlotCoolTime(int32 Index, float& Current, float& Max)
+{
+	CheckFalse(QuickSlotSkillActors.IsValidIndex(Index));
+	CheckNull(QuickSlotSkillActors[Index]);
+	Current = QuickSlotSkillActors[Index]->GetCurrnetCoolTime();
+	Max = QuickSlotSkillActors[Index]->GetMaxCoolTime();
+}
+
+bool USkillComponent::IsQuickSlotCoolTime(int32 Index)
+{
+	if (!QuickSlotSkillActors.IsValidIndex(Index))return 1;
+	if (!QuickSlotSkillActors[Index])return 1;
+	return QuickSlotSkillActors[Index]->IsCoolTime();
 }

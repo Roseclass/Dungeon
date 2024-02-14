@@ -1,61 +1,90 @@
 #include "Widgets/UW_QuickSlot.h"
 #include "Global.h"
-#include "Widgets/SkillButton.h"
+#include "Kismet/KismetMaterialLibrary.h" 
+#include "Kismet/KismetTextLibrary.h"
+#include "Materials/MaterialInstance.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 #include "Components/SkillComponent.h"
+#include "Widgets/SkillButton.h"
 #include "Objects/SkillActor.h"
 
 void UUW_QuickSlot::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
+}
 
-	ResetSlot(Slot0);
-	ResetSlot(Slot1);
-	ResetSlot(Slot2);
-	ResetSlot(Slot3);
-	ResetSlot(Slot4);
-	ResetSlot(Slot5);
+void UUW_QuickSlot::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	Slots.Add(Slot0);Slots.Add(Slot1);Slots.Add(Slot2);
+	Slots.Add(Slot3);Slots.Add(Slot4);Slots.Add(Slot5);
+	Timers.Add(Timer0); Timers.Add(Timer1); Timers.Add(Timer2);
+	Timers.Add(Timer3); Timers.Add(Timer4); Timers.Add(Timer5);
+	for (auto i : Slots)
+	{
+		UMaterialInstanceDynamic* dynamicMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), SlotMaterial, NAME_None, EMIDCreationFlags::None);
+		if (!dynamicMat)continue;
+		Materials.Add(dynamicMat);
+		i->SetIsEnabled(0);
+		i->WidgetStyle.Normal.SetResourceObject(dynamicMat);
+		i->WidgetStyle.Hovered.SetResourceObject(dynamicMat);
+		i->WidgetStyle.Pressed.SetResourceObject(dynamicMat);
+		i->WidgetStyle.Disabled.SetResourceObject(dynamicMat);
+		i->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+		i->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+	}
+}
+
+void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (OwnerComponent)
+	{
+		for (int32 i = 0; i < Materials.Num(); ++i)
+		{
+			float cur = 0, max = 0;
+			OwnerComponent->GetQuickSlotCoolTime(i, cur, max);
+			if (max <= 0)
+			{
+				Materials[i]->SetScalarParameterValue("Progress", 0);
+				Timers[i]->SetText(FText());
+			}
+			else
+			{
+				Materials[i]->SetScalarParameterValue("Progress", cur / max);
+				FText time;
+				if (max - cur >= max)time = FText();
+				else if (max - cur < 10)time = UKismetTextLibrary::Conv_FloatToText(max - cur, ERoundingMode::HalfToEven, 0, 1, 1, 1, 1, 1);
+				else time = UKismetTextLibrary::Conv_FloatToText(max - cur, ERoundingMode::HalfToEven, 0, 1, 1, 3, 0, 0);
+				Timers[i]->SetText(time);
+			}
+		}
+	}
 }
 
 void UUW_QuickSlot::OnQuickSlotDataChanged(int32 Index, ASkillActor* InSkillActor)
 {
-	USkillButton* button = nullptr;
-	switch (Index)
-	{
-	case 0:button=Slot0;break;
-	case 1:button=Slot1;break;
-	case 2:button=Slot2;break;
-	case 3:button=Slot3;break;
-	case 4:button=Slot4;break;
-	case 5:button=Slot5;break;
-	default:break;
-	}
-	CheckNull(button);
+	CheckFalse(Slots.IsValidIndex(Index));
 	if (InSkillActor)
 	{
-		button->SetIsEnabled(1);
-		button->WidgetStyle.Normal.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-		button->WidgetStyle.Hovered.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-		button->WidgetStyle.Pressed.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-		button->WidgetStyle.Disabled.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-		button->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
-		button->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
+		Slots[Index]->SetIsEnabled(1);
+		Slots[Index]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
+		Slots[Index]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
+		UTexture* icon = Cast<UTexture>(InSkillActor->GetSkillData()->SkillImage);
+		Materials[Index]->SetTextureParameterValue("Icon", icon);
 	}
 	else
 	{ 
-		ResetSlot(button);
+		Slots[Index]->SetIsEnabled(0);
+		Slots[Index]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+		Slots[Index]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+		Materials[Index]->SetTextureParameterValue("Icon", DefaultIcon);
 	}
-}
-
-void UUW_QuickSlot::ResetSlot(USkillButton* InSlot)
-{
-	InSlot->SetIsEnabled(0);
-	InSlot->WidgetStyle.Normal.SetResourceObject(nullptr);
-	InSlot->WidgetStyle.Hovered.SetResourceObject(nullptr);
-	InSlot->WidgetStyle.Pressed.SetResourceObject(nullptr);
-	InSlot->WidgetStyle.Disabled.SetResourceObject(nullptr);
-	InSlot->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.5));
-	InSlot->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.5));
 }
 
 void UUW_QuickSlot::ConnectComponent(USkillComponent* InSkillComponent)

@@ -20,6 +20,7 @@
 
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
+#include "Objects/SkillActor.h"
 
 ADungeonCharacter::ADungeonCharacter()
 {
@@ -115,31 +116,55 @@ void ADungeonCharacter::UseSkill(int32 Idx)
 
 void ADungeonCharacter::UseLeft()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(0));
+	if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(0);
 }
 
 void ADungeonCharacter::UseRight()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(1));
+	if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(1);
 }
 
 void ADungeonCharacter::UseQ()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(2));
+	if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(2);
 }
 
 void ADungeonCharacter::UseW()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(3));
+	if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(3);
 }
 
 void ADungeonCharacter::UseE()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(4));
+	if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(4);
 }
 
 void ADungeonCharacter::UseR()
 {
+	CheckFalse(CanUse());
+	CheckTrue(Skill->IsQuickSlotCoolTime(5));
+	if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
+		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(5);
 }
 

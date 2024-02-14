@@ -17,6 +17,16 @@ void ASkillActor::BeginPlay()
 void ASkillActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bCoolTime)
+	{
+		CurrnetCoolTime += DeltaTime;
+		if (CurrnetCoolTime >= Data.CoolTime)
+		{
+			CurrnetCoolTime = 0;
+			bCoolTime = 0;
+		}
+	}
 }
 
 void ASkillActor::Load()
@@ -38,6 +48,7 @@ void ASkillActor::Load()
 void ASkillActor::Use()
 {
 	CheckNull(OwnerCharacter);
+	CoolTimeStart();
 	OwnerCharacter->SetCannotUse();
 	if(!Data.bCanMove)OwnerCharacter->SetStop();
 	if(Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
@@ -65,6 +76,11 @@ void ASkillActor::SpawnProjectile()
 	//projectile->SetTarget(InActor);
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
+}
+
+void ASkillActor::CoolTimeStart()
+{
+	bCoolTime = 1;
 }
 
 void ASkillActor::SetLocked() 

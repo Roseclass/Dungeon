@@ -60,6 +60,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Widget")
 		FVector2D ParentPosition;
+
+	UPROPERTY(EditAnywhere, Category = "CoolTime")
+		float CoolTime = 10.0f;
 };
 
 UCLASS()
@@ -79,6 +82,10 @@ private:
 	ADungeonCharacter* OwnerCharacter;
 	ASkillActor* Parent;
 	TArray<ASkillActor*> Children;
+
+	bool bCoolTime;
+	float CurrnetCoolTime;
+
 protected:
 	//트리형태로 스킬트리가될 예정
 	UPROPERTY(EditDefaultsOnly)
@@ -99,12 +106,16 @@ public:
 	virtual void Load();
 	virtual void Use();
 	virtual void SpawnProjectile();
+	virtual void CoolTimeStart();
 
 	//getter
 	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }
 	FORCEINLINE ASkillActor* GetParent() const { return Parent; }
 	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return Children; };
 	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() const { return SkillTreeState; }
+	FORCEINLINE float GetMaxCoolTime() const { return Data.CoolTime; }
+	FORCEINLINE float GetCurrnetCoolTime() const { return CurrnetCoolTime; }
+	FORCEINLINE bool IsCoolTime() const { return bCoolTime; }
 
 	//setter
 	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };

@@ -47,6 +47,11 @@ private:
 protected:
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
+	void OnRightClick();
+	void OnQuickSlot0();
+	void OnQuickSlot1();
+	void OnQuickSlot2();
+	void OnQuickSlot3();
 public:
 
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }

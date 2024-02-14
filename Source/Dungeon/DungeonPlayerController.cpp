@@ -90,6 +90,11 @@ void ADungeonPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &ADungeonPlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &ADungeonPlayerController::OnSetDestinationReleased);
+	InputComponent->BindAction("RightClick", IE_Pressed, this, &ADungeonPlayerController::OnRightClick);
+	InputComponent->BindAction("QuickSlot0", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot0);
+	InputComponent->BindAction("QuickSlot1", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot1);
+	InputComponent->BindAction("QuickSlot2", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot2);
+	InputComponent->BindAction("QuickSlot3", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot3);
 }
 
 void ADungeonPlayerController::OnSetDestinationPressed()
@@ -126,4 +131,39 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, Hit.Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 		}
 	}
+}
+
+void ADungeonPlayerController::OnRightClick()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->UseRight();
+}
+
+void ADungeonPlayerController::OnQuickSlot0()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->UseQ();
+}
+
+void ADungeonPlayerController::OnQuickSlot1()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->UseW();
+}
+
+void ADungeonPlayerController::OnQuickSlot2()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->UseE();
+}
+
+void ADungeonPlayerController::OnQuickSlot3()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->UseR();
 }
