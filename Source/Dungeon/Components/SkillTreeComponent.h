@@ -40,4 +40,6 @@ public:
 	void Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
 	void AddPoints();
 	void Acquire(ASkillActor* SkillActor);
+
+	FORCEINLINE const TArray<ASkillActor*>& GetRootActors() { return RootActors; }
 };

@@ -13,6 +13,7 @@ class UBorder;
 class UScaleBox;
 class USkillButton;
 class ASkillActor;
+class USkillTreeComponent;
 class UUW_SkillTreePopup;
 
 UCLASS()
@@ -27,7 +28,7 @@ public:
 
 	//property
 private:
-	TArray<ASkillActor*>RootActors;
+	USkillTreeComponent* OwnerComponent;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCanvasPanel* BaseCanvasPanel;
@@ -55,6 +56,6 @@ private:
 	UFUNCTION() void OnButtonClicked(USkillButton* InButton);
 protected:
 public:
-	void Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
+	void Init(const TArray<ASkillActor*>& Array, USkillTreeComponent* InSkillTreeComp, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
 };
 

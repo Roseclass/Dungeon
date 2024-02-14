@@ -8,6 +8,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 
+#include "Components/SkillTreeComponent.h"
 #include "Objects/SkillActor.h"
 #include "Widgets/SkillButton.h"
 #include "Widgets/UW_SkillTreePopup.h"
@@ -22,8 +23,10 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 	int32 result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	FPaintContext context = FPaintContext(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 
+	const TArray<ASkillActor*>& rootActors = OwnerComponent->GetRootActors();
+
 	//트리구조에 맞게 선그리기
-	for (auto i : RootActors)
+	for (auto i : rootActors)
 	{
 		TQueue<ASkillActor*> q;
 		q.Enqueue(i);
@@ -90,14 +93,14 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 	}
 }
 
-void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
+void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, USkillTreeComponent* InSkillTreeComp, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
 {
-	//가로세로 최대수, 루트구하기
+	OwnerComponent = InSkillTreeComp;
+
+	//가로세로 최대수 구하기
 	int32 h = 0, v = 0;
 	for (auto i : Array)
 	{
-		if (!i->GetParent())
-			RootActors.Add(i);
 		FVector2D pos = i->GetSkillData()->PannelPosition;
 		h = UKismetMathLibrary::Max(h, pos.X);
 		v = UKismetMathLibrary::Max(v, pos.Y);
