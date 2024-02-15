@@ -23,6 +23,8 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 	int32 result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	FPaintContext context = FPaintContext(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 
+	if (!OwnerComponent)return result;
+
 	const TArray<ASkillActor*>& rootActors = OwnerComponent->GetRootActors();
 
 	//트리구조에 맞게 선그리기
