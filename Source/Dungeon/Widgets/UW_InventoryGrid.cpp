@@ -98,6 +98,25 @@ void UUW_InventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent,
 bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	bool result = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	UItemObject* item = nullptr;
+	if (InOperation) item = Cast<UItemObject>(InOperation->Payload.Get());
+	if (!item)return 1;
+
+	if (OwnerComponent)
+	{
+		bool vacant = OwnerComponent->IsRoomAvailable(item);
+		if (vacant)
+		{
+			int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
+			OwnerComponent->AddItemAt(item, idx);
+		}
+		else
+		{
+			if (!OwnerComponent->TryAddItem(item))DropItem(item);
+		}
+	}
+
 	return result;
 }
 
