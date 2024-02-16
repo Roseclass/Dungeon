@@ -69,12 +69,12 @@ int32 UUW_InventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		green = OwnerComponent->IsRoomAvailable(itemObject);
 
 		FVector2D start = FVector2D(topleft.X + (gap.X * BoxLeft), topleft.Y + (gap.Y * BoxTop));
-		FVector2D end = start + (FVector2D(BoxRight, BoxBottom) * gap);
+		FVector2D boxsize = FVector2D(gap.X * (BoxRight - BoxLeft), gap.Y * (BoxBottom - BoxTop));
 
 		UWidgetBlueprintLibrary::DrawBox(
 			context,
 			start,
-			end,
+			boxsize,
 			SlateBrush,
 			green ? FLinearColor(0.25, 1, 0, 0.25) : FLinearColor(1, 0, 0, 0.25)
 		);
@@ -107,20 +107,26 @@ bool UUW_InventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 
 	FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
 
-	FVector2D size = USlateBlueprintLibrary::GetLocalSize(Background->GetCachedGeometry());
-	FVector2D gap = FVector2D(size.X / RowSize, size.Y / ColumnSize);
-	FVector2D topleft = USlateBlueprintLibrary::GetLocalTopLeft(Background->GetCachedGeometry());
-	
+	FVector2D widgetPos = Background->GetCachedGeometry().GetAbsolutePosition();
+	FVector2D widgetSize = Background->GetCachedGeometry().GetAbsoluteSize();
+
+	FVector2D topLeft, bottomRight, gap;
+	USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), widgetPos, gap, topLeft);
+	USlateBlueprintLibrary::AbsoluteToViewport(GetWorld(), widgetPos + widgetSize, gap, bottomRight);
+	gap = bottomRight - topLeft;
+	gap.X /= RowSize;
+	gap.Y /= ColumnSize;
+
 	int32 x, y;
 	UItemObject* item = Cast<UItemObject>(InOperation->Payload);
 	if (!item)return 1;
 	item->GetDimensions(x, y);
-
-	FVector2D loc = mousePos - topleft;
+	
+	FVector2D loc = mousePos - topLeft;
 	BoxLeft = loc.X / gap.X;
 	BoxRight = BoxLeft + x;
 	if (BoxRight > RowSize) BoxRight = RowSize;
-
+	
 	BoxTop = loc.Y / gap.Y;
 	BoxBottom = BoxTop + y;
 	if (BoxBottom > ColumnSize) BoxBottom = ColumnSize;
