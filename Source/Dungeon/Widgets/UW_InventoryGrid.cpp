@@ -8,6 +8,9 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/DragDropOperation.h"
+#include "Kismet/KismetMaterialLibrary.h" 
+#include "Materials/MaterialInstance.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 #include "Components/InventoryComponent.h"
 #include "Objects/ItemObject.h"
@@ -129,6 +132,8 @@ void UUW_InventoryGrid::ChangeGridSize(int32 InRowSize, int32 InColumnSize)
 {
 	RowSize = InRowSize;
 	ColumnSize = InColumnSize;
+	Grid->GetDynamicMaterial()->SetScalarParameterValue("Row", RowSize);
+	Grid->GetDynamicMaterial()->SetScalarParameterValue("Column", ColumnSize);
 }
 
 void UUW_InventoryGrid::Refresh()

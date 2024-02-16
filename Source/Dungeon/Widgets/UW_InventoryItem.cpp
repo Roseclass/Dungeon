@@ -52,6 +52,22 @@ void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 
 void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
+
+	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
+
+	FVector2D size = USlateBlueprintLibrary::GetLocalSize(canvas->GetCachedGeometry());
+	
+	if (OwnerComponent)
+	{
+		size.X /= OwnerComponent->GetRows();
+		size.Y /= OwnerComponent->GetColumns();
+	}
+
+	int32 x, y;
+	ItemObject->GetDimensions(x, y);
+	TileSize.X = size.X * x;
+	TileSize.Y = size.Y * y;
+
 	OutOperation = NewObject<UDragDropOperation>(this);
 	OutOperation->Payload = ItemObject;
 	OutOperation->DefaultDragVisual = this;
@@ -68,30 +84,14 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 FSlateBrush UUW_InventoryItem::GetIconImage()
 {
-	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
-
-	FVector2D size = USlateBlueprintLibrary::GetLocalSize(canvas->GetCachedGeometry());
-
-	if (OwnerComponent)
-	{
-		size.X /= OwnerComponent->GetRows();
-		size.Y /= OwnerComponent->GetColumns();
-	}
-
-	size.X *= TileSize.X;
-	size.Y *= TileSize.Y;
-
-	CLog::Print(int32(TileSize.X), 1, 0);
-	CLog::Print(int32(TileSize.Y), 2, 0);
-
-	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), size.X, size.Y);
+	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), TileSize.X, TileSize.Y);
 }
 
 void UUW_InventoryItem::Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent)
 {
 	TileSize = InSize;
 	ItemObject = InObject;
-	//ItemImage->BrushDelegate.BindUFunction(this, "GetIconImage");
+	ItemImage->BrushDelegate.BindUFunction(this, "GetIconImage");
 	ItemImage->SetBrushFromMaterial(ItemObject->GetIcon());
 
 	OwnerComponent = InComponent;

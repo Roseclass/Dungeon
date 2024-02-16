@@ -40,6 +40,9 @@ protected:
 		UBorder* Background;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UBorder* Grid;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCanvasPanel* GridCanvasPanel;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Size", meta = (ClampMin = 1.00))
