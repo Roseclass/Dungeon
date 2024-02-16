@@ -11,6 +11,7 @@
 class UBorder;
 class UButton;
 class UUW_InventoryGrid;
+class UInventoryComponent;
 
 UCLASS()
 class DUNGEON_API UUW_Inventory : public UUserWidget
@@ -19,6 +20,7 @@ class DUNGEON_API UUW_Inventory : public UUserWidget
 
 	//property
 private:
+	UInventoryComponent* OwnerComponent;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
@@ -38,4 +40,5 @@ public:
 private:
 protected:
 public:
+	void Init(UInventoryComponent* InComponent);
 };

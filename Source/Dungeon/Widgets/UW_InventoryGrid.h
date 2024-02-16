@@ -9,8 +9,10 @@
  */
 
 class UBorder;
+class UCanvasPanel;
 class USlateBrushAsset;
 class UInventoryComponent;
+class UUW_InventoryItem;
 
 UCLASS()
 class DUNGEON_API UUW_InventoryGrid : public UUserWidget
@@ -29,11 +31,16 @@ private:
 	UInventoryComponent* OwnerComponent;
 	bool DrawBox;
 	int32 BoxLeft = 0;
+	int32 BoxRight = 0;
 	int32 BoxTop = 0;
+	int32 BoxBottom = 0;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UCanvasPanel* GridCanvasPanel;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Size", meta = (ClampMin = 1.00))
 		int32 RowSize = 1;
@@ -44,11 +51,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "DragDrop")
 		USlateBrushAsset* SlateBrush;
 
+	UPROPERTY(EditDefaultsOnly, Category = "DragDrop")
+		TSubclassOf<UUW_InventoryItem> ItemWidgetClass;
+
 public:
 
 	//function
 private:
+	void ChangeGridSize(int32 InRowSize = 1, int32 InColumnSize = 1);
+	UFUNCTION()void Refresh();
+	UFUNCTION()void OnItemRemoved(UItemObject* InObject);
+	UFUNCTION()FEventReply OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent);
+	void DropItem(UItemObject* InObject);
+
 protected:
 public:
-
+	void Init(UInventoryComponent* InComponent);
+	void ChangeOwnerComponent(UInventoryComponent* InComponent);
 };

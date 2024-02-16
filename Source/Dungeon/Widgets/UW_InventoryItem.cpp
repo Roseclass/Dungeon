@@ -1,0 +1,111 @@
+#include "Widgets/UW_InventoryItem.h"
+#include "Global.h"
+#include "Components/Border.h"
+#include "Components/BorderSlot.h"
+#include "Components/SizeBox.h"
+#include "Components/Image.h"
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
+#include "Blueprint/DragDropOperation.h"
+
+#include "Components/InventoryComponent.h"
+#include "Objects/ItemObject.h"
+#include "Objects/Weapon.h"
+
+void UUW_InventoryItem::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+}
+
+FReply UUW_InventoryItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (FKey("LeftMouseButton") == InMouseEvent.GetEffectingButton())
+	{
+		return 	UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, FKey("LeftMouseButton")).NativeReply;
+	}
+	else if (FKey("RightMouseButton") == InMouseEvent.GetEffectingButton())
+	{
+		//OwnerComponent->ChangePresetData(OwnerComponent->GetPresetIndex(), ItemObject);
+		//if (OnInventoryItem_Removed.IsBound())
+		//	OnInventoryItem_Removed.Broadcast(ItemObject);
+		RemoveFromParent();
+	}
+	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+}
+
+void UUW_InventoryItem::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+
+	BackgroundBorder->SetBrushColor(FLinearColor(0.5, 0.5, 0.5, 0.2));
+}
+
+void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseLeave(InMouseEvent);
+
+	BackgroundBorder->SetBrushColor(FLinearColor(0, 0, 0, 0.5));
+}
+
+void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
+{
+	OutOperation = NewObject<UDragDropOperation>(this);
+	OutOperation->Payload = ItemObject;
+	OutOperation->DefaultDragVisual = this;
+	OutOperation->Pivot = EDragPivot::CenterCenter;
+	OutOperation->Offset = FVector2D(0, 0);
+
+	//if (ItemObject)ItemObject->GetAttachment()->SetInventoryMode();
+
+	if (OnInventoryItemRemoved.IsBound())
+		OnInventoryItemRemoved.Broadcast(ItemObject);
+
+	RemoveFromParent();
+}
+
+FSlateBrush UUW_InventoryItem::GetIconImage()
+{
+	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
+
+	FVector2D size = USlateBlueprintLibrary::GetLocalSize(canvas->GetCachedGeometry());
+
+	if (OwnerComponent)
+	{
+		size.X /= OwnerComponent->GetRows();
+		size.Y /= OwnerComponent->GetColumns();
+	}
+
+	size.X *= TileSize.X;
+	size.Y *= TileSize.Y;
+
+	CLog::Print(int32(TileSize.X), 1, 0);
+	CLog::Print(int32(TileSize.Y), 2, 0);
+
+	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), size.X, size.Y);
+}
+
+void UUW_InventoryItem::Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent)
+{
+	TileSize = InSize;
+	ItemObject = InObject;
+	//ItemImage->BrushDelegate.BindUFunction(this, "GetIconImage");
+	ItemImage->SetBrushFromMaterial(ItemObject->GetIcon());
+
+	OwnerComponent = InComponent;
+	Refresh();
+}
+
+void UUW_InventoryItem::Refresh()
+{
+	//int32 X, Y;
+	//CheckNull(ItemObject);
+	//ItemObject->GetDimensions(X, Y);
+	//Size = 
+	//BackgroundSizeBox->SetWidthOverride(Size.X);
+	//BackgroundSizeBox->SetHeightOverride(Size.Y);
+	//UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(ItemImage->Slot);
+	//slot->SetSize(Size);
+}

@@ -4,6 +4,13 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+/**
+ *
+ */
+
+class UItemObject;
+class UMaterialInstance;
+
 UCLASS()
 class DUNGEON_API AWeapon : public AActor
 {
@@ -20,12 +27,25 @@ public:
 private:
 	TArray<UShapeComponent*> CollisionComponents;
 	TArray<AActor*> HittedActors;
+	UItemObject* ItemObject;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FTransform AttachTransform;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FName SocketName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
+		int32 DimensionX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
+		int32 DimensionY;
+
+	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
+		UMaterialInstance* Icon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
+		UMaterialInstance* IconRotated;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
@@ -54,4 +74,6 @@ public:
 
 	FORCEINLINE FTransform GetAttachTransform() { return AttachTransform; }
 	FORCEINLINE FName GetSocketName() { return SocketName; }
+	FORCEINLINE UItemObject* GetItemObject() { return ItemObject; }
+
 };

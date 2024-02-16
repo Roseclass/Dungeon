@@ -4,3 +4,9 @@
 #include "Components/Button.h"
 
 #include "Widgets/UW_InventoryGrid.h"
+
+void UUW_Inventory::Init(UInventoryComponent* InComponent)
+{
+	OwnerComponent = InComponent;
+	Grid->Init(OwnerComponent);
+}

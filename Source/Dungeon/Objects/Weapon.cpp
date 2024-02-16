@@ -3,15 +3,18 @@
 #include "Components/ShapeComponent.h"
 
 #include "Characters/DungeonCharacter.h"
+#include "Objects/ItemObject.h"
 
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	ItemObject = CreateDefaultSubobject<UItemObject>(FName("Item"));
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	ItemObject->Init(DimensionX, DimensionY, Icon, IconRotated, this);
 	FindCollision();
 }
 
