@@ -11,6 +11,7 @@
 class UBorder;
 class UButton;
 class UUW_InventoryGrid;
+class UUW_InventoryEquipmentSlot;
 class UInventoryComponent;
 
 UCLASS()
@@ -33,6 +34,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_InventoryGrid* Grid;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* WeaponSlot;
 
 public:
 

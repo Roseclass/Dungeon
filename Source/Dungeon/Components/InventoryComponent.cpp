@@ -28,6 +28,7 @@ void UInventoryComponent::InitDefault()
 	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
 
 	Items.Init(nullptr, Columns * Rows);
+	PresetItems.Init(nullptr, 1);
 
 	if (WidgetClass)
 	{
@@ -245,4 +246,104 @@ void UInventoryComponent::GetAllItems(TMap<UItemObject*, TTuple<int32, int32>>& 
 		IndexToTile(i, x, y);
 		Map.Add(cur, TTuple < int32, int32>(x, y));
 	}
+}
+
+bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)
+{
+	if (!PresetItems.IsValidIndex(InIdx))return 0;
+	UItemObject* item = PresetItems[InIdx];
+	if (!item)return 1;
+	return IsRoomAvailable(item);
+}
+
+bool UInventoryComponent::CanTakeOffCurrentEquipment()
+{
+	return CanTakeOffEquipment(PresetIndex);
+}
+
+UItemObject* UInventoryComponent::GetPresetItems(int32 InIdx)
+{
+	return PresetItems.IsValidIndex(InIdx) ? PresetItems[InIdx] : nullptr;
+}
+
+void UInventoryComponent::Equip(UItemObject* InData)
+{
+	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
+	//if (!state || !state->IsIdleMode())return;
+
+	if (OnInventoryEquipWeapon.IsBound())
+		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData->GetWeapon());
+}
+
+void UInventoryComponent::EquipPreset(int32 InIdx)
+{
+	CheckFalse(PresetItems.IsValidIndex(InIdx));
+
+	//UCActionComponent* action = CHelpers::GetComponent<UCActionComponent>(GetOwner());
+	//bool bUnarmed = action->IsUnarmedMode();
+	//if ((PresetIndex == InIdx && !bUnarmed) || !PresetItems[InIdx])Select->PlaySelectDown();
+	//else if (InIdx == 0)Select->PlaySelectLeft();
+	//else if (InIdx == 1)Select->PlaySelectUp();
+	//else if (InIdx == 2)Select->PlaySelectRight();
+
+	PresetIndex = InIdx;
+	Equip(PresetItems[InIdx]);
+}
+
+bool UInventoryComponent::ChangePresetData(int32 InIdx, UItemObject* InData)
+{
+	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
+	//if (!state || !state->IsIdleMode())return 0;
+
+	if (!PresetItems.IsValidIndex(InIdx))return 0;
+	if (!CanTakeOffEquipment(InIdx))return 0;
+	if (PresetItems[InIdx] && !TryAddItem(PresetItems[InIdx]))return 0;
+	PresetItems[InIdx] = InData;
+	if (InIdx == PresetIndex)Equip(PresetItems[InIdx]);
+	if (OnInventoryPresetChanged.IsBound())
+		OnInventoryPresetChanged.Broadcast();
+
+	//if (Select)
+	//	Select->ChangeData(InIdx, InData);
+
+	return 1;
+}
+
+void UInventoryComponent::ChangePresetIndex(int32 InIdx)
+{
+	// 기본적으로 플레이어가 키보드로 누르면 ui교체,장비교체
+	// 위젯의 프리셋 변경버튼 눌러도 ui교체,장비교체
+	// 둘을 묶는 함수가 필요할듯?
+	//
+	// 이미지를 프리셋에 맞게 변경
+	// 현재 인덱스 변경
+
+	CheckFalse(PresetItems.IsValidIndex(InIdx));
+	PresetIndex = InIdx;
+	Equip(PresetItems[InIdx]);
+
+	//if (OnInventoryPresetChanged.IsBound())
+	//	OnInventoryPresetChanged.Broadcast();
+}
+
+bool UInventoryComponent::RemovePreset(int32 InIdx)
+{
+	return ChangePresetData(InIdx, nullptr);
+}
+
+bool UInventoryComponent::RemovePreset_Drag(int32 InIdx)
+{
+	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
+	//if (!state || !state->IsIdleMode())return 0;
+	 
+	if (!PresetItems.IsValidIndex(InIdx))return 0;
+	PresetItems[InIdx] = nullptr;
+	if (InIdx == PresetIndex)Equip(PresetItems[InIdx]);
+	if (OnInventoryPresetChanged.IsBound())
+		OnInventoryPresetChanged.Broadcast();
+
+	//if (Select)
+	//	Select->ChangeData(InIdx, nullptr);
+
+	return 1;
 }

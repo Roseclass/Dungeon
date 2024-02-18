@@ -31,6 +31,9 @@ public:
 	//property
 private:
 	UPROPERTY()TArray<UItemObject*> Items;
+	UPROPERTY()TArray<UItemObject*> PresetItems;
+	int32 PresetIndex;
+
 	UPROPERTY()UUW_Inventory* Widget;
 
 	AWeapon* CurrentWeapon;
@@ -53,6 +56,7 @@ protected:
 public:
 	FInventoryChanged OnInventoryChanged;
 	FInventoryEquipWeapon OnInventoryEquipWeapon;
+	FInventoryPresetChanged OnInventoryPresetChanged;
 
 	//function
 private:
@@ -83,20 +87,17 @@ public:
 	FORCEINLINE int32 GetRows() { return Rows; }
 	FORCEINLINE int32 GetColumns() { return Columns; }
 
-	////for EquipmentSlot
-	//bool CanTakeOffEquipment(int32 InIdx);
-	//bool CanTakeOffCurrentEquipment();
-	//UItemObject* GetPresetItems(int32 InIdx);
-	//FORCEINLINE UItemObject* GetCurrentPresetItem() { return PresetItems[PresetIndex]; };
-	//FORCEINLINE int32 GetPresetIndex() { return PresetIndex; };
-	//FORCEINLINE int32 GetGold() { return Gold; };
-	//FORCEINLINE void SetGold(int32 InGold) { Gold = InGold; };
-	//void EquipAttachment(UItemObject* InData);
-	//void EquipPreset(int32 InIdx);
-	//bool ChangePresetData(int32 InIdx, UItemObject* InData);
-	//void ChangePresetIndex(int32 InIdx);
-	//bool RemovePreset(int32 InIdx);
-	//bool RemovePreset_Drag(int32 InIdx);
+	//for EquipmentSlot
+	bool CanTakeOffEquipment(int32 InIdx);
+	bool CanTakeOffCurrentEquipment();
+	UItemObject* GetPresetItems(int32 InIdx);
+	FORCEINLINE UItemObject* GetCurrentPresetItem() { return PresetItems[PresetIndex]; };
+	void Equip(UItemObject* InData);
+	void EquipPreset(int32 InIdx);
+	bool ChangePresetData(int32 InIdx, UItemObject* InData);
+	void ChangePresetIndex(int32 InIdx);
+	bool RemovePreset(int32 InIdx);
+	bool RemovePreset_Drag(int32 InIdx);
 
 	//Widget OnOff
 	//UFUNCTION()void ToggleWidget();

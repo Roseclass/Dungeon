@@ -77,7 +77,10 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 	//if (ItemObject)ItemObject->GetAttachment()->SetInventoryMode();
 
 	if (OnInventoryItemRemoved.IsBound())
+	{
 		OnInventoryItemRemoved.Broadcast(ItemObject);
+		OnInventoryItemRemoved.Clear();
+	}
 
 	RemoveFromParent();
 }
