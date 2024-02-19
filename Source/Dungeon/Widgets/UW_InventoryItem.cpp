@@ -55,18 +55,7 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
 
-	FVector2D size = USlateBlueprintLibrary::GetLocalSize(canvas->GetCachedGeometry());
-	
-	if (OwnerComponent)
-	{
-		size.X /= OwnerComponent->GetRows();
-		size.Y /= OwnerComponent->GetColumns();
-	}
-
-	int32 x, y;
-	ItemObject->GetDimensions(x, y);
-	TileSize.X = size.X * x;
-	TileSize.Y = size.Y * y;
+	WidgetSize = USlateBlueprintLibrary::GetLocalSize(ItemImage->GetCachedGeometry());
 
 	OutOperation = NewObject<UDragDropOperation>(this);
 	OutOperation->Payload = ItemObject;
@@ -74,7 +63,7 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 	OutOperation->Pivot = EDragPivot::CenterCenter;
 	OutOperation->Offset = FVector2D(0, 0);
 
-	//if (ItemObject)ItemObject->GetAttachment()->SetInventoryMode();
+	if (ItemObject)ItemObject->GetWeapon()->SetInventoryMode();
 
 	if (OnInventoryItemRemoved.IsBound())
 	{
@@ -87,12 +76,11 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 FSlateBrush UUW_InventoryItem::GetIconImage()
 {
-	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), TileSize.X, TileSize.Y);
+	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), WidgetSize.X, WidgetSize.Y);
 }
 
 void UUW_InventoryItem::Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent)
 {
-	TileSize = InSize;
 	ItemObject = InObject;
 	ItemImage->BrushDelegate.BindUFunction(this, "GetIconImage");
 	ItemImage->SetBrushFromMaterial(ItemObject->GetIcon());

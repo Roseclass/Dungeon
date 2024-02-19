@@ -30,7 +30,7 @@ public:
 
 	//property
 private:
-	FVector2D TileSize;
+	FVector2D WidgetSize;//드래그 드롭때 크기를 유지하기 위함
 	UItemObject* ItemObject;
 	UInventoryComponent* OwnerComponent;
 protected:

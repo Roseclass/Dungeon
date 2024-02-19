@@ -110,28 +110,6 @@ FReply UUW_InventoryEquipmentSlot::NativeOnMouseButtonDown(const FGeometry& InGe
 	return 	UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, FKey("LeftMouseButton")).NativeReply;
 }
 
-//void UUW_InventoryEquipmentSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
-//{
-//	UItemObject* item = OwnerComponent->GetPresetItems(SlotIndex);
-//	CheckNull(item);
-//	CheckFalse(OwnerComponent->RemovePreset_Drag(SlotIndex));
-//
-//	UUW_InventoryItem* widget = nullptr;
-//	for (auto i : Pannel->GetAllChildren())
-//	{
-//		widget = Cast<UUW_InventoryItem>(i);
-//		if (widget)break;
-//	}
-//
-//	OutOperation = NewObject<UDragDropOperation>(this);
-//	OutOperation->Payload = item;
-//	OutOperation->DefaultDragVisual = widget;
-//	OutOperation->Pivot = EDragPivot::CenterCenter;
-//	OutOperation->Offset = FVector2D(0, 0);
-//	//item->GetAttachment()->SetInventoryMode();
-//	Refresh();
-//}
-
 void UUW_InventoryEquipmentSlot::Refresh()
 {
 	//UItemObject* item = OwnerComponent->GetPresetItems(SlotIndex);

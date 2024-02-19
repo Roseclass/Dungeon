@@ -99,6 +99,7 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 {
 	bool result = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
+
 	UItemObject* item = nullptr;
 	if (InOperation) item = Cast<UItemObject>(InOperation->Payload.Get());
 	if (!item)return 1;

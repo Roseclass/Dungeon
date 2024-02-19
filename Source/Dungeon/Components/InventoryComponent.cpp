@@ -56,6 +56,7 @@ void UInventoryComponent::InitDefault()
 	{
 		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
 		TryAddItem(test->GetItemObject());
+		test->SetInventoryMode();
 	}
 }
 
@@ -270,6 +271,23 @@ void UInventoryComponent::Equip(UItemObject* InData)
 {
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
+
+	if (!InData)
+	{
+		if (CurrentWeapon)CurrentWeapon->SetInventoryMode();
+		CurrentWeapon = nullptr;
+		return;
+	}
+
+	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+
+	CurrentWeapon = InData->GetWeapon();
+	CurrentWeapon->OffCollision();
+	FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+	CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
+	CurrentWeapon->SetOwner(owner);
+	CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
+	CurrentWeapon->SetEquipMode();
 
 	if (OnInventoryEquipWeapon.IsBound())
 		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData->GetWeapon());

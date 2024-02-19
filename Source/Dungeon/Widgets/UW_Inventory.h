@@ -18,6 +18,9 @@ UCLASS()
 class DUNGEON_API UUW_Inventory : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)override;
+public:
 
 	//property
 private:
