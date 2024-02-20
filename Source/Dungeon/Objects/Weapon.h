@@ -2,17 +2,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Weapon.generated.h"
 
 /**
  *
  */
 
+class UFXSystemAsset;
 class UShapeComponent;
 class UMeshComponent;
 class UMaterialInstance;
 class ACharacter;
 class UItemObject;
+class UNiagaraComponent;
+class UParticleSystemComponent;
 
 UCLASS()
 class DUNGEON_API AWeapon : public AActor
@@ -35,6 +39,10 @@ private:
 	ACharacter* OwnerCharacter;
 	bool bPickable;
 
+	UNiagaraComponent* NiagaraPickEffect;
+	UParticleSystemComponent* ParticlePickEffect;
+
+
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FTransform AttachTransform;
 
@@ -53,6 +61,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
 		UMaterialInstance* IconRotated;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+		UFXSystemAsset* LootEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+		TArray<FParticleSysParam> LootEffectParams;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+		FQuat LootEffectWorldRotation;
+
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
 		uint8 TeamID = 0;
@@ -65,6 +82,7 @@ public:
 	//function
 private:
 	void FindComponents();
+	void SpawnLootEffects();
 	void SetEffectLocation();
 	void SortMesh();
 	void ActivateEffect();

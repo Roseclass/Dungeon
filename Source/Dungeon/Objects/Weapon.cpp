@@ -2,6 +2,11 @@
 #include "Global.h"
 #include "Components/ShapeComponent.h"
 #include "Components/MeshComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 #include "Characters/DungeonCharacter.h"
 #include "Objects/ItemObject.h"
@@ -17,6 +22,7 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 	ItemObject->Init(DimensionX, DimensionY, Icon, IconRotated, this);
 	FindComponents();
+	SpawnLootEffects();
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -52,6 +58,38 @@ void AWeapon::FindComponents()
 	GetComponents<UMeshComponent>(MeshComponents);
 }
 
+void AWeapon::SpawnLootEffects()
+{
+	UNiagaraSystem* n = Cast<UNiagaraSystem>(LootEffect);
+	UParticleSystem* p = Cast<UParticleSystem>(LootEffect);
+
+	UFXSystemComponent* fx = nullptr;
+	if (n)
+	{
+		NiagaraPickEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(n, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget, 1);
+		NiagaraPickEffect->SetAutoDestroy(0);
+		fx = NiagaraPickEffect;
+	}
+	else if (p)
+	{
+		ParticlePickEffect = UGameplayStatics::SpawnEmitterAttached(p, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget);
+		ParticlePickEffect->bAutoDestroy = 0;
+		fx = ParticlePickEffect;
+	}
+
+	if (fx)
+	{
+		for (auto i : LootEffectParams)
+		{
+			if (i.ParamType == PSPT_Scalar)fx->SetFloatParameter(i.Name, i.Scalar);
+			else if (i.ParamType == PSPT_Vector)fx->SetVectorParameter(i.Name, i.Vector);
+			else if (i.ParamType == PSPT_Color)fx->SetColorParameter(i.Name, i.Color);
+			else if (i.ParamType == PSPT_Actor)fx->SetActorParameter(i.Name, i.Actor);
+		}
+	}
+	if (!bPickable)DeactivateEffect();
+}
+
 void AWeapon::SetEffectLocation()
 {
 
@@ -64,12 +102,24 @@ void AWeapon::SortMesh()
 
 void AWeapon::ActivateEffect()
 {
-
+	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
+	if (NiagaraPickEffect)
+	{
+		NiagaraPickEffect->SetWorldRotation(LootEffectWorldRotation);
+		NiagaraPickEffect->Activate();
+	}
+	if (ParticlePickEffect)
+	{
+		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
+		ParticlePickEffect->Activate();
+	}
 }
 
 void AWeapon::DeactivateEffect()
 {
-
+	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
+	if (NiagaraPickEffect)NiagaraPickEffect->Deactivate();
+	if (ParticlePickEffect)ParticlePickEffect->Deactivate();
 }
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
