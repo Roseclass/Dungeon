@@ -28,6 +28,16 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
+	if (NiagaraPickEffect)
+	{
+		NiagaraPickEffect->SetWorldRotation(LootEffectWorldRotation);
+	}
+	if (ParticlePickEffect)
+	{
+		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
+	}
 }
 
 void AWeapon::FindComponents()
@@ -44,6 +54,11 @@ void AWeapon::FindComponents()
 				CollisionComponents.Add(component);
 				break;
 			}
+			else if (i == FName("InteractCollision"))
+			{
+				InteractCollisionComponents.Add(component);
+				break;
+			}
 		}
 	}
 	for (UShapeComponent* component : CollisionComponents)
@@ -52,6 +67,9 @@ void AWeapon::FindComponents()
 		component->OnComponentHit.Clear();
 		component->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnComponentBeginOverlap);
 		component->OnComponentHit.AddDynamic(this, &AWeapon::OnComponentHit);
+		component->OnBeginCursorOver;
+		component->OnEndCursorOver;
+		component->OnClicked;
 	}
 
 	//메시 찾기
@@ -105,12 +123,10 @@ void AWeapon::ActivateEffect()
 	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
 	if (NiagaraPickEffect)
 	{
-		NiagaraPickEffect->SetWorldRotation(LootEffectWorldRotation);
 		NiagaraPickEffect->Activate();
 	}
 	if (ParticlePickEffect)
 	{
-		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
 		ParticlePickEffect->Activate();
 	}
 }
@@ -237,9 +253,6 @@ void AWeapon::SetPickableMode()
 	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
 	SetEffectLocation();
 
-	// On Item Effects
-	ActivateEffect();
-
 	// On Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
@@ -254,4 +267,8 @@ void AWeapon::SetPickableMode()
 	SetOwnerCharacter(nullptr);
 	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
 	DetachFromActor(f);
+
+	// On Item Effects
+	ActivateEffect();
+
 }

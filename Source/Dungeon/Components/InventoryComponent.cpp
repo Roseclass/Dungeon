@@ -219,8 +219,8 @@ void UInventoryComponent::AddItemAt(UItemObject* InObject, int32 TopLeftIndex)
 		}
 	}
 
-	//InObject->GetAttachment()->SetInventoryMode();
-	//InObject->SetInventoryComp(this);
+	InObject->GetWeapon()->SetInventoryMode();
+	InObject->SetInventoryComp(this);
 
 	if (OnInventoryChanged.IsBound())
 		OnInventoryChanged.Broadcast();

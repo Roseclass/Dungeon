@@ -173,6 +173,11 @@ void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillAct
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
+bool ADungeonCharacter::TryAddItem(UItemObject* InObject)
+{
+	return Inventory->TryAddItem(InObject);
+}
+
 bool ADungeonCharacter::CanUse()
 {
 	return Status->CanUse();

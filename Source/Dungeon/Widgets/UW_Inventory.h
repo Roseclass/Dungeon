@@ -10,6 +10,7 @@
 
 class UBorder;
 class UButton;
+class UCanvasPanel;
 class UUW_InventoryGrid;
 class UUW_InventoryEquipmentSlot;
 class UInventoryComponent;
@@ -26,6 +27,9 @@ public:
 private:
 	UInventoryComponent* OwnerComponent;
 protected:
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UCanvasPanel* BackgroundPanel;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
 

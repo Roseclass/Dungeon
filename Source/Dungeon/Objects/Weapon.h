@@ -11,6 +11,7 @@
 
 class UFXSystemAsset;
 class UShapeComponent;
+class UBoxComponent;
 class UMeshComponent;
 class UMaterialInstance;
 class ACharacter;
@@ -33,6 +34,7 @@ public:
 	//property
 private:
 	TArray<UShapeComponent*> CollisionComponents;
+	TArray<UShapeComponent*> InteractCollisionComponents;
 	TArray<UMeshComponent*> MeshComponents;
 	TArray<AActor*> HittedActors;
 	UItemObject* ItemObject;
@@ -41,7 +43,6 @@ private:
 
 	UNiagaraComponent* NiagaraPickEffect;
 	UParticleSystemComponent* ParticlePickEffect;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FTransform AttachTransform;

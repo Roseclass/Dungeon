@@ -7,6 +7,7 @@
 
 class UNiagaraSystem;
 class ADungeonCharacter;
+class AWeapon;
 class UUW_Main;
 
 UCLASS()
@@ -28,6 +29,7 @@ private:
 	float FollowTime;
 
 	ADungeonCharacter* Target;
+	AWeapon* Item;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		float ShortPressThreshold;

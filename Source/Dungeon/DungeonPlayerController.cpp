@@ -8,6 +8,7 @@
 #include "AIController.h"
 
 #include "Characters/DungeonCharacter.h"
+#include "Objects/Weapon.h"
 #include "Widgets/UW_Main.h"
 
 ADungeonPlayerController::ADungeonPlayerController()
@@ -51,6 +52,18 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		return;
 	}
 
+	if (Item)
+	{
+		if (myPawn->IsOverlappingActor(Item))
+		{
+			CLog::Print(Item->GetName());
+			StopMovement();
+			myPawn->TryAddItem(Item->GetItemObject());
+			Item = nullptr;
+		}
+		return;
+	}
+
 	if(bInputPressed)
 	{
 		FollowTime += DeltaTime;
@@ -66,6 +79,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		{
 			dist = UKismetMathLibrary::Vector_Distance(myPawn->GetActorLocation(), other->GetActorLocation());
 		}
+
 		if (other && dist < 500 && myPawn->CanUse() && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			//dist는 좌클릭 스킬 데이터에서 사거리를 받아와야함
@@ -100,6 +114,7 @@ void ADungeonPlayerController::SetupInputComponent()
 void ADungeonPlayerController::OnSetDestinationPressed()
 {
 	Target = nullptr;
+	Item = nullptr;
 	bInputPressed = true;
 	StopMovement();
 }
@@ -120,10 +135,17 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 
 		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+		AWeapon* const otherWeapon = Cast<AWeapon>(Hit.GetActor());
+
 		if (other && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, other);
 			Target = other;
+		}
+		else if (otherWeapon)
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, otherWeapon);
+			Item = otherWeapon;
 		}
 		else
 		{
