@@ -47,6 +47,7 @@ public:
 	//function
 private:
 protected:
+	//skill input
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
 	void OnRightClick();
@@ -54,6 +55,9 @@ protected:
 	void OnQuickSlot1();
 	void OnQuickSlot2();
 	void OnQuickSlot3();
+	//widget input
+	void OnSkillTree();
+	void OnInventory();
 public:
 
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }

@@ -109,6 +109,11 @@ void ADungeonCharacter::Init()
 
 }
 
+void ADungeonCharacter::OffAllWidget()
+{
+
+}
+
 void ADungeonCharacter::UseSkill(int32 Idx)
 {
 	Skill->UseSkill(Idx);
@@ -231,4 +236,26 @@ void ADungeonCharacter::OffCollision()
 void ADungeonCharacter::ResetHittedActors()
 {
 	Inventory->ResetHittedActors();
+}
+
+void ADungeonCharacter::ToggleSkillTree()
+{
+	if (SkillTree->IsWidgetVisible())
+		SkillTree->OffWidget();
+	else
+	{
+		OffAllWidget();
+		SkillTree->OnWidget();
+	}
+}
+
+void ADungeonCharacter::ToggleInventory()
+{
+	if (Inventory->IsWidgetVisible())
+		Inventory->OffWidget();
+	else
+	{
+		OffAllWidget();
+		Inventory->OnWidget();
+	}
 }

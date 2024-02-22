@@ -69,6 +69,7 @@ public:
 	//function
 private:
 	void Init();
+	void OffAllWidget();
 protected:
 public:
 	//Skill
@@ -98,6 +99,10 @@ public:
 	UFUNCTION(BlueprintCallable)void OnCollision();
 	UFUNCTION(BlueprintCallable)void OffCollision();
 	UFUNCTION(BlueprintCallable)void ResetHittedActors();
+
+	//widget Toggle
+	void ToggleSkillTree();
+	void ToggleInventory();
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

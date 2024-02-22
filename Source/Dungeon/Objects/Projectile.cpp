@@ -19,11 +19,6 @@ void AProjectile::BeginPlay()
 	FindCollision();
 }
 
-void AProjectile::OnProjectileDestroyed(AActor* DestroyedActor)
-{
-
-}
-
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -71,6 +66,11 @@ void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompone
 	SendDamage(Damage, OtherActor, SweepResult);
 }
 
+void AProjectile::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
+}
+
 void AProjectile::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//FVector loc = OverlapTransform.GetLocation() + Hit.Location;
@@ -109,4 +109,14 @@ void AProjectile::SendDamage(float InDamage, AActor* OtherActor, const FHitResul
 
 	FDamageEvent f;
 	OtherActor->TakeDamage(InDamage, f, inst, this);
+}
+
+void AProjectile::Activate()
+{
+
+}
+
+void AProjectile::Deactivate()
+{
+
 }

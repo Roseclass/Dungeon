@@ -67,9 +67,6 @@ void AWeapon::FindComponents()
 		component->OnComponentHit.Clear();
 		component->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnComponentBeginOverlap);
 		component->OnComponentHit.AddDynamic(this, &AWeapon::OnComponentHit);
-		component->OnBeginCursorOver;
-		component->OnEndCursorOver;
-		component->OnClicked;
 	}
 
 	//메시 찾기

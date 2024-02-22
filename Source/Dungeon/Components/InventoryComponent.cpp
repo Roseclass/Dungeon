@@ -365,3 +365,18 @@ bool UInventoryComponent::RemovePreset_Drag(int32 InIdx)
 
 	return 1;
 }
+
+bool UInventoryComponent::IsWidgetVisible()
+{
+	return Widget->IsVisible();
+}
+
+void UInventoryComponent::OnWidget()
+{
+	Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
+void UInventoryComponent::OffWidget()
+{
+	Widget->SetVisibility(ESlateVisibility::Collapsed);
+}

@@ -76,6 +76,7 @@ void ASkillActor::SpawnProjectile()
 	//projectile->SetTarget(InActor);
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
+	projectile->Activate();
 }
 
 void ASkillActor::CoolTimeStart()

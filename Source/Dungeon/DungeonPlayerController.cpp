@@ -56,7 +56,6 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 	{
 		if (myPawn->IsOverlappingActor(Item))
 		{
-			CLog::Print(Item->GetName());
 			StopMovement();
 			myPawn->TryAddItem(Item->GetItemObject());
 			Item = nullptr;
@@ -109,6 +108,9 @@ void ADungeonPlayerController::SetupInputComponent()
 	InputComponent->BindAction("QuickSlot1", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot1);
 	InputComponent->BindAction("QuickSlot2", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot2);
 	InputComponent->BindAction("QuickSlot3", IE_Pressed, this, &ADungeonPlayerController::OnQuickSlot3);
+
+	InputComponent->BindAction("SkillTree", IE_Pressed, this, &ADungeonPlayerController::OnSkillTree);
+	InputComponent->BindAction("Inventory", IE_Pressed, this, &ADungeonPlayerController::OnInventory);
 }
 
 void ADungeonPlayerController::OnSetDestinationPressed()
@@ -188,4 +190,18 @@ void ADungeonPlayerController::OnQuickSlot3()
 	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseR();
+}
+
+void ADungeonPlayerController::OnSkillTree()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->ToggleSkillTree();
+}
+
+void ADungeonPlayerController::OnInventory()
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->ToggleInventory();
 }

@@ -99,11 +99,11 @@ public:
 	bool RemovePreset(int32 InIdx);
 	bool RemovePreset_Drag(int32 InIdx);
 
-	//Widget OnOff
-	//UFUNCTION()void ToggleWidget();
-	//void OnWidget();
-	//void OffWidget();
-	
+	//Widget
+	bool IsWidgetVisible();
+	void OnWidget();
+	void OffWidget();
+
 	//
 	// 드래그 드롭 - 이동 및 장착, 해제
 	// 우클릭 - 장착 및 해제

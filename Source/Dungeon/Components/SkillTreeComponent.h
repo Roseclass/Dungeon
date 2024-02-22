@@ -41,5 +41,10 @@ public:
 	void AddPoints();
 	void Acquire(ASkillActor* SkillActor);
 
+	//Widget
+	bool IsWidgetVisible();
+	void OnWidget();
+	void OffWidget();
+
 	FORCEINLINE const TArray<ASkillActor*>& GetRootActors() { return RootActors; }
 };

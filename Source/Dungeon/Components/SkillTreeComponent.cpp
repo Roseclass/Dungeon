@@ -52,3 +52,18 @@ void USkillTreeComponent::Acquire(ASkillActor* SkillActor)
 {
 	SkillActor->SetAcquired();
 }
+
+bool USkillTreeComponent::IsWidgetVisible()
+{
+	return Widget->IsVisible();
+}
+
+void USkillTreeComponent::OnWidget()
+{
+	Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
+void USkillTreeComponent::OffWidget()
+{
+	Widget->SetVisibility(ESlateVisibility::Collapsed);
+}
