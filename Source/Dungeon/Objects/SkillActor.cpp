@@ -7,6 +7,7 @@
 ASkillActor::ASkillActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	SetReplicates(1);
 }
 
 void ASkillActor::BeginPlay()
@@ -27,6 +28,22 @@ void ASkillActor::Tick(float DeltaTime)
 			bCoolTime = 0;
 		}
 	}
+}
+
+void ASkillActor::Multicast_SpawnProjectile_Implementation(const FTransform& Transform)
+{
+	FActorSpawnParameters f;
+	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, Transform, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+
+	if (OwnerCharacter)projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
+	else CLog::Print("nullptr");
+	projectile->SetDamage(10);//TODO::
+	//projectile->SetTarget(InActor);
+
+	UGameplayStatics::FinishSpawningActor(projectile, Transform);
+	projectile->Activate();
 }
 
 void ASkillActor::Load()
@@ -54,7 +71,7 @@ void ASkillActor::Use()
 	if(Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
 }
 
-void ASkillActor::SpawnProjectile()
+void ASkillActor::Server_SpawnProjectile_Implementation()
 {
 	CheckNull(OwnerCharacter);
 	FVector loc = OwnerCharacter->GetMesh()->GetSocketLocation(Data.SocketName);
@@ -65,18 +82,7 @@ void ASkillActor::SpawnProjectile()
 	FTransform trans;
 	trans.SetLocation(loc);
 	trans.SetRotation(FQuat4d(rot));
-
-	FActorSpawnParameters f;
-	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, trans, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
-	projectile->SetDamage(10);//TODO::
-	//projectile->SetTarget(InActor);
-
-	UGameplayStatics::FinishSpawningActor(projectile, trans);
-	projectile->Activate();
+	Multicast_SpawnProjectile(trans);
 }
 
 void ASkillActor::CoolTimeStart()

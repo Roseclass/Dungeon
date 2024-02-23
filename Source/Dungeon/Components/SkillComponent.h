@@ -43,6 +43,7 @@ public:
 
 	//function
 private:
+	UFUNCTION(NetMulticast, Reliable)void Multicast_SetSkillActorDatas(const TArray<ASkillActor*>& Array);
 protected:
 public:
 	void SpawnSkillActors();

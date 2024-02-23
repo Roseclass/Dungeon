@@ -57,7 +57,7 @@ ADungeonCharacter::ADungeonCharacter()
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
-
+	Skill->SetIsReplicated(1);
 }
 
 void ADungeonCharacter::BeginPlay()

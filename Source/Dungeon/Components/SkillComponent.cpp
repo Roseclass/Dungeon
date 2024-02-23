@@ -7,7 +7,7 @@
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
+	SetIsReplicated(1);
 	QuickSlotSkillActors.Init(nullptr, 6);
 }
 
@@ -22,10 +22,15 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillComponent::SpawnSkillActors()
+void USkillComponent::Multicast_SetSkillActorDatas_Implementation(const TArray<ASkillActor*>& Array)
 {
-	for (auto i : SkillActorClasses)
-		SkillActors.Add(GetWorld()->SpawnActor<ASkillActor>(i));
+	CLog::Print(__FUNCTION__);
+
+	if (!GetOwner()->HasAuthority())
+	{
+		SkillActors = Array;
+	}
+
 	for (auto i : SkillActors)
 		i->SetOwnerCharacter(Cast<ADungeonCharacter>(GetOwner()));
 
@@ -40,6 +45,16 @@ void USkillComponent::SpawnSkillActors()
 		}
 }
 
+void USkillComponent::SpawnSkillActors()
+{
+	CheckFalse(GetOwner()->HasAuthority());
+
+	for (auto i : SkillActorClasses)
+		SkillActors.Add(GetWorld()->SpawnActor<ASkillActor>(i));
+
+	Multicast_SetSkillActorDatas(SkillActors);
+}
+
 void USkillComponent::UseSkill(int32 Idx)
 {
 	CheckFalse(QuickSlotSkillActors.IsValidIndex(Idx));
@@ -51,7 +66,7 @@ void USkillComponent::UseSkill(int32 Idx)
 void USkillComponent::SpawnProjectile()
 {
 	CheckNull(CurrentSkill);
-	CurrentSkill->SpawnProjectile();
+	CurrentSkill->Server_SpawnProjectile();
 }
 
 void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)

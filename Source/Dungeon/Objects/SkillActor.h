@@ -99,14 +99,17 @@ public:
 	FSkillTreeSkillStateChanged OnUnlocked;
 	FSkillTreeSkillStateChanged OnAcquired;
 	//function
-private:	
+private:
+	UFUNCTION(NetMulticast, Reliable)void Multicast_SpawnProjectile(const FTransform& Transform);
+
 protected:
 	FORCEINLINE ADungeonCharacter* GetOwnerCharacter() { return OwnerCharacter; }
 public:
 	virtual void Load();
 	virtual void Use();
-	virtual void SpawnProjectile();
+	UFUNCTION(Reliable, Server)void Server_SpawnProjectile();
 	virtual void CoolTimeStart();
+
 
 	//getter
 	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }
