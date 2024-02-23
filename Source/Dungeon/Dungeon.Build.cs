@@ -22,7 +22,8 @@ public class Dungeon : ModuleRules
 			"UMG",
 			"ProceduralMeshComponent",
 			"Niagara",
-			"OnlineSubsystem"
+			"OnlineSubsystem",
+			"OnlineSubsystemUtils"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);

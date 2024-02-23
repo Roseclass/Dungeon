@@ -21,6 +21,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
+	virtual void PostNetInit() override;
+	virtual void OnPossess(APawn* InPawn)override;
 public:
 
 	//property
@@ -46,6 +48,12 @@ public:
 
 	//function
 private:
+	UFUNCTION(Client, Reliable)void Client_CreateMainWidget();
+
+	UFUNCTION(Reliable, Server)void Server_ReplicateRotation(FRotator NewRotation, ADungeonPlayerController* Exception);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_ReplicateRotation(FRotator NewRotation, ADungeonPlayerController* Exception);
+	UFUNCTION(Client, Reliable)void Client_ReplicateRotation(FRotator NewRotation);
+
 protected:
 	//skill input
 	void OnSetDestinationPressed();

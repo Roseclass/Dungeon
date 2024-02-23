@@ -1,6 +1,7 @@
 #include "DungeonPlayerController.h"
 #include "Global.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerState.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -20,13 +21,6 @@ ADungeonPlayerController::ADungeonPlayerController()
 void ADungeonPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (MainWidgetClass)
-	{
-		MainWidget = CreateWidget<UUW_Main, ADungeonPlayerController>(this, MainWidgetClass);
-		MainWidget->AddToViewport();
-	}
-
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)
@@ -82,7 +76,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		if (other && dist < 500 && myPawn->CanUse() && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			//dist는 좌클릭 스킬 데이터에서 사거리를 받아와야함
-			myPawn->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), other->GetActorLocation()));
+			Client_ReplicateRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), other->GetActorLocation()));
 			myPawn->UseLeft();
 		}
 		else if(myPawn && myPawn->CanMove())
@@ -111,6 +105,48 @@ void ADungeonPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SkillTree", IE_Pressed, this, &ADungeonPlayerController::OnSkillTree);
 	InputComponent->BindAction("Inventory", IE_Pressed, this, &ADungeonPlayerController::OnInventory);
+}
+
+void ADungeonPlayerController::PostNetInit()
+{
+	Super::PostNetInit();
+}
+
+void ADungeonPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	Client_CreateMainWidget();
+}
+
+void ADungeonPlayerController::Client_CreateMainWidget_Implementation()
+{
+	if (MainWidgetClass)
+	{
+		MainWidget = CreateWidget<UUW_Main, ADungeonPlayerController>(this, MainWidgetClass);
+		MainWidget->AddToViewport();
+	}
+}
+
+void ADungeonPlayerController::Server_ReplicateRotation_Implementation(FRotator NewRotation, ADungeonPlayerController* Exception)
+{
+	Multicast_ReplicateRotation(NewRotation, Exception);
+}
+
+void ADungeonPlayerController::Multicast_ReplicateRotation_Implementation(FRotator NewRotation, ADungeonPlayerController* Exception)
+{
+	CheckTrue(Exception->IsLocalController());
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->SetActorRotation(NewRotation);
+}
+
+void ADungeonPlayerController::Client_ReplicateRotation_Implementation(FRotator NewRotation)
+{
+	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->SetActorRotation(NewRotation);
+	Server_ReplicateRotation(NewRotation, this);
 }
 
 void ADungeonPlayerController::OnSetDestinationPressed()
