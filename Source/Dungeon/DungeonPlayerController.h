@@ -43,7 +43,7 @@ protected:
 		TSubclassOf<UUW_Main> MainWidgetClass;
 
 	uint32 bMoveToMouseCursor : 1;
-	UUW_Main* MainWidget;
+	UPROPERTY()UUW_Main* MainWidget;
 public:
 
 	//function

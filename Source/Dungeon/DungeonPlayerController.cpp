@@ -38,7 +38,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 			StopMovement();
 			if (myPawn->CanUse())
 			{
-				myPawn->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), Target->GetActorLocation()));
+				Client_ReplicateRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), Target->GetActorLocation()));
 				myPawn->UseLeft();
 			}
 			Target = nullptr;
@@ -116,7 +116,7 @@ void ADungeonPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	Client_CreateMainWidget();
+	Client_CreateMainWidget();	
 }
 
 void ADungeonPlayerController::Client_CreateMainWidget_Implementation()

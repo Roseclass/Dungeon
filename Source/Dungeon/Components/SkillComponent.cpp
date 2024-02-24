@@ -7,7 +7,7 @@
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	SetIsReplicated(1);
+	SetIsReplicatedByDefault(1);
 	QuickSlotSkillActors.Init(nullptr, 6);
 }
 
@@ -22,17 +22,41 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillComponent::Multicast_SetSkillActorDatas_Implementation(const TArray<ASkillActor*>& Array)
+void USkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	CLog::Print(__FUNCTION__);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	if (!GetOwner()->HasAuthority())
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(USkillComponent, SkillActors, COND_None);
+}
+
+void USkillComponent::OnRep_SkillActors()
+{
+	int32 cnt = 0;
+	for (auto i : SkillActors)
+		if (i)++cnt;
+	if (SkillActors.Num() == cnt)
 	{
-		SkillActors = Array;
+		ADungeonCharacter* const owner = Cast<ADungeonCharacter>(GetOwner());
+		CheckNull(owner);
+		owner->InitClientWidget();
 	}
+}
+
+void USkillComponent::SpawnSkillActors_Implementation()
+{
+	if (!SkillActors.IsEmpty())return;
+	TArray<ASkillActor*> Array;
+	for (auto i : SkillActorClasses)
+		Array.Add(GetWorld()->SpawnActor<ASkillActor>(i));
+
+	SkillActors = Array;
 
 	for (auto i : SkillActors)
+	{
 		i->SetOwnerCharacter(Cast<ADungeonCharacter>(GetOwner()));
+		i->SetOwner(GetOwner());
+	}
 
 	for (auto i : SkillActors)
 		for (auto j : SkillActors)
@@ -43,16 +67,6 @@ void USkillComponent::Multicast_SetSkillActorDatas_Implementation(const TArray<A
 				j->SetParent(i);
 			}
 		}
-}
-
-void USkillComponent::SpawnSkillActors()
-{
-	CheckFalse(GetOwner()->HasAuthority());
-
-	for (auto i : SkillActorClasses)
-		SkillActors.Add(GetWorld()->SpawnActor<ASkillActor>(i));
-
-	Multicast_SetSkillActorDatas(SkillActors);
 }
 
 void USkillComponent::UseSkill(int32 Idx)

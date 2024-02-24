@@ -22,9 +22,10 @@ class DUNGEON_API USkillComponent : public UActorComponent
 public:
 	USkillComponent();
 protected:
-	virtual void BeginPlay() override;
+	virtual void BeginPlay() override;	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
@@ -35,7 +36,7 @@ private:
 		TArray<TSubclassOf<ASkillActor>> SkillActorClasses;
 		
 	ASkillActor* CurrentSkill;
-	TArray<ASkillActor*> SkillActors;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_SkillActors")TArray<ASkillActor*> SkillActors;
 	TArray<ASkillActor*> QuickSlotSkillActors;
 protected:
 public:
@@ -43,10 +44,10 @@ public:
 
 	//function
 private:
-	UFUNCTION(NetMulticast, Reliable)void Multicast_SetSkillActorDatas(const TArray<ASkillActor*>& Array);
+	UFUNCTION() void OnRep_SkillActors();
 protected:
 public:
-	void SpawnSkillActors();
+	UFUNCTION(Reliable, Server)void SpawnSkillActors();
 	void UseSkill(int32 Idx);
 	void SpawnProjectile();
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);

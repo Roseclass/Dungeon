@@ -57,13 +57,19 @@ ADungeonCharacter::ADungeonCharacter()
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
-	Skill->SetIsReplicated(1);
 }
 
 void ADungeonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Init();
+	FTimerHandle WaitHandle;
+	float WaitTime = 5.0f;
+	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+	{
+		
+	}), WaitTime, false);
+
 }
 
 void ADungeonCharacter::Tick(float DeltaSeconds)
@@ -99,6 +105,8 @@ void ADungeonCharacter::Init()
 		}
 	}
 
+	if (!HasAuthority())return;
+
 	//SkillTreecomp
 	TFunction<void(int32, ASkillActor*)> func;
 	func = [this](int32 Idx, ASkillActor* Actor)
@@ -106,12 +114,23 @@ void ADungeonCharacter::Init()
 		ChangeQuickSlotData(Idx, Actor);
 	};
 	SkillTree->Init(Skill->GetSkillActors(), func);
-
 }
 
 void ADungeonCharacter::OffAllWidget()
 {
 
+}
+
+void ADungeonCharacter::InitClientWidget()
+{
+	CheckNull(GetController());
+	CheckFalse(GetController()->IsLocalController());
+	TFunction<void(int32, ASkillActor*)> func;
+	func = [this](int32 Idx, ASkillActor* Actor)
+	{
+		ChangeQuickSlotData(Idx, Actor);
+	};
+	SkillTree->Init(Skill->GetSkillActors(), func);
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)

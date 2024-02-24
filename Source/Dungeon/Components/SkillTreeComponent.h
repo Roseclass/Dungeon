@@ -29,7 +29,7 @@ private:
 		TSubclassOf<UUW_SkillTree> WidgetClass;
 	
 	TArray<ASkillActor*>RootActors;
-	UUW_SkillTree* Widget;
+	UPROPERTY()UUW_SkillTree* Widget;
 protected:
 public:
 

@@ -7,7 +7,7 @@
 ASkillActor::ASkillActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	SetReplicates(1);
+	bReplicates = 1;
 }
 
 void ASkillActor::BeginPlay()
@@ -30,6 +30,16 @@ void ASkillActor::Tick(float DeltaTime)
 	}
 }
 
+void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(ASkillActor, OwnerCharacter, COND_None);
+	DOREPLIFETIME_CONDITION(ASkillActor, ParentSkill, COND_None);
+	DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
+}
+
 void ASkillActor::Multicast_SpawnProjectile_Implementation(const FTransform& Transform)
 {
 	FActorSpawnParameters f;
@@ -37,8 +47,7 @@ void ASkillActor::Multicast_SpawnProjectile_Implementation(const FTransform& Tra
 
 	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, Transform, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
-	if (OwnerCharacter)projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
-	else CLog::Print("nullptr");
+	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
 	projectile->SetDamage(10);//TODO::
 	//projectile->SetTarget(InActor);
 
@@ -110,7 +119,7 @@ void ASkillActor::SetAcquired()
 	if (OnAcquired.IsBound())
 		OnAcquired.Broadcast();
 
-	for (auto child : Children)
+	for (auto child : ChildrenSkills)
 	{
 		if (child->GetSkillTreeState() == ESkillTreeSkillState::Locked)
 		{

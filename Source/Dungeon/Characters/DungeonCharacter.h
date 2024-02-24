@@ -72,6 +72,7 @@ private:
 	void OffAllWidget();
 protected:
 public:
+	void InitClientWidget();
 	//Skill
 	void UseSkill(int32 Idx);
 	void UseLeft();

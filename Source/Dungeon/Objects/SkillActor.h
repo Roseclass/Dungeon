@@ -76,12 +76,13 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
-	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	//property
 private:
-	ADungeonCharacter* OwnerCharacter;
-	ASkillActor* Parent;
-	TArray<ASkillActor*> Children;
+	UPROPERTY(Replicated)ADungeonCharacter* OwnerCharacter;
+	UPROPERTY(Replicated)ASkillActor* ParentSkill;
+	UPROPERTY(Replicated)TArray<ASkillActor*> ChildrenSkills;
 
 	bool bCoolTime;
 	float CurrnetCoolTime;
@@ -113,8 +114,8 @@ public:
 
 	//getter
 	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }
-	FORCEINLINE ASkillActor* GetParent() const { return Parent; }
-	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return Children; };
+	FORCEINLINE ASkillActor* GetParent() const { return ParentSkill; }
+	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return ChildrenSkills; };
 	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() const { return SkillTreeState; }
 	FORCEINLINE float GetMaxCoolTime() const { return Data.CoolTime; }
 	FORCEINLINE float GetCurrnetCoolTime() const { return CurrnetCoolTime; }
@@ -122,8 +123,8 @@ public:
 
 	//setter
 	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };
-	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { Parent = InSkillActor; };
-	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { Children.Add(InSkillActor); };
+	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { ParentSkill = InSkillActor; };
+	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { ChildrenSkills.Add(InSkillActor); };
 	void SetLocked();
 	void SetUnlocked();
 	void SetAcquired();
