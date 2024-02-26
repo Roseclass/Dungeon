@@ -26,11 +26,6 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 {
 	for (auto i : Array)
 	{
-		if (!i)
-		{
-			CLog::Print("nullptr");
-			continue;
-		}
 		if (!i->GetParent())
 			RootActors.Add(i);
 	}

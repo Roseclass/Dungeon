@@ -91,7 +91,18 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 	FTransform trans;
 	trans.SetLocation(loc);
 	trans.SetRotation(FQuat4d(rot));
-	Multicast_SpawnProjectile(trans);
+	//Multicast_SpawnProjectile(trans);
+	FActorSpawnParameters f;
+	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, trans, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+
+	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
+	projectile->SetDamage(10);//TODO::
+	//projectile->SetTarget(InActor);
+
+	UGameplayStatics::FinishSpawningActor(projectile, trans);
+	projectile->Activate();
 }
 
 void ASkillActor::CoolTimeStart()

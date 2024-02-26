@@ -8,7 +8,8 @@
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	bReplicates = 1;
+	SetReplicateMovement(1);
 	//actor
 	CHelpers::CreateActorComponent<UProjectileMovementComponent>(this, &ProjectileMovement, "ProjectileMovement");
 }
@@ -22,6 +23,8 @@ void AProjectile::BeginPlay()
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CLog::Print(HasAuthority(),23,0);
 }
 
 FGenericTeamId AProjectile::GetGenericTeamId() const
