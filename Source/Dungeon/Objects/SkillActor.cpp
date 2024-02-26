@@ -1,6 +1,7 @@
 #include "Objects/SkillActor.h"
 #include "Global.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/DungeonCharacter.h"
 #include "Objects/Projectile.h"
 
@@ -40,19 +41,15 @@ void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
 }
 
-void ASkillActor::Multicast_SpawnProjectile_Implementation(const FTransform& Transform)
+void ASkillActor::Multicast_Use_Implementation(ADungeonPlayerController* Exception)
 {
-	FActorSpawnParameters f;
-	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	if (Exception && Exception->IsLocalController())return;
+	if (Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
+}
 
-	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, Transform, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
-	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
-	projectile->SetDamage(10);//TODO::
-	//projectile->SetTarget(InActor);
-
-	UGameplayStatics::FinishSpawningActor(projectile, Transform);
-	projectile->Activate();
+void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
+{
+	Multicast_Use(Exception);
 }
 
 void ASkillActor::Load()
@@ -71,13 +68,16 @@ void ASkillActor::Load()
 	}
 }
 
-void ASkillActor::Use()
+void ASkillActor::Client_Use_Implementation()
 {
 	CheckNull(OwnerCharacter);
 	CoolTimeStart();
 	OwnerCharacter->SetCannotUse();
+
 	if(!Data.bCanMove)OwnerCharacter->SetStop();
 	if(Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(OwnerCharacter->GetController());
+	if (controller)Server_Use(controller);
 }
 
 void ASkillActor::Server_SpawnProjectile_Implementation()
@@ -100,6 +100,7 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
 	projectile->SetDamage(10);//TODO::
 	//projectile->SetTarget(InActor);
+	projectile->SetCollide(1);
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
 	projectile->Activate();

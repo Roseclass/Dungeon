@@ -10,6 +10,7 @@
 
 class AProjectile;
 class ADungeonCharacter;
+class ADungeonPlayerController;
 class UImage;
 
 DECLARE_MULTICAST_DELEGATE(FSkillTreeSkillStateChanged);
@@ -101,14 +102,15 @@ public:
 	FSkillTreeSkillStateChanged OnAcquired;
 	//function
 private:
-	UFUNCTION(NetMulticast, Reliable)void Multicast_SpawnProjectile(const FTransform& Transform);
-
 protected:
+	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
+	UFUNCTION(Reliable, Server)virtual void Server_Use(ADungeonPlayerController* Exception);
+
 	FORCEINLINE ADungeonCharacter* GetOwnerCharacter() { return OwnerCharacter; }
 public:
 	virtual void Load();
-	virtual void Use();
-	UFUNCTION(Reliable, Server)void Server_SpawnProjectile();
+	UFUNCTION(Client, Reliable)virtual void Client_Use();
+	UFUNCTION(Reliable, Server)virtual void Server_SpawnProjectile();
 	virtual void CoolTimeStart();
 
 

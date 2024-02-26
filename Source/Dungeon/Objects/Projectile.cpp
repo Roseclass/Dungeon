@@ -58,6 +58,8 @@ void AProjectile::FindCollision()
 
 void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	CheckFalse(bCanCollide);
+
 	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
 	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
 	if (!other && !otherCh)
@@ -112,6 +114,11 @@ void AProjectile::SendDamage(float InDamage, AActor* OtherActor, const FHitResul
 
 	FDamageEvent f;
 	OtherActor->TakeDamage(InDamage, f, inst, this);
+}
+
+void AProjectile::SetCollide(bool InState)
+{
+	bCanCollide = InState;
 }
 
 void AProjectile::Activate()

@@ -74,7 +74,7 @@ void USkillComponent::UseSkill(int32 Idx)
 	CheckFalse(QuickSlotSkillActors.IsValidIndex(Idx));
 	CheckNull(QuickSlotSkillActors[Idx]);
 	CurrentSkill = QuickSlotSkillActors[Idx];
-	QuickSlotSkillActors[Idx]->Use();
+	QuickSlotSkillActors[Idx]->Client_Use();
 }
 
 void USkillComponent::SpawnProjectile()

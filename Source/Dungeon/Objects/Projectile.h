@@ -34,14 +34,19 @@ private:
 		UProjectileMovementComponent* ProjectileMovement;
 
 protected:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
+	bool bCanCollide;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Collision", meta = (ExposeOnSpawn = true))
 		uint8 TeamID = 0;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Collision", meta = (ExposeOnSpawn = true))
 		float Damage;
 
-	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadWrite, Category = "Collision", meta = (ExposeOnSpawn = true))
 		AActor* Target;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Collision", meta = (ExposeOnSpawn = true))
+		bool bAOE;
 public:
 
 	//function
@@ -55,6 +60,7 @@ protected:
 	void SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult);
 public:
 	//void Init(AActor* InOwner, float InDamgeRate = 1.0, float InLifeSpan = -1);
+	virtual void SetCollide(bool InState);
 	virtual void Activate();
 	virtual void Deactivate();
 
