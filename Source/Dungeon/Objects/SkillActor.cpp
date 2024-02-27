@@ -1,8 +1,10 @@
 #include "Objects/SkillActor.h"
 #include "Global.h"
+#include "GameFramework/GameState.h"
 
 #include "DungeonPlayerController.h"
 #include "Characters/DungeonCharacter.h"
+#include "Components/SkillComponent.h"
 #include "Objects/Projectile.h"
 
 ASkillActor::ASkillActor()
@@ -19,16 +21,34 @@ void ASkillActor::BeginPlay()
 void ASkillActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (bCoolTime)
+	/*
+	float FActiveGameplayEffectsContainer::GetServerWorldTime() const
 	{
-		CurrnetCoolTime += DeltaTime;
-		if (CurrnetCoolTime >= Data.CoolTime)
+		UWorld* World = Owner->GetWorld();
+		AGameStateBase* GameState = World->GetGameState();
+		if (GameState)
 		{
-			CurrnetCoolTime = 0;
-			bCoolTime = 0;
+			return GameState->GetServerWorldTimeSeconds();
 		}
+	
+		return World->GetTimeSeconds();
 	}
+	
+	float FActiveGameplayEffectsContainer::GetWorldTime() const
+	{
+		UWorld *World = Owner->GetWorld();
+		return World->GetTimeSeconds();
+	}
+	void FActiveGameplayEffect::RecomputeStartWorldTime(const FActiveGameplayEffectsContainer& InArray)
+	{
+		RecomputeStartWorldTime(InArray.GetWorldTime(), InArray.GetServerWorldTime());
+	}
+	
+	void FActiveGameplayEffect::RecomputeStartWorldTime(const float WorldTime, const float ServerWorldTime)
+	{
+		StartWorldTime = WorldTime - (ServerWorldTime - StartServerWorldTime);
+	}
+	*/
 }
 
 void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -39,16 +59,51 @@ void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_CONDITION(ASkillActor, OwnerCharacter, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, ParentSkill, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
+	DOREPLIFETIME_CONDITION(ASkillActor, bCoolDown_Server, COND_None);
+	DOREPLIFETIME_CONDITION(ASkillActor, StartServerWorldTime, COND_None);
+}
+
+void ASkillActor::OnRep_CoolDown_Server()
+{
+	if (bCoolDown_Server && OwnerCharacter)
+	{
+		//ui 쿨다운 돌리기
+		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OwnerCharacter);
+		CheckNull(skill);
+
+		float WorldTime, ServerWorldTime;
+		WorldTime = ServerWorldTime = GetWorld()->GetTimeSeconds();
+
+		AGameStateBase* GameState = GetWorld()->GetGameState();
+		if(GameState)ServerWorldTime = GameState->GetServerWorldTimeSeconds();
+
+		StartWorldTime = WorldTime - (ServerWorldTime - StartServerWorldTime);
+		skill->SetCoolDown(this);
+	}
+	else
+	{
+		bCoolDown_Client = 0;
+	}
 }
 
 void ASkillActor::Multicast_Use_Implementation(ADungeonPlayerController* Exception)
 {
-	if (Exception && Exception->IsLocalController())return;
+	CheckTrue(Exception && Exception->IsLocalController());
 	if (Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
 }
 
 void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 {
+	bCoolDown_Server = 1;
+	StartServerWorldTime = GetWorld()->GetTimeSeconds();
+
+	FTimerHandle WaitHandle;
+	float WaitTime = Data.CoolDown;
+	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+	{
+		bCoolDown_Server = 0;
+	}), WaitTime, false);
+
 	Multicast_Use(Exception);
 }
 
@@ -71,7 +126,7 @@ void ASkillActor::Load()
 void ASkillActor::Client_Use_Implementation()
 {
 	CheckNull(OwnerCharacter);
-	CoolTimeStart();
+	bCoolDown_Client = 1;
 	OwnerCharacter->SetCannotUse();
 
 	if(!Data.bCanMove)OwnerCharacter->SetStop();
@@ -106,9 +161,11 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 	projectile->Activate();
 }
 
-void ASkillActor::CoolTimeStart()
+float ASkillActor::GetRemainingCoolDown() const
 {
-	bCoolTime = 1;
+	float result = StartWorldTime + Data.CoolDown - GetWorld()->GetTimeSeconds();
+	if (result < 0)result = 0;
+	return result;
 }
 
 void ASkillActor::SetLocked() 

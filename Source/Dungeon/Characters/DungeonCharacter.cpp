@@ -63,13 +63,6 @@ void ADungeonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Init();
-	FTimerHandle WaitHandle;
-	float WaitTime = 5.0f;
-	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
-	{
-		
-	}), WaitTime, false);
-
 }
 
 void ADungeonCharacter::Tick(float DeltaSeconds)
@@ -141,7 +134,7 @@ void ADungeonCharacter::UseSkill(int32 Idx)
 void ADungeonCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(0));
+	CheckTrue(Skill->IsQuickSlotCoolDown(0));
 	if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(0);
@@ -150,7 +143,7 @@ void ADungeonCharacter::UseLeft()
 void ADungeonCharacter::UseRight()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(1));
+	CheckTrue(Skill->IsQuickSlotCoolDown(1));
 	if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(1);
@@ -159,7 +152,7 @@ void ADungeonCharacter::UseRight()
 void ADungeonCharacter::UseQ()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(2));
+	CheckTrue(Skill->IsQuickSlotCoolDown(2));
 	if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(2);
@@ -168,7 +161,7 @@ void ADungeonCharacter::UseQ()
 void ADungeonCharacter::UseW()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(3));
+	CheckTrue(Skill->IsQuickSlotCoolDown(3));
 	if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(3);
@@ -177,7 +170,7 @@ void ADungeonCharacter::UseW()
 void ADungeonCharacter::UseE()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(4));
+	CheckTrue(Skill->IsQuickSlotCoolDown(4));
 	if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(4);
@@ -186,7 +179,7 @@ void ADungeonCharacter::UseE()
 void ADungeonCharacter::UseR()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolTime(5));
+	CheckTrue(Skill->IsQuickSlotCoolDown(5));
 	if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(5);

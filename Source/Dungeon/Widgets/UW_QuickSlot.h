@@ -32,6 +32,7 @@ public:
 private:
 	USkillComponent* OwnerComponent;
 	FDelegateHandle OnQuickSlotDataChangedHandle;
+	FDelegateHandle OnQuickSlotCoolDownHandle;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		USkillButton* Slot0;
@@ -78,11 +79,13 @@ protected:
 	TArray<USkillButton*> Slots;
 	TArray<UTextBlock*> Timers;
 	TArray<UMaterialInstanceDynamic*> Materials;
+	TArray<float> RemainingCoolDowns;
 public:
 
 	//function
 private:
 	UFUNCTION()void OnQuickSlotDataChanged(int32 Index, ASkillActor* InSkillActor);
+	UFUNCTION()void OnQuickSlotCoolDown(int32 Index, float Time);
 protected:
 public:
 	void ConnectComponent(USkillComponent* InSkillComponent);

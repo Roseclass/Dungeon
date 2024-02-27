@@ -103,19 +103,27 @@ void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor
 
 	OnQuickSlotDataChanged.Broadcast(Index, InSkillActor);
 	QuickSlotSkillActors[Index] = InSkillActor;
+	SetCoolDown(InSkillActor);
 }
 
-void USkillComponent::GetQuickSlotCoolTime(int32 Index, float& Current, float& Max)
+void USkillComponent::SetCoolDown(ASkillActor* InSkillActor)
 {
-	CheckFalse(QuickSlotSkillActors.IsValidIndex(Index));
-	CheckNull(QuickSlotSkillActors[Index]);
-	Current = QuickSlotSkillActors[Index]->GetCurrnetCoolTime();
-	Max = QuickSlotSkillActors[Index]->GetMaxCoolTime();
+	CheckNull(InSkillActor);
+	int32 idx = QuickSlotSkillActors.Find(InSkillActor);
+	CheckTrue(idx == INDEX_NONE);
+	OnQuickSlotCoolDown.Broadcast(idx, QuickSlotSkillActors[idx]->GetRemainingCoolDown());
 }
 
-bool USkillComponent::IsQuickSlotCoolTime(int32 Index)
+bool USkillComponent::GetQuickSlotCoolDown(int32 Index,float& Result)
+{
+	if (!QuickSlotSkillActors.IsValidIndex(Index) || !QuickSlotSkillActors[Index])return 0;
+	Result = QuickSlotSkillActors[Index]->GetCoolDown();
+	return 1;
+}
+
+bool USkillComponent::IsQuickSlotCoolDown(int32 Index)
 {
 	if (!QuickSlotSkillActors.IsValidIndex(Index))return 1;
 	if (!QuickSlotSkillActors[Index])return 1;
-	return QuickSlotSkillActors[Index]->IsCoolTime();
+	return QuickSlotSkillActors[Index]->IsCoolDown();
 }

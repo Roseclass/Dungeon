@@ -20,6 +20,7 @@ void UUW_QuickSlot::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	RemainingCoolDowns.Init(0, 6);
 	Slots.Add(Slot0);Slots.Add(Slot1);Slots.Add(Slot2);
 	Slots.Add(Slot3);Slots.Add(Slot4);Slots.Add(Slot5);
 	Timers.Add(Timer0); Timers.Add(Timer1); Timers.Add(Timer2);
@@ -47,9 +48,15 @@ void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	{
 		for (int32 i = 0; i < Materials.Num(); ++i)
 		{
-			float cur = 0, max = 0;
-			OwnerComponent->GetQuickSlotCoolTime(i, cur, max);
-			if (max <= 0)
+			if (!RemainingCoolDowns.IsValidIndex(i))break;
+			RemainingCoolDowns[i] -= InDeltaTime;
+			if (RemainingCoolDowns[i] < 0)RemainingCoolDowns[i] = 0;
+
+			float cur = RemainingCoolDowns[i], max = 0;
+			bool flag = OwnerComponent->GetQuickSlotCoolDown(i, max);
+			cur = max - cur;
+
+			if (max <= 0 || !flag || RemainingCoolDowns[i] <= 0)
 			{
 				Materials[i]->SetScalarParameterValue("Progress", 0);
 				Timers[i]->SetText(FText());
@@ -87,13 +94,23 @@ void UUW_QuickSlot::OnQuickSlotDataChanged(int32 Index, ASkillActor* InSkillActo
 	}
 }
 
+void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
+{
+	CheckFalse(RemainingCoolDowns.IsValidIndex(Index));
+	RemainingCoolDowns[Index] = Time;
+	CLog::Print(Index);
+	CLog::Print(Time);
+}
+
 void UUW_QuickSlot::ConnectComponent(USkillComponent* InSkillComponent)
 {
 	if (OwnerComponent)
 	{
 		OwnerComponent->OnQuickSlotDataChanged.Remove(OnQuickSlotDataChangedHandle);
+		OwnerComponent->OnQuickSlotCoolDown.Remove(OnQuickSlotCoolDownHandle);
 	}
 
 	OwnerComponent = InSkillComponent;
 	OnQuickSlotDataChangedHandle = OwnerComponent->OnQuickSlotDataChanged.AddUFunction(this, "OnQuickSlotDataChanged");
+	OnQuickSlotCoolDownHandle = OwnerComponent->OnQuickSlotCoolDown.AddUFunction(this, "OnQuickSlotCoolDown");
 }

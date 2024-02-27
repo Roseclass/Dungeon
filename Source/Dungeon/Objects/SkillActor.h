@@ -62,8 +62,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Widget")
 		FVector2D ParentPosition;
 
-	UPROPERTY(EditAnywhere, Category = "CoolTime")
-		float CoolTime = 10.0f;
+	UPROPERTY(EditAnywhere, Category = "CoolDown")
+		float CoolDown = 10.0f;
 };
 
 UCLASS()
@@ -84,10 +84,11 @@ private:
 	UPROPERTY(Replicated)ADungeonCharacter* OwnerCharacter;
 	UPROPERTY(Replicated)ASkillActor* ParentSkill;
 	UPROPERTY(Replicated)TArray<ASkillActor*> ChildrenSkills;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_CoolDown_Server")bool bCoolDown_Server;
+	UPROPERTY(Replicated)float StartServerWorldTime;
 
-	bool bCoolTime;
-	float CurrnetCoolTime;
-
+	bool bCoolDown_Client;
+	float StartWorldTime;
 protected:
 	//트리형태로 스킬트리가될 예정
 	UPROPERTY(EditDefaultsOnly)
@@ -102,6 +103,7 @@ public:
 	FSkillTreeSkillStateChanged OnAcquired;
 	//function
 private:
+	UFUNCTION()void OnRep_CoolDown_Server();
 protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
 	UFUNCTION(Reliable, Server)virtual void Server_Use(ADungeonPlayerController* Exception);
@@ -111,17 +113,15 @@ public:
 	virtual void Load();
 	UFUNCTION(Client, Reliable)virtual void Client_Use();
 	UFUNCTION(Reliable, Server)virtual void Server_SpawnProjectile();
-	virtual void CoolTimeStart();
-
 
 	//getter
 	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }
 	FORCEINLINE ASkillActor* GetParent() const { return ParentSkill; }
 	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return ChildrenSkills; };
 	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() const { return SkillTreeState; }
-	FORCEINLINE float GetMaxCoolTime() const { return Data.CoolTime; }
-	FORCEINLINE float GetCurrnetCoolTime() const { return CurrnetCoolTime; }
-	FORCEINLINE bool IsCoolTime() const { return bCoolTime; }
+	FORCEINLINE float GetCoolDown() const { return Data.CoolDown; }
+	FORCEINLINE bool IsCoolDown() const { return bCoolDown_Client; }
+	float GetRemainingCoolDown() const;
 
 	//setter
 	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };

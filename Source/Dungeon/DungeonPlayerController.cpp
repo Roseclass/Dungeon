@@ -135,7 +135,7 @@ void ADungeonPlayerController::Server_ReplicateRotation_Implementation(FRotator 
 
 void ADungeonPlayerController::Multicast_ReplicateRotation_Implementation(FRotator NewRotation, ADungeonPlayerController* Exception)
 {
-	CheckTrue(Exception->IsLocalController());
+	CheckTrue(Exception && Exception->IsLocalController());
 	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->SetActorRotation(NewRotation);

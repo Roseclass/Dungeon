@@ -13,6 +13,7 @@ class ASkillActor;
 struct FSkillData;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotDataChanged, int32, ASkillActor*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotCoolDown, int32, float);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API USkillComponent : public UActorComponent
@@ -41,6 +42,7 @@ private:
 protected:
 public:
 	FQuickSlotDataChanged OnQuickSlotDataChanged;
+	FQuickSlotCoolDown OnQuickSlotCoolDown;
 
 	//function
 private:
@@ -51,8 +53,9 @@ public:
 	void UseSkill(int32 Idx);
 	void SpawnProjectile();
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
-	void GetQuickSlotCoolTime(int32 Index, float& Current, float& Max);
-	bool IsQuickSlotCoolTime(int32 Index);
+	void SetCoolDown(ASkillActor* InSkillActor);
+	bool GetQuickSlotCoolDown(int32 Index, float& Result);
+	bool IsQuickSlotCoolDown(int32 Index);
 
 	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
 	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };
