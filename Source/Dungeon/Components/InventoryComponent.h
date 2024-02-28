@@ -72,8 +72,6 @@ public:
 	void OffCollision();
 	void ResetHittedActors();
 
-	//ui
-	//void LoadData(UCSaveGameData* const InData);
 
 	bool IsRoomAvailable(UItemObject* InObject, int32 TopLeftIndex);
 	bool IsRoomAvailable(UItemObject* InObject);
@@ -113,4 +111,8 @@ public:
 	// 격자무늬 인벤토리 탭3개
 	// 프리셋 탭 2개
 	//
+	
+	//ui
+	//void LoadData(UCSaveGameData* const InData);
+
 };

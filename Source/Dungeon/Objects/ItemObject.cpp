@@ -28,3 +28,8 @@ void UItemObject::GetDimensions(int32& X, int32& Y)
 		Y = DimensionY;
 	}
 }
+
+void UItemObject::ChangeVisibility(EItemMode InMode)
+{
+	if (Weapon)Weapon->ChangeVisibility(InMode);
+}

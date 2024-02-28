@@ -18,6 +18,13 @@ class ACharacter;
 class UItemObject;
 class UNiagaraComponent;
 class UParticleSystemComponent;
+class AItemManager;
+
+UENUM()
+enum class EItemMode : uint8
+{
+	Loot, Inventory, Equip, Max
+};
 
 UCLASS()
 class DUNGEON_API AWeapon : public AActor
@@ -30,16 +37,20 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
+	UPROPERTY(Replicated)AItemManager* Manager;
 	TArray<UShapeComponent*> CollisionComponents;
 	TArray<UShapeComponent*> InteractCollisionComponents;
 	TArray<UMeshComponent*> MeshComponents;
 	TArray<AActor*> HittedActors;
-	UItemObject* ItemObject;
+	UPROPERTY()UItemObject* ItemObject;
 	ACharacter* OwnerCharacter;
 	bool bPickable;
+
+	UPROPERTY(ReplicatedUsing = "OnRep_Mode")EItemMode Mode = EItemMode::Max;
 
 	UNiagaraComponent* NiagaraPickEffect;
 	UParticleSystemComponent* ParticlePickEffect;
@@ -82,12 +93,17 @@ public:
 
 	//function
 private:
+	UFUNCTION() void OnRep_Mode();
+
 	void FindComponents();
 	void SpawnLootEffects();
 	void SetEffectLocation();
 	void SortMesh();
 	void ActivateEffect();
 	void DeactivateEffect();
+	void SetPickableMode();
+	void SetInventoryMode();
+	void SetEquipMode();
 
 protected:	
 	UFUNCTION()void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -100,9 +116,8 @@ public:
 	void OffCollision();
 	void ResetHittedActors();
 
-	void SetEquipMode();
-	void SetInventoryMode();
-	void SetPickableMode();
+	void ChangeVisibility(EItemMode InMode);
+	void SetMode(EItemMode InMode);
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
 	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }

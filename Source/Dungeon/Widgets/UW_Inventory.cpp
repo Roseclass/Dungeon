@@ -7,6 +7,7 @@
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 
+#include "Characters/DungeonCharacter.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"
@@ -37,8 +38,9 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
 		{
 			item->GetWeapon()->SetActorLocation(hit.Location);
-			item->GetWeapon()->SetPickableMode();
 			item->GetWeapon()->SetActorRotation(FRotator());
+			ADungeonCharacter* ch = Cast<ADungeonCharacter>(OwnerComponent->GetOwner());
+			if (ch)ch->Server_ChangeItemVisibility(item->GetWeapon(), EItemMode::Loot);
 		}		
 		return result;
 	}

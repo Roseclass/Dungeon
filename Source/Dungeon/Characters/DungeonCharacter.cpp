@@ -1,4 +1,4 @@
-#include "DungeonCharacter.h"
+#include "Characters/DungeonCharacter.h"
 #include "Global.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -21,6 +21,8 @@
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
 #include "Objects/SkillActor.h"
+#include "Objects/Weapon.h"
+#include "Objects/ItemObject.h"
 
 ADungeonCharacter::ADungeonCharacter()
 {
@@ -114,6 +116,12 @@ void ADungeonCharacter::OffAllWidget()
 
 }
 
+void ADungeonCharacter::Multicast_ChangeItemVisibility_Implementation(AWeapon* InObject, EItemMode InMode)
+{
+	InObject->ChangeVisibility(InMode);
+	InObject->GetItemObject()->SetInventoryComp(Inventory);
+}
+
 void ADungeonCharacter::InitClientWidget()
 {
 	CheckNull(GetController());
@@ -190,9 +198,19 @@ void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillAct
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
+void ADungeonCharacter::Server_ChangeItemVisibility_Implementation(AWeapon* InObject, EItemMode InMode)
+{
+	Multicast_ChangeItemVisibility(InObject, InMode);
+}
+
 bool ADungeonCharacter::TryAddItem(UItemObject* InObject)
 {
-	return Inventory->TryAddItem(InObject);
+	bool result = Inventory->TryAddItem(InObject);
+	if (result)
+	{
+		//Server_ChangeItemVisibility(InObject->GetWeapon(), EItemMode::Inventory);
+	}
+	return result;
 }
 
 bool ADungeonCharacter::CanUse()

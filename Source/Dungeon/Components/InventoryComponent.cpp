@@ -10,6 +10,7 @@
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(1);
 }
 
 void UInventoryComponent::BeginPlay()
@@ -56,7 +57,7 @@ void UInventoryComponent::InitDefault()
 	{
 		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
 		TryAddItem(test->GetItemObject());
-		test->SetInventoryMode();
+		owner->Server_ChangeItemVisibility(test, EItemMode::Inventory);
 	}
 }
 
@@ -180,7 +181,7 @@ bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject)
 bool UInventoryComponent::TryAddItem(UItemObject* InObject)
 {
 	if (!InObject)return 0;
-
+	
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
 		if (!IsRoomAvailable(InObject, i))continue;
@@ -199,7 +200,6 @@ bool UInventoryComponent::TryAddItem(UItemObject* InObject)
 
 	InObject->Rotate();
 	return 0;
-
 }
 
 void UInventoryComponent::AddItemAt(UItemObject* InObject, int32 TopLeftIndex)
@@ -219,7 +219,7 @@ void UInventoryComponent::AddItemAt(UItemObject* InObject, int32 TopLeftIndex)
 		}
 	}
 
-	InObject->GetWeapon()->SetInventoryMode();
+	InObject->ChangeVisibility(EItemMode::Inventory);
 	InObject->SetInventoryComp(this);
 
 	if (OnInventoryChanged.IsBound())
@@ -272,14 +272,15 @@ void UInventoryComponent::Equip(UItemObject* InData)
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
 
+	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+
 	if (!InData)
 	{
-		if (CurrentWeapon)CurrentWeapon->SetInventoryMode();
+		if (CurrentWeapon)owner->Server_ChangeItemVisibility(InData->GetWeapon(),EItemMode::Inventory);
 		CurrentWeapon = nullptr;
 		return;
 	}
 
-	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
 
 	CurrentWeapon = InData->GetWeapon();
 	CurrentWeapon->OffCollision();
@@ -287,7 +288,7 @@ void UInventoryComponent::Equip(UItemObject* InData)
 	CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
 	CurrentWeapon->SetOwner(owner);
 	CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
-	CurrentWeapon->SetEquipMode();
+	owner->Server_ChangeItemVisibility(InData->GetWeapon(), EItemMode::Equip);
 
 	if (OnInventoryEquipWeapon.IsBound())
 		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData->GetWeapon());

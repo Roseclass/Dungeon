@@ -11,6 +11,7 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Blueprint/DragDropOperation.h"
 
+#include "Characters/DungeonCharacter.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
@@ -52,7 +53,6 @@ void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 
 void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
-
 	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
 
 	WidgetSize = USlateBlueprintLibrary::GetLocalSize(ItemImage->GetCachedGeometry());
@@ -63,7 +63,11 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 	OutOperation->Pivot = EDragPivot::CenterCenter;
 	OutOperation->Offset = FVector2D(0, 0);
 
-	if (ItemObject)ItemObject->GetWeapon()->SetInventoryMode();
+	if (ItemObject && OwnerComponent)
+	{
+		ADungeonCharacter* ch = Cast<ADungeonCharacter>(OwnerComponent->GetOwner());
+		if (ch)ch->Server_ChangeItemVisibility(ItemObject->GetWeapon(), EItemMode::Inventory);
+	}
 
 	if (OnInventoryItemRemoved.IsBound())
 	{

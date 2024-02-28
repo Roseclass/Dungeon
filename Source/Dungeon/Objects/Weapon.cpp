@@ -9,20 +9,30 @@
 #include "NiagaraSystem.h"
 
 #include "Characters/DungeonCharacter.h"
+#include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	ItemObject = CreateDefaultSubobject<UItemObject>(FName("Item"));
+	bReplicates = 1;
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	ItemObject = NewObject<UItemObject>(this, FName("Item"));
 	ItemObject->Init(DimensionX, DimensionY, Icon, IconRotated, this);
+
 	FindComponents();
+
 	SpawnLootEffects();
+
+	if (HasAuthority())
+	{
+		AActor* manager = UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass());
+		Manager = Cast<AItemManager>(manager);
+	}
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -37,6 +47,27 @@ void AWeapon::Tick(float DeltaTime)
 	if (ParticlePickEffect)
 	{
 		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
+	}
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(AWeapon, Manager, COND_None);
+	DOREPLIFETIME_CONDITION(AWeapon, Mode, COND_None);
+}
+
+void AWeapon::OnRep_Mode()
+{
+	switch (Mode)
+	{
+	case EItemMode::Loot:SetPickableMode();break;
+	case EItemMode::Inventory:SetInventoryMode();break;
+	case EItemMode::Equip:SetEquipMode();break;
+	case EItemMode::Max:break;
+	default:break;
 	}
 }
 
@@ -82,12 +113,14 @@ void AWeapon::SpawnLootEffects()
 	if (n)
 	{
 		NiagaraPickEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(n, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget, 1);
+		NiagaraPickEffect->SetIsReplicated(1);
 		NiagaraPickEffect->SetAutoDestroy(0);
 		fx = NiagaraPickEffect;
 	}
 	else if (p)
 	{
 		ParticlePickEffect = UGameplayStatics::SpawnEmitterAttached(p, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget);
+		ParticlePickEffect->SetIsReplicated(1);
 		ParticlePickEffect->bAutoDestroy = 0;
 		fx = ParticlePickEffect;
 	}
@@ -120,19 +153,92 @@ void AWeapon::ActivateEffect()
 	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
 	if (NiagaraPickEffect)
 	{
-		NiagaraPickEffect->Activate();
+		NiagaraPickEffect->SetVisibility(1);
 	}
 	if (ParticlePickEffect)
 	{
-		ParticlePickEffect->Activate();
+		ParticlePickEffect->SetVisibility(1);
 	}
 }
 
 void AWeapon::DeactivateEffect()
 {
 	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
-	if (NiagaraPickEffect)NiagaraPickEffect->Deactivate();
-	if (ParticlePickEffect)ParticlePickEffect->Deactivate();
+	if (NiagaraPickEffect)NiagaraPickEffect->SetVisibility(0);
+	if (ParticlePickEffect)ParticlePickEffect->SetVisibility(0);
+}
+
+void AWeapon::SetPickableMode()
+{
+	//bPickable = 1;
+
+	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
+	SetEffectLocation();
+
+	// On Appearance
+	for (auto component : MeshComponents)
+		component->SetVisibility(1);
+
+	// Off Collision
+	for (UShapeComponent* component : CollisionComponents)
+		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// On Interaction Collision
+	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	// Change Owner
+	SetOwnerCharacter(nullptr);
+	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
+	DetachFromActor(f);
+
+	// On Item Effects
+	ActivateEffect();
+
+}
+
+void AWeapon::SetInventoryMode()
+{
+	// Sort Mesh
+	//if (bPickable)SortMesh();
+
+	bPickable = 0;
+
+	// Off Item Effects
+	DeactivateEffect();
+
+	// Off Widget
+	//InfoWidget->SetVisibility(0);
+
+	// Off Appearance
+	for (auto component : MeshComponents)
+		component->SetVisibility(0);
+
+	// Off Collision
+	for (UShapeComponent* component : CollisionComponents)
+		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AWeapon::SetEquipMode()
+{
+	// Sort Mesh
+	//if (bPickable)SortMesh();
+
+	bPickable = 0;
+
+	// Off Item Effects
+	DeactivateEffect();
+
+	// Off Widget
+	//InfoWidget->SetVisibility(0);
+
+	// On Appearance
+	for (auto component : MeshComponents)
+		component->SetVisibility(1);
+
+	// Off Collision
+	for (UShapeComponent* component : CollisionComponents)
+		component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -197,75 +303,19 @@ void AWeapon::ResetHittedActors()
 	HittedActors.Empty();
 }
 
-void AWeapon::SetEquipMode()
+void AWeapon::ChangeVisibility(EItemMode InMode)
 {
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
-	bPickable = 0;
-
-	// Off Item Effects
-	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
-
-	// On Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(1);
-
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (InMode == EItemMode::Max)return;
+	if (!Manager)
+	{
+		CLog::Print("NoManager");
+		return;
+	}
+	Manager->ChangeVisibility(this, InMode);
 }
 
-void AWeapon::SetInventoryMode()
+void AWeapon::SetMode(EItemMode InMode)
 {
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
-	bPickable = 0;
-
-	// Off Item Effects
-	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
-
-	// Off Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(0);
-
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-void AWeapon::SetPickableMode()
-{
-	//bPickable = 1;
-
-	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
-	SetEffectLocation();
-
-	// On Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(1);
-
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// On Interaction Collision
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-	// Change Owner
-	SetOwnerCharacter(nullptr);
-	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
-	DetachFromActor(f);
-
-	// On Item Effects
-	ActivateEffect();
-
+	Mode = InMode;
+	if (HasAuthority())OnRep_Mode();
 }

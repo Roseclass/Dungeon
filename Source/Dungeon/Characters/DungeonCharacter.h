@@ -19,8 +19,11 @@ class UStatusComponent;
 class UInventoryComponent;
 class UItemObject;
 class ASkillActor;
+class AWeapon;
 
 struct FSkillData;
+
+enum class EItemMode : uint8;
 
 UCLASS(Blueprintable)
 class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface
@@ -70,6 +73,8 @@ public:
 private:
 	void Init();
 	void OffAllWidget();
+
+	UFUNCTION(NetMulticast, Reliable) void Multicast_ChangeItemVisibility(AWeapon* InObject, EItemMode InMode);
 protected:
 public:
 	void InitClientWidget();
@@ -84,6 +89,7 @@ public:
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
 
 	//Inventory
+	UFUNCTION(Reliable, Server) void Server_ChangeItemVisibility(AWeapon* InObject, EItemMode InMode);
 	bool TryAddItem(UItemObject* InObject);
 
 	//getter
