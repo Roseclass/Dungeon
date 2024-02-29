@@ -10,7 +10,6 @@
 
 class AWeapon;
 class UUW_Inventory;
-class UItemObject;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquipWeapon, AWeapon*, InAttachment);
@@ -27,11 +26,12 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
-	UPROPERTY()TArray<UItemObject*> Items;
-	UPROPERTY()TArray<UItemObject*> PresetItems;
+	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AWeapon*> Items;
+	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AWeapon*> PresetItems;
 	int32 PresetIndex;
 
 	UPROPERTY()UUW_Inventory* Widget;
@@ -62,10 +62,12 @@ public:
 private:
 	void InitDefault();
 	void InitWidget();
+	UFUNCTION() void OnRep_Items();
+	UFUNCTION() void OnRep_PresetItems();
 
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
-	bool GetItemAtIndex(int32 InIndex, UItemObject** OutObject);
+	bool GetItemAtIndex(int32 InIndex, AWeapon** OutObject);
 
 protected:
 public:
@@ -74,13 +76,13 @@ public:
 	void ResetHittedActors();
 
 
-	bool IsRoomAvailable(UItemObject* InObject, int32 TopLeftIndex);
-	bool IsRoomAvailable(UItemObject* InObject);
-	bool TryAddItem(UItemObject* InObject);
-	void AddItemAt(UItemObject* InObject, int32 TopLeftIndex);
-	void RemoveItem(UItemObject* InObject);
+	bool IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex);
+	bool IsRoomAvailable(AWeapon* InObject);
+	bool TryAddItem(AWeapon* InObject);
+	void AddItemAt(AWeapon* InObject, int32 TopLeftIndex);
+	void RemoveItem(AWeapon* InObject);
 
-	void GetAllItems(TMap<UItemObject*, TTuple<int32, int32>>& Map);
+	void GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map);
 
 	FORCEINLINE int32 TileToIndex(int32 X, int32 Y) {return X + (Y * Columns);}
 	FORCEINLINE int32 GetRows() { return Rows; }
@@ -89,11 +91,11 @@ public:
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);
 	bool CanTakeOffCurrentEquipment();
-	UItemObject* GetPresetItems(int32 InIdx);
-	FORCEINLINE UItemObject* GetCurrentPresetItem() { return PresetItems[PresetIndex]; };
-	void Equip(UItemObject* InData);
+	AWeapon* GetPresetItems(int32 InIdx);
+	FORCEINLINE AWeapon* GetCurrentPresetItem() { return PresetItems[PresetIndex]; };
+	void Equip(AWeapon* InData);
 	void EquipPreset(int32 InIdx);
-	bool ChangePresetData(int32 InIdx, UItemObject* InData);
+	bool ChangePresetData(int32 InIdx, AWeapon* InData);
 	void ChangePresetIndex(int32 InIdx);
 	bool RemovePreset(int32 InIdx);
 	bool RemovePreset_Drag(int32 InIdx);

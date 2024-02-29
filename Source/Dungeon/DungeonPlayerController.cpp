@@ -59,7 +59,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		if (myPawn->IsOverlappingActor(Item))
 		{
 			StopMovement();
-			myPawn->TryAddItem(Item->GetItemObject());
+			myPawn->TryAddItem(Item);
 			Item = nullptr;
 		}
 		return;

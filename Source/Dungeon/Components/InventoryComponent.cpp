@@ -29,6 +29,15 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(UInventoryComponent, Items, COND_None);
+	DOREPLIFETIME_CONDITION(UInventoryComponent, PresetItems, COND_None);
+}
+
 void UInventoryComponent::InitDefault()
 {
 	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
@@ -59,15 +68,12 @@ void UInventoryComponent::InitDefault()
 	{
 		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
 		test->SetManager(manager);
-		TryAddItem(test->GetItemObject());
+		TryAddItem(test);
 	}
 }
 
 void UInventoryComponent::InitWidget()
 {
-	Items.Init(nullptr, Columns * Rows);
-	PresetItems.Init(nullptr, 1);
-
 	if (WidgetClass)
 	{
 		ADungeonCharacter* character = Cast<ADungeonCharacter>(GetOwner());
@@ -81,9 +87,21 @@ void UInventoryComponent::InitWidget()
 	}
 }
 
+void UInventoryComponent::OnRep_Items()
+{
+	if (OnInventoryChanged.IsBound())
+		OnInventoryChanged.Broadcast();
+}
+
+void UInventoryComponent::OnRep_PresetItems()
+{
+	if (OnInventoryPresetChanged.IsBound())
+		OnInventoryPresetChanged.Broadcast();
+}
+
 void UInventoryComponent::Reset()
 {
-	//TSet<UItemObject*> itemSet;
+	//TSet<AWeapon*> itemSet;
 
 	////PresetData
 	//for (int32 i = 0; i < 3; i++)
@@ -112,7 +130,7 @@ void UInventoryComponent::IndexToTile(int32 InIndex, int32& X, int32& Y)
 	Y = InIndex / Columns;
 }
 
-bool UInventoryComponent::GetItemAtIndex(int32 InIndex, UItemObject** OutObject)
+bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AWeapon** OutObject)
 {
 	*OutObject = nullptr;
 	if (!Items.IsValidIndex(InIndex))return 0;
@@ -135,11 +153,11 @@ void UInventoryComponent::ResetHittedActors()
 	if (CurrentWeapon)CurrentWeapon->ResetHittedActors();
 }
 
-bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject, int32 TopLeftIndex)
+bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
-	InObject->GetDimensions(X, Y);
+	InObject->GetItemObject()->GetDimensions(X, Y);
 	X += x; Y += y;
 	for (int32 i = x; i < X; i++)
 	{
@@ -148,7 +166,7 @@ bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject, int32 TopLeftIn
 			if (i < 0 || i >= Columns)return 0;
 			if (j < 0 || j >= Rows)return 0;
 			int32 idx = TileToIndex(i, j);
-			UItemObject* obj = nullptr;
+			AWeapon* obj = nullptr;
 			if (!GetItemAtIndex(idx, &obj))return 0;
 			if (obj)return 0;
 		}
@@ -156,7 +174,7 @@ bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject, int32 TopLeftIn
 	return 1;
 }
 
-bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject)
+bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject)
 {
 	if (!InObject)return 1;
 
@@ -164,8 +182,8 @@ bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject)
 	TArray<int32> arr; arr.Init(0, Columns * Rows);
 	int32 cnt = 0; int32 rcnt = 0;
 	int32 x = 0, y = 0, rx = 0, ry = 0;
-	InObject->GetDimensions(x, y); InObject->Rotate();
-	InObject->GetDimensions(rx, ry); InObject->Rotate();
+	InObject->GetItemObject()->GetDimensions(x, y); InObject->GetItemObject()->Rotate();
+	InObject->GetItemObject()->GetDimensions(rx, ry); InObject->GetItemObject()->Rotate();
 
 	for (int32 i = 0; i < arr.Num(); i++)
 	{
@@ -198,18 +216,9 @@ bool UInventoryComponent::IsRoomAvailable(UItemObject* InObject)
 	return 0;
 }
 
-bool UInventoryComponent::TryAddItem(UItemObject* InObject)
+bool UInventoryComponent::TryAddItem(AWeapon* InObject)
 {
 	if (!InObject)return 0;
-	
-	for (int32 i = 0; i < Items.Num(); i++)
-	{
-		if (!IsRoomAvailable(InObject, i))continue;
-		AddItemAt(InObject, i);
-		return 1;
-	}
-
-	InObject->Rotate();
 
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
@@ -218,15 +227,24 @@ bool UInventoryComponent::TryAddItem(UItemObject* InObject)
 		return 1;
 	}
 
-	InObject->Rotate();
+	InObject->GetItemObject()->Rotate();
+
+	for (int32 i = 0; i < Items.Num(); i++)
+	{
+		if (!IsRoomAvailable(InObject, i))continue;
+		AddItemAt(InObject, i);
+		return 1;
+	}
+
+	InObject->GetItemObject()->Rotate();
 	return 0;
 }
 
-void UInventoryComponent::AddItemAt(UItemObject* InObject, int32 TopLeftIndex)
+void UInventoryComponent::AddItemAt(AWeapon* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
-	InObject->GetDimensions(X, Y);
+	InObject->GetItemObject()->GetDimensions(X, Y);
 	X += x; Y += y;
 	for (int32 i = x; i < X; i++)
 	{
@@ -240,13 +258,13 @@ void UInventoryComponent::AddItemAt(UItemObject* InObject, int32 TopLeftIndex)
 	}
 
 	InObject->ChangeVisibility(EItemMode::Inventory);
-	InObject->SetInventoryComp(this);
+	InObject->GetItemObject()->SetInventoryComp(this);
 
 	if (OnInventoryChanged.IsBound())
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::RemoveItem(UItemObject* InObject)
+void UInventoryComponent::RemoveItem(AWeapon* InObject)
 {
 	CheckNull(InObject);
 	for (int32 i = 0; i < Items.Num(); i++)
@@ -256,12 +274,12 @@ void UInventoryComponent::RemoveItem(UItemObject* InObject)
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::GetAllItems(TMap<UItemObject*, TTuple<int32, int32>>& Map)
+void UInventoryComponent::GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map)
 {
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
-		UItemObject* cur = Items[i];
-		if (!cur)continue;
+		AWeapon* cur = Items[i];
+		if (!Items[i])continue;
 		if (Map.Contains(cur))continue;
 		int32 x, y;
 		IndexToTile(i, x, y);
@@ -272,7 +290,7 @@ void UInventoryComponent::GetAllItems(TMap<UItemObject*, TTuple<int32, int32>>& 
 bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)
 {
 	if (!PresetItems.IsValidIndex(InIdx))return 0;
-	UItemObject* item = PresetItems[InIdx];
+	AWeapon* item = PresetItems[InIdx];
 	if (!item)return 1;
 	return IsRoomAvailable(item);
 }
@@ -282,12 +300,12 @@ bool UInventoryComponent::CanTakeOffCurrentEquipment()
 	return CanTakeOffEquipment(PresetIndex);
 }
 
-UItemObject* UInventoryComponent::GetPresetItems(int32 InIdx)
+AWeapon* UInventoryComponent::GetPresetItems(int32 InIdx)
 {
 	return PresetItems.IsValidIndex(InIdx) ? PresetItems[InIdx] : nullptr;
 }
 
-void UInventoryComponent::Equip(UItemObject* InData)
+void UInventoryComponent::Equip(AWeapon* InData)
 {
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
@@ -303,7 +321,7 @@ void UInventoryComponent::Equip(UItemObject* InData)
 	}
 
 
-	CurrentWeapon = InData->GetWeapon();
+	CurrentWeapon = InData;
 	CurrentWeapon->OffCollision();
 	FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
 	CurrentWeapon->SetOwner(owner);
@@ -312,7 +330,7 @@ void UInventoryComponent::Equip(UItemObject* InData)
 	CurrentWeapon->ChangeVisibility(EItemMode::Equip);
 
 	if (OnInventoryEquipWeapon.IsBound())
-		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData->GetWeapon());
+		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData);
 }
 
 void UInventoryComponent::EquipPreset(int32 InIdx)
@@ -330,7 +348,7 @@ void UInventoryComponent::EquipPreset(int32 InIdx)
 	Equip(PresetItems[InIdx]);
 }
 
-bool UInventoryComponent::ChangePresetData(int32 InIdx, UItemObject* InData)
+bool UInventoryComponent::ChangePresetData(int32 InIdx, AWeapon* InData)
 {
 	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return 0;

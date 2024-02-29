@@ -66,7 +66,7 @@ int32 UUW_InventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		if (operation) itemObject = Cast<UItemObject>(operation->Payload.Get());
 		bool green = 0;
 
-		green = OwnerComponent->IsRoomAvailable(itemObject);
+		green = OwnerComponent->IsRoomAvailable(itemObject->GetWeapon());
 
 		FVector2D start = FVector2D(topleft.X + (gap.X * BoxLeft), topleft.Y + (gap.Y * BoxTop));
 		FVector2D boxsize = FVector2D(gap.X * (BoxRight - BoxLeft), gap.Y * (BoxBottom - BoxTop));
@@ -106,15 +106,15 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 
 	if (OwnerComponent)
 	{
-		bool vacant = OwnerComponent->IsRoomAvailable(item);
+		bool vacant = OwnerComponent->IsRoomAvailable(item->GetWeapon());
 		if (vacant)
 		{
 			int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
-			OwnerComponent->AddItemAt(item, idx);
+			OwnerComponent->AddItemAt(item->GetWeapon(), idx);
 		}
 		else
 		{
-			if (!OwnerComponent->TryAddItem(item))DropItem(item);
+			if (!OwnerComponent->TryAddItem(item->GetWeapon()))DropItem(item);
 		}
 	}
 
@@ -164,7 +164,7 @@ void UUW_InventoryGrid::ChangeGridSize(int32 InRowSize, int32 InColumnSize)
 
 void UUW_InventoryGrid::Refresh()
 {
-	TMap<UItemObject*, TTuple<int32, int32>> map;
+	TMap<AWeapon*, TTuple<int32, int32>> map;
 	GridCanvasPanel->ClearChildren();
 	CheckNull(OwnerComponent);
 	OwnerComponent->GetAllItems(map);
@@ -176,14 +176,15 @@ void UUW_InventoryGrid::Refresh()
 	{
 		UUW_InventoryItem* widget = CreateWidget<UUW_InventoryItem, APlayerController>(GetOwningPlayer(), ItemWidgetClass);
 		if (!widget)continue;
-		widget->Init(gap, i.Key, OwnerComponent);
+		UItemObject* obj = i.Key->GetItemObject();
+		widget->Init(gap, obj, OwnerComponent);
 		widget->OnInventoryItemRemoved.AddUFunction(this, "OnItemRemoved");
 		UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(GridCanvasPanel->AddChild(widget));
 		if (!slot)continue;
 
 		//¾ÞÄ¿ Á¶Àý
 		int32 x, y;
-		i.Key->GetDimensions(x, y);
+		obj->GetDimensions(x, y);
 		FAnchors anch; 
 		anch.Minimum = FVector2D(double(i.Value.Key) / double(RowSize), double(i.Value.Value) / double(ColumnSize));
 		anch.Maximum = anch.Minimum + FVector2D(double(x) / double(RowSize), double(y) / double(ColumnSize));
@@ -195,7 +196,9 @@ void UUW_InventoryGrid::Refresh()
 void UUW_InventoryGrid::OnItemRemoved(UItemObject* InObject)
 {
 	CheckNull(OwnerComponent);
-	OwnerComponent->RemoveItem(InObject);
+	AWeapon* weapon = nullptr;
+	if (InObject)weapon = InObject->GetWeapon();
+	OwnerComponent->RemoveItem(weapon);
 	TArray<UWidget*>arr = GridCanvasPanel->GetAllChildren();
 	for (auto i : arr)
 	{

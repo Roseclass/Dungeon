@@ -12,6 +12,7 @@ class UBorder;
 class UCanvasPanel;
 class USlateBrushAsset;
 class UInventoryComponent;
+class AWeapon;
 class UItemObject;
 class UUW_InventoryItem;
 
@@ -59,5 +60,5 @@ public:
 	void Init(UInventoryComponent* InComponent, int32 InSlotIndex);
 	void EquipPreset(int32 InIdx);
 	void ChangePresetIndex(int32 InIdx);
-	void ChangePresetData(int32 InIdx, UItemObject* InData);
+	void ChangePresetData(int32 InIdx, AWeapon* InData);
 };

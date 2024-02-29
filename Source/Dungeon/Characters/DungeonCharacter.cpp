@@ -192,13 +192,9 @@ void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillAct
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
-bool ADungeonCharacter::TryAddItem(UItemObject* InObject)
+bool ADungeonCharacter::TryAddItem(AWeapon* InObject)
 {
 	bool result = Inventory->TryAddItem(InObject);
-	if (result)
-	{
-		//Server_ChangeItemVisibility(InObject->GetWeapon(), EItemMode::Inventory);
-	}
 	return result;
 }
 

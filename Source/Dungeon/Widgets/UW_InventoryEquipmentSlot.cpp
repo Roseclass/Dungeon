@@ -75,7 +75,7 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 		if (!item)return 1;
 		if (OwnerComponent->CanTakeOffEquipment(SlotIndex))
 		{
-			ChangePresetData(SlotIndex, item);
+			ChangePresetData(SlotIndex, item->GetWeapon());
 			Pannel->AddChild(InOperation->DefaultDragVisual.Get());
 
 			UUW_InventoryItem* widget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual.Get());
@@ -92,7 +92,7 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 			slot->SetAutoSize(1);
 		}
 		else
-			OwnerComponent->TryAddItem(item);
+			OwnerComponent->TryAddItem(item->GetWeapon());
 	}
 
 	return 1;
@@ -145,7 +145,7 @@ void UUW_InventoryEquipmentSlot::ChangePresetIndex(int32 InIdx)
 	OwnerComponent->ChangePresetIndex(InIdx);
 }
 
-void UUW_InventoryEquipmentSlot::ChangePresetData(int32 InIdx, UItemObject* InData)
+void UUW_InventoryEquipmentSlot::ChangePresetData(int32 InIdx, AWeapon* InData)
 {
 	OwnerComponent->ChangePresetData(InIdx, InData);
 }

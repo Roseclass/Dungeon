@@ -88,7 +88,7 @@ public:
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
 
 	//Inventory
-	bool TryAddItem(UItemObject* InObject);
+	bool TryAddItem(AWeapon* InObject);
 
 	//getter
 	bool CanUse();

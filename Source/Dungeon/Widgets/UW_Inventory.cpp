@@ -53,7 +53,7 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	//그리드 바깥으로 드롭
 	else
 	{
-		OwnerComponent->TryAddItem(item);
+		OwnerComponent->TryAddItem(item->GetWeapon());
 	}	
 
 	return result;
