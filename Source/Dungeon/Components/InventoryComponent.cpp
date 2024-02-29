@@ -3,6 +3,7 @@
 
 #include "Characters/DungeonCharacter.h"
 #include "DungeonPlayerController.h"
+#include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
 #include "Widgets/UW_Inventory.h"
@@ -16,7 +17,11 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitDefault();
+
+	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
+	if (pc && pc->IsLocalController())InitWidget();
+	if (owner->HasAuthority())InitDefault();
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -27,7 +32,39 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 void UInventoryComponent::InitDefault()
 {
 	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+	int32 num = UGameplayStatics::GetNumLocalPlayerControllers(GetWorld());
+	AItemManager* manager = nullptr;
+	for (int32 i = 0; i < num; i++)
+	{
+		ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i));
+		if (pc && pc->IsLocalController())
+			manager = pc->GetItemManager();
+	}
 
+	Items.Init(nullptr, Columns * Rows);
+	PresetItems.Init(nullptr, 1);
+
+	if (DefaultWeapon)
+	{
+		CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon);
+		CurrentWeapon->SetManager(manager);
+		CurrentWeapon->OffCollision();
+		FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+		CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
+		CurrentWeapon->SetOwner(owner);
+		CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
+	}
+
+	if (InvTestClass)
+	{
+		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
+		test->SetManager(manager);
+		TryAddItem(test->GetItemObject());
+	}
+}
+
+void UInventoryComponent::InitWidget()
+{
 	Items.Init(nullptr, Columns * Rows);
 	PresetItems.Init(nullptr, 1);
 
@@ -41,23 +78,6 @@ void UInventoryComponent::InitDefault()
 		Widget = CreateWidget<UUW_Inventory, ADungeonPlayerController>(controller, WidgetClass);
 		Widget->AddToViewport();
 		Widget->Init(this);
-	}
-
-	if (DefaultWeapon)
-	{
-		CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon);
-		CurrentWeapon->OffCollision();
-		FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
-		CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
-		CurrentWeapon->SetOwner(owner);
-		CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
-	}
-
-	if (InvTestClass)
-	{
-		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
-		TryAddItem(test->GetItemObject());
-		owner->Server_ChangeItemVisibility(test, EItemMode::Inventory);
 	}
 }
 
@@ -276,7 +296,8 @@ void UInventoryComponent::Equip(UItemObject* InData)
 
 	if (!InData)
 	{
-		if (CurrentWeapon)owner->Server_ChangeItemVisibility(InData->GetWeapon(),EItemMode::Inventory);
+		if (CurrentWeapon)CurrentWeapon->ChangeVisibility(EItemMode::Inventory);
+
 		CurrentWeapon = nullptr;
 		return;
 	}
@@ -285,10 +306,10 @@ void UInventoryComponent::Equip(UItemObject* InData)
 	CurrentWeapon = InData->GetWeapon();
 	CurrentWeapon->OffCollision();
 	FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
-	CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
 	CurrentWeapon->SetOwner(owner);
 	CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
-	owner->Server_ChangeItemVisibility(InData->GetWeapon(), EItemMode::Equip);
+	CurrentWeapon->AttachItemToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
+	CurrentWeapon->ChangeVisibility(EItemMode::Equip);
 
 	if (OnInventoryEquipWeapon.IsBound())
 		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData->GetWeapon());

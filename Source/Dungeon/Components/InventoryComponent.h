@@ -61,6 +61,7 @@ public:
 	//function
 private:
 	void InitDefault();
+	void InitWidget();
 
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);

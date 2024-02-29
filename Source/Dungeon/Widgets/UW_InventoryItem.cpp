@@ -65,8 +65,7 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 	if (ItemObject && OwnerComponent)
 	{
-		ADungeonCharacter* ch = Cast<ADungeonCharacter>(OwnerComponent->GetOwner());
-		if (ch)ch->Server_ChangeItemVisibility(ItemObject->GetWeapon(), EItemMode::Inventory);
+		ItemObject->GetWeapon()->ChangeVisibility(EItemMode::Inventory);
 	}
 
 	if (OnInventoryItemRemoved.IsBound())

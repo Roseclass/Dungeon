@@ -116,12 +116,6 @@ void ADungeonCharacter::OffAllWidget()
 
 }
 
-void ADungeonCharacter::Multicast_ChangeItemVisibility_Implementation(AWeapon* InObject, EItemMode InMode)
-{
-	InObject->ChangeVisibility(InMode);
-	InObject->GetItemObject()->SetInventoryComp(Inventory);
-}
-
 void ADungeonCharacter::InitClientWidget()
 {
 	CheckNull(GetController());
@@ -196,11 +190,6 @@ void ADungeonCharacter::UseR()
 void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
 {
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
-}
-
-void ADungeonCharacter::Server_ChangeItemVisibility_Implementation(AWeapon* InObject, EItemMode InMode)
-{
-	Multicast_ChangeItemVisibility(InObject, InMode);
 }
 
 bool ADungeonCharacter::TryAddItem(UItemObject* InObject)

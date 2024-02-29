@@ -7,6 +7,7 @@
 
 class UNiagaraSystem;
 class ADungeonCharacter;
+class AItemManager;
 class AWeapon;
 class UUW_Main;
 
@@ -20,6 +21,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void SetupInputComponent() override;
 	virtual void PostNetInit() override;
 	virtual void OnPossess(APawn* InPawn)override;
@@ -31,6 +33,7 @@ private:
 	float FollowTime;
 
 	ADungeonCharacter* Target;
+	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
 	AWeapon* Item;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -48,6 +51,8 @@ public:
 
 	//function
 private:
+	UFUNCTION() void OnRep_ItemManager();
+
 	UFUNCTION(Client, Reliable)void Client_CreateMainWidget();
 
 	UFUNCTION(Reliable, Server)void Server_ReplicateRotation(FRotator NewRotation, ADungeonPlayerController* Exception);
@@ -69,6 +74,7 @@ protected:
 public:
 
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
+	FORCEINLINE AItemManager* GetItemManager() const { return ItemManager; }
 };
 
 

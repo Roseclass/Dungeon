@@ -28,11 +28,11 @@ void AWeapon::BeginPlay()
 
 	SpawnLootEffects();
 
-	if (HasAuthority())
+	/*if (!Manager)
 	{
 		AActor* manager = UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass());
 		Manager = Cast<AItemManager>(manager);
-	}
+	}*/
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -55,7 +55,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
-	DOREPLIFETIME_CONDITION(AWeapon, Manager, COND_None);
 	DOREPLIFETIME_CONDITION(AWeapon, Mode, COND_None);
 }
 
@@ -303,12 +302,42 @@ void AWeapon::ResetHittedActors()
 	HittedActors.Empty();
 }
 
+void AWeapon::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
+{
+	if (!Manager)
+	{
+		CLog::Print(__FUNCTION__);
+		return;
+	}
+	Manager->SetItemLocation(this, NewLocation, bSweep, OutSweepHitResult, Teleport);
+}
+
+void AWeapon::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
+{
+	if (!Manager)
+	{
+		CLog::Print(__FUNCTION__);
+		return;
+	}
+	Manager->SetItemRotation(this, NewRotation, Teleport);
+}
+
+void AWeapon::AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName)
+{
+	if (!Manager)
+	{
+		CLog::Print(__FUNCTION__);
+		return;
+	}
+	Manager->AttachItemToComponent(this, Parent, AttachmentRules, InSocketName);
+}
+
 void AWeapon::ChangeVisibility(EItemMode InMode)
 {
 	if (InMode == EItemMode::Max)return;
 	if (!Manager)
 	{
-		CLog::Print("NoManager");
+		CLog::Print(__FUNCTION__);
 		return;
 	}
 	Manager->ChangeVisibility(this, InMode);

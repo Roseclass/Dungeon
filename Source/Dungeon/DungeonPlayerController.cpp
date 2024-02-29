@@ -10,6 +10,7 @@
 
 #include "Characters/DungeonCharacter.h"
 #include "Objects/Weapon.h"
+#include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
 
 ADungeonPlayerController::ADungeonPlayerController()
@@ -21,6 +22,13 @@ ADungeonPlayerController::ADungeonPlayerController()
 void ADungeonPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		ItemManager = GetWorld()->SpawnActor<AItemManager>(AItemManager::StaticClass());
+		ItemManager->SetOwner(this);
+		if (IsLocalController())OnRep_ItemManager();
+	}
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)
@@ -91,6 +99,14 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 	}
 }
 
+void ADungeonPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(ADungeonPlayerController, ItemManager, COND_None);
+}
+
 void ADungeonPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -117,6 +133,25 @@ void ADungeonPlayerController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	Client_CreateMainWidget();	
+}
+
+void ADungeonPlayerController::OnRep_ItemManager()
+{
+	//클라이언트 동기화 완료 체크
+
+	if (ItemManager)
+	{
+		CLog::Print("load");
+
+		TArray<AActor*>arr;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeapon::StaticClass(), arr);
+		for (auto i : arr)
+		{
+			AWeapon* item = Cast<AWeapon>(i);
+			if (!item)continue;
+			item->SetManager(ItemManager);
+		}
+	}
 }
 
 void ADungeonPlayerController::Client_CreateMainWidget_Implementation()

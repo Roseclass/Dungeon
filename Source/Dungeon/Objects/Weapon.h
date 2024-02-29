@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/EngineTypes.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Weapon.generated.h"
 
@@ -17,6 +18,7 @@ class UMaterialInstance;
 class ACharacter;
 class UItemObject;
 class UNiagaraComponent;
+class USceneComponent;
 class UParticleSystemComponent;
 class AItemManager;
 
@@ -41,7 +43,7 @@ public:
 
 	//property
 private:
-	UPROPERTY(Replicated)AItemManager* Manager;
+	AItemManager* Manager;
 	TArray<UShapeComponent*> CollisionComponents;
 	TArray<UShapeComponent*> InteractCollisionComponents;
 	TArray<UMeshComponent*> MeshComponents;
@@ -116,11 +118,15 @@ public:
 	void OffCollision();
 	void ResetHittedActors();
 
+	void SetItemLocation(const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);
+	void SetItemRotation(FRotator NewRotation, ETeleportType Teleport = ETeleportType::None);
+	void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None);
 	void ChangeVisibility(EItemMode InMode);
 	void SetMode(EItemMode InMode);
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
 	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }
+	FORCEINLINE void SetManager(AItemManager* InManager) {Manager = InManager; OnRep_Mode();}
 
 	FORCEINLINE FTransform GetAttachTransform() { return AttachTransform; }
 	FORCEINLINE FName GetSocketName() { return SocketName; }

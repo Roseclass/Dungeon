@@ -37,10 +37,9 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 		TArray<AActor*> arr; FHitResult hit;
 		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
 		{
-			item->GetWeapon()->SetActorLocation(hit.Location);
-			item->GetWeapon()->SetActorRotation(FRotator());
-			ADungeonCharacter* ch = Cast<ADungeonCharacter>(OwnerComponent->GetOwner());
-			if (ch)ch->Server_ChangeItemVisibility(item->GetWeapon(), EItemMode::Loot);
+			item->GetWeapon()->SetItemLocation(hit.Location);
+			item->GetWeapon()->SetItemRotation(FRotator());
+			item->GetWeapon()->ChangeVisibility(EItemMode::Loot);
 		}		
 		return result;
 	}
