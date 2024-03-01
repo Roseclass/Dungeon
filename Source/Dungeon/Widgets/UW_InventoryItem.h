@@ -33,6 +33,7 @@ private:
 	FVector2D WidgetSize;//드래그 드롭때 크기를 유지하기 위함
 	UItemObject* ItemObject;
 	UInventoryComponent* OwnerComponent;
+	bool bDragDetected;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* BackgroundBorder;
@@ -49,5 +50,6 @@ protected:
 public:
 	void Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent);
 	void Refresh();
+	void DragDropEnd();
 	FORCEINLINE bool CheckItem(UItemObject* InItemObject) { return ItemObject == InItemObject; }
 };

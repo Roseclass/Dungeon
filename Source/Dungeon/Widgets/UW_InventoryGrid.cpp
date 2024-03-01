@@ -66,7 +66,8 @@ int32 UUW_InventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		if (operation) itemObject = Cast<UItemObject>(operation->Payload.Get());
 		bool green = 0;
 
-		green = OwnerComponent->IsRoomAvailable(itemObject->GetWeapon());
+		int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
+		green = OwnerComponent->IsRoomGreen(itemObject->GetWeapon(), idx);
 
 		FVector2D start = FVector2D(topleft.X + (gap.X * BoxLeft), topleft.Y + (gap.Y * BoxTop));
 		FVector2D boxsize = FVector2D(gap.X * (BoxRight - BoxLeft), gap.Y * (BoxBottom - BoxTop));
@@ -99,6 +100,8 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 {
 	bool result = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
+	UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
+	if (itemWidget)itemWidget->DragDropEnd();
 
 	UItemObject* item = nullptr;
 	if (InOperation) item = Cast<UItemObject>(InOperation->Payload.Get());
@@ -106,15 +109,16 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 
 	if (OwnerComponent)
 	{
-		bool vacant = OwnerComponent->IsRoomAvailable(item->GetWeapon());
+		int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
+		bool vacant = OwnerComponent->IsRoomGreen(item->GetWeapon(), idx);
 		if (vacant)
 		{
-			int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
-			OwnerComponent->AddItemAt(item->GetWeapon(), idx);
+			OwnerComponent->Server_AddItemAt(item->GetWeapon(), idx);
 		}
 		else
 		{
-			if (!OwnerComponent->TryAddItem(item->GetWeapon()))DropItem(item);
+			if (!OwnerComponent->IsRoomAvailable(item->GetWeapon()))DropItem(item);
+			else OwnerComponent->Server_TryAddItem(item->GetWeapon());
 		}
 	}
 
@@ -198,14 +202,13 @@ void UUW_InventoryGrid::OnItemRemoved(UItemObject* InObject)
 	CheckNull(OwnerComponent);
 	AWeapon* weapon = nullptr;
 	if (InObject)weapon = InObject->GetWeapon();
-	OwnerComponent->RemoveItem(weapon);
-	TArray<UWidget*>arr = GridCanvasPanel->GetAllChildren();
-	for (auto i : arr)
-	{
-		UUW_InventoryItem* widget = Cast<UUW_InventoryItem>(i);
-		if (!widget)continue;
-		if (widget->CheckItem(InObject))widget->RemoveFromParent();
-	}
+	OwnerComponent->Server_RemoveItem(weapon);
+	Refresh();
+	// 서버의 데이터 변화에 따라 갱신되게 설정해놨음
+	// 드래그드롭이 끝나면 본체도 없애고 다음 갱신을 기다렸는데
+	// 그렇게하면 데이터 변화가 없는 경우에는 새로고침이 안되는 경우도 있어
+	// 강제 새로고침
+
 }
 
 FEventReply UUW_InventoryGrid::OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent)
@@ -223,9 +226,9 @@ void UUW_InventoryGrid::DropItem(UItemObject* InObject)
 	TArray<AActor*> arr; FHitResult hit;
 	if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
 	{
-		//InObject->GetAttachment()->SetActorLocation(hit.Location);
-		//InObject->GetAttachment()->SetPickableMode();
-		//InObject->GetAttachment()->SetActorRotation(FRotator());
+		InObject->GetWeapon()->SetItemLocation(hit.Location);
+		InObject->GetWeapon()->SetMode(EItemMode::Loot);
+		InObject->GetWeapon()->SetItemRotation(FRotator());
 	}
 }
 

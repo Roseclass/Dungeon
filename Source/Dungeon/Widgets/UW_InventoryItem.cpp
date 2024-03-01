@@ -32,7 +32,7 @@ FReply UUW_InventoryItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, c
 		//OwnerComponent->ChangePresetData(OwnerComponent->GetPresetIndex(), ItemObject);
 		//if (OnInventoryItem_Removed.IsBound())
 		//	OnInventoryItem_Removed.Broadcast(ItemObject);
-		RemoveFromParent();
+		//RemoveFromParent();
 	}
 	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
@@ -53,33 +53,31 @@ void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 
 void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
+	bDragDetected = 1;
+	SetVisibility(ESlateVisibility::HitTestInvisible);
+
 	UCanvasPanel* canvas = Cast<UCanvasPanel>(GetParent());
 
 	WidgetSize = USlateBlueprintLibrary::GetLocalSize(ItemImage->GetCachedGeometry());
 
 	OutOperation = NewObject<UDragDropOperation>(this);
 	OutOperation->Payload = ItemObject;
-	OutOperation->DefaultDragVisual = this;
-	OutOperation->Pivot = EDragPivot::CenterCenter;
+	OutOperation->Pivot = EDragPivot::MouseDown;
 	OutOperation->Offset = FVector2D(0, 0);
+	OutOperation->DefaultDragVisual = this;
 
 	if (ItemObject && OwnerComponent)
 	{
 		ItemObject->GetWeapon()->ChangeVisibility(EItemMode::Inventory);
 	}
-
-	if (OnInventoryItemRemoved.IsBound())
-	{
-		OnInventoryItemRemoved.Broadcast(ItemObject);
-		OnInventoryItemRemoved.Clear();
-	}
-
-	RemoveFromParent();
 }
 
 FSlateBrush UUW_InventoryItem::GetIconImage()
 {
-	return UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), WidgetSize.X, WidgetSize.Y);
+	FSlateBrush result = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObject->GetIcon(), WidgetSize.X, WidgetSize.Y);
+	float tint = bDragDetected ? 0.1 : 1;
+	result.TintColor = FLinearColor(tint, tint, tint, 1);
+	return result;
 }
 
 void UUW_InventoryItem::Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent)
@@ -102,4 +100,13 @@ void UUW_InventoryItem::Refresh()
 	//BackgroundSizeBox->SetHeightOverride(Size.Y);
 	//UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(ItemImage->Slot);
 	//slot->SetSize(Size);
+}
+
+void UUW_InventoryItem::DragDropEnd()
+{
+	if (OnInventoryItemRemoved.IsBound())
+	{
+		OnInventoryItemRemoved.Broadcast(ItemObject);
+		OnInventoryItemRemoved.Clear();
+	}
 }

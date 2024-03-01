@@ -13,6 +13,7 @@
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_InventoryGrid.h"
 #include "Widgets/UW_InventoryEquipmentSlot.h"
+#include "Widgets/UW_InventoryItem.h"
 
 bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
@@ -26,12 +27,14 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	{
 		UObject* payload = InOperation->Payload.Get();
 		item = Cast<UItemObject>(payload);
-		if (!item)return 1;
+		if (!item)return result;
 	}
 
 	//인벤토리 밖으로 드롭
 	if (mousePos.X < 0.7)
 	{
+		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
+		if (itemWidget)itemWidget->DragDropEnd();
 		AActor* actor = OwnerComponent->GetOwner();
 		FVector start = actor->GetActorLocation() + actor->GetActorForwardVector() * 150.0f;
 		TArray<AActor*> arr; FHitResult hit;
@@ -53,7 +56,9 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	//그리드 바깥으로 드롭
 	else
 	{
-		OwnerComponent->TryAddItem(item->GetWeapon());
+		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
+		if (itemWidget)itemWidget->DragDropEnd();
+		OwnerComponent->Server_TryAddItem(item->GetWeapon());
 	}	
 
 	return result;

@@ -192,10 +192,9 @@ void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillAct
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
-bool ADungeonCharacter::TryAddItem(AWeapon* InObject)
+void ADungeonCharacter::TryAddItem(AWeapon* InObject)
 {
-	bool result = Inventory->TryAddItem(InObject);
-	return result;
+	Inventory->Server_TryAddItem(InObject);
 }
 
 bool ADungeonCharacter::CanUse()

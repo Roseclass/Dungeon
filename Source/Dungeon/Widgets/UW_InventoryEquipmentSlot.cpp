@@ -92,7 +92,7 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 			slot->SetAutoSize(1);
 		}
 		else
-			OwnerComponent->TryAddItem(item->GetWeapon());
+			OwnerComponent->Server_TryAddItem(item->GetWeapon());
 	}
 
 	return 1;

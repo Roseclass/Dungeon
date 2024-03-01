@@ -68,7 +68,7 @@ void UInventoryComponent::InitDefault()
 	{
 		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
 		test->SetManager(manager);
-		TryAddItem(test);
+		Server_TryAddItem(test);
 	}
 }
 
@@ -89,14 +89,14 @@ void UInventoryComponent::InitWidget()
 
 void UInventoryComponent::OnRep_Items()
 {
+	//서버 아이템 목록이 갱신됨
 	if (OnInventoryChanged.IsBound())
 		OnInventoryChanged.Broadcast();
 }
 
 void UInventoryComponent::OnRep_PresetItems()
 {
-	if (OnInventoryPresetChanged.IsBound())
-		OnInventoryPresetChanged.Broadcast();
+
 }
 
 void UInventoryComponent::Reset()
@@ -216,31 +216,40 @@ bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject)
 	return 0;
 }
 
-bool UInventoryComponent::TryAddItem(AWeapon* InObject)
+bool UInventoryComponent::IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex)
 {
-	if (!InObject)return 0;
-
-	for (int32 i = 0; i < Items.Num(); i++)
+	int32 x, y, X, Y;
+	IndexToTile(TopLeftIndex, x, y);
+	InObject->GetItemObject()->GetDimensions(X, Y);
+	X += x; Y += y;
+	for (int32 i = x; i < X; i++)
 	{
-		if (!IsRoomAvailable(InObject, i))continue;
-		AddItemAt(InObject, i);
-		return 1;
+		for (int32 j = y; j < Y; j++)
+		{
+			if (i < 0 || i >= Columns)return 0;
+			if (j < 0 || j >= Rows)return 0;
+			int32 idx = TileToIndex(i, j);
+			AWeapon* obj = nullptr;
+			if (!GetItemAtIndex(idx, &obj))return 0;
+			if (obj && obj != InObject)return 0;
+		}
 	}
-
-	InObject->GetItemObject()->Rotate();
-
-	for (int32 i = 0; i < Items.Num(); i++)
-	{
-		if (!IsRoomAvailable(InObject, i))continue;
-		AddItemAt(InObject, i);
-		return 1;
-	}
-
-	InObject->GetItemObject()->Rotate();
-	return 0;
+	return 1;
 }
 
-void UInventoryComponent::AddItemAt(AWeapon* InObject, int32 TopLeftIndex)
+void UInventoryComponent::Server_TryAddItem_Implementation(AWeapon* InObject)
+{
+	if (!InObject)return;
+	if (!IsRoomAvailable(InObject))return;
+	for (int32 i = 0; i < Items.Num(); i++)
+	{
+		if (!IsRoomAvailable(InObject, i))continue;
+		Server_AddItemAt(InObject, i);
+		return;
+	}
+}
+
+void UInventoryComponent::Server_AddItemAt_Implementation(AWeapon* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
@@ -264,7 +273,7 @@ void UInventoryComponent::AddItemAt(AWeapon* InObject, int32 TopLeftIndex)
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::RemoveItem(AWeapon* InObject)
+void UInventoryComponent::Server_RemoveItem_Implementation(AWeapon* InObject)
 {
 	CheckNull(InObject);
 	for (int32 i = 0; i < Items.Num(); i++)
@@ -355,7 +364,8 @@ bool UInventoryComponent::ChangePresetData(int32 InIdx, AWeapon* InData)
 
 	if (!PresetItems.IsValidIndex(InIdx))return 0;
 	if (!CanTakeOffEquipment(InIdx))return 0;
-	if (PresetItems[InIdx] && !TryAddItem(PresetItems[InIdx]))return 0;
+	if (PresetItems[InIdx] && !IsRoomAvailable(PresetItems[InIdx]))return 0;
+	if (IsRoomAvailable(PresetItems[InIdx]))Server_TryAddItem(PresetItems[InIdx]);
 	PresetItems[InIdx] = InData;
 	if (InIdx == PresetIndex)Equip(PresetItems[InIdx]);
 	if (OnInventoryPresetChanged.IsBound())

@@ -31,7 +31,7 @@ public:
 	//property
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AWeapon*> Items;
-	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AWeapon*> PresetItems;
+	UPROPERTY(ReplicatedUsing = "OnRep_PresetItems")TArray<AWeapon*> PresetItems;
 	int32 PresetIndex;
 
 	UPROPERTY()UUW_Inventory* Widget;
@@ -69,18 +69,23 @@ private:
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
 	bool GetItemAtIndex(int32 InIndex, AWeapon** OutObject);
 
+	//드래그 드롭으로 배열에 변화를 주지 못한 경우 OnRep_Items 실행 안돼서
+	//아이템 위젯만 날아가니 강제 갱신 시켜줌
+	void TryRefreshGridIfFirstItem(AWeapon* InObject);
 protected:
 public:
 	void OnCollision();
 	void OffCollision();
 	void ResetHittedActors();
 
-
 	bool IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex);
 	bool IsRoomAvailable(AWeapon* InObject);
-	bool TryAddItem(AWeapon* InObject);
-	void AddItemAt(AWeapon* InObject, int32 TopLeftIndex);
-	void RemoveItem(AWeapon* InObject);
+	bool IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex);
+
+	UFUNCTION(Reliable, Server)void Server_TryAddItem(AWeapon* InObject);
+	UFUNCTION(Reliable, Server)void Server_AddItemAt(AWeapon* InObject, int32 TopLeftIndex);
+
+	UFUNCTION(Reliable, Server)void Server_RemoveItem(AWeapon* InObject);
 
 	void GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map);
 
