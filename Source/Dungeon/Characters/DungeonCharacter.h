@@ -11,7 +11,9 @@
  */
 
 class UCameraComponent;
+class USceneCaptureComponent2D;
 class USpringArmComponent;
+class UStaticMeshComponent;
 class USkillComponent;
 class USkillTreeComponent;
 class UMontageComponent;
@@ -48,6 +50,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		USpringArmComponent* CameraBoom;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Minimap", meta = (AllowPrivateAccess = "true"))
+		UStaticMeshComponent* MinimapIcon;
+
+	USpringArmComponent* MinimapArm;
+	USceneCaptureComponent2D* MinimapCapture;
+
 	//actor
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillComponent* Skill;
@@ -73,7 +81,6 @@ public:
 private:
 	void Init();
 	void OffAllWidget();
-
 protected:
 public:
 	void InitClientWidget();

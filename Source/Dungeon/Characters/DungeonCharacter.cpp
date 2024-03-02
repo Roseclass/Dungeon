@@ -2,13 +2,16 @@
 #include "Global.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/DecalComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Engine/TextureRenderTarget2D.h"
 
 #include "DungeonPlayerController.h"
 #include "Components/SkillComponent.h"
@@ -46,12 +49,16 @@ ADungeonCharacter::ADungeonCharacter()
 	//scene
 	CHelpers::CreateComponent(this, &CameraBoom, "CameraBoom", RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
-	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->TargetArmLength = 2500.0f;
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	CHelpers::CreateComponent(this, &TopDownCameraComponent, "TopDownCamera", CameraBoom);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	CHelpers::CreateComponent(this, &MinimapIcon, "MinimapIcon", RootComponent);
+	MinimapIcon->SetVisibleInSceneCaptureOnly(1);
+	MinimapIcon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//actor
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
@@ -98,17 +105,80 @@ void ADungeonCharacter::Init()
 		{
 			mainWidget->GetQuickSlot()->ConnectComponent(Skill);
 		}
+		if (HasAuthority())
+			InitClientWidget();
 	}
 
-	if (!HasAuthority())return;
+	//init minimap
+	MinimapIcon->CreateDynamicMaterialInstance(0);
+	if (controller && controller->IsLocalController())
+		Cast<UMaterialInstanceDynamic>(MinimapIcon->GetMaterial(0))->SetVectorParameterValue("Color",FLinearColor::Green);
+	else
+		Cast<UMaterialInstanceDynamic>(MinimapIcon->GetMaterial(0))->SetVectorParameterValue("Color", FLinearColor::Yellow);
 
-	//SkillTreecomp
-	TFunction<void(int32, ASkillActor*)> func;
-	func = [this](int32 Idx, ASkillActor* Actor)
+	if (controller && controller->IsLocalController())
 	{
-		ChangeQuickSlotData(Idx, Actor);
-	};
-	SkillTree->Init(Skill->GetSkillActors(), func);
+		MinimapArm = NewObject<USpringArmComponent>(this, "MinimapArm");
+		MinimapArm->SetupAttachment(RootComponent);
+		MinimapArm->SetUsingAbsoluteRotation(true);
+		MinimapArm->TargetArmLength = 1000.f;
+		MinimapArm->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
+		MinimapArm->bDoCollisionTest = false;
+		MinimapArm->RegisterComponent();
+
+		MinimapCapture = NewObject<USceneCaptureComponent2D>(this, "MinimapCapture");
+		MinimapCapture->SetupAttachment(MinimapArm);
+		MinimapCapture->RegisterComponent();
+
+		MinimapCapture->ProjectionType = ECameraProjectionMode::Orthographic;
+		MinimapCapture->OrthoWidth = 2000;
+
+		//showflags
+		MinimapCapture->ShowFlags.BSP = 0;
+		MinimapCapture->ShowFlags.Decals = 0;
+		MinimapCapture->ShowFlags.Landscape = 1;
+		MinimapCapture->ShowFlags.Translucency = 1;
+		MinimapCapture->ShowFlags.SkeletalMeshes = 0;
+		MinimapCapture->ShowFlags.StaticMeshes = 1;
+		MinimapCapture->ShowFlags.AntiAliasing = 0;
+		MinimapCapture->ShowFlags.Atmosphere = 0;
+		MinimapCapture->ShowFlags.Particles = 0;
+		MinimapCapture->ShowFlags.Fog = 0;
+		MinimapCapture->ShowFlags.InstancedGrass = 1;
+		MinimapCapture->ShowFlags.NaniteMeshes = 0;
+		MinimapCapture->ShowFlags.SingleLayerWaterRefractionFullPrecision = 1;
+		MinimapCapture->ShowFlags.DeferredLighting = 1;
+		MinimapCapture->ShowFlags.TextRender = 0;
+		MinimapCapture->ShowFlags.InstancedStaticMeshes = 1;
+		MinimapCapture->ShowFlags.TemporalAA = 0;
+		MinimapCapture->ShowFlags.Paper2DSprites = 0;
+		MinimapCapture->ShowFlags.InstancedFoliage = 1;
+		MinimapCapture->ShowFlags.EyeAdaptation = 1;
+		MinimapCapture->ShowFlags.LocalExposure = 1;
+		MinimapCapture->ShowFlags.MotionBlur = 0;
+		MinimapCapture->ShowFlags.Bloom = 1;
+		MinimapCapture->ShowFlags.ToneCurve= 1;
+		MinimapCapture->ShowFlags.SkyLighting= 0;
+		MinimapCapture->ShowFlags.DynamicShadows = 0;
+		MinimapCapture->ShowFlags.AmbientOcclusion= 0;
+		MinimapCapture->ShowFlags.DistanceFieldAO = 1;
+		MinimapCapture->ShowFlags.LightShafts = 1;
+		MinimapCapture->ShowFlags.LightFunctions = 1;
+		MinimapCapture->ShowFlags.ReflectionEnvironment = 1;
+		MinimapCapture->ShowFlags.VolumetricFog = 1;
+		MinimapCapture->ShowFlags.ScreenSpaceReflections = 1;
+		MinimapCapture->ShowFlags.AmbientCubemap = 1;
+		MinimapCapture->ShowFlags.TexturedLightProfiles = 1;
+		MinimapCapture->ShowFlags.Game = 1;
+		MinimapCapture->ShowFlags.Lighting = 1;
+		MinimapCapture->ShowFlags.PathTracing = 0;
+		MinimapCapture->ShowFlags.PostProcessing = 1;
+
+		//rendertarget
+		UTextureRenderTarget2D* target;
+		CHelpers::GetAssetDynamic(&target, "TextureRenderTarget2D'/Game/Widgets/Minimap/RT_Minimap.RT_Minimap'");
+		MinimapCapture->TextureTarget = target;
+	}
 }
 
 void ADungeonCharacter::OffAllWidget()
@@ -118,7 +188,7 @@ void ADungeonCharacter::OffAllWidget()
 
 void ADungeonCharacter::InitClientWidget()
 {
-	CheckNull(GetController());
+	CheckNull(GetController());//::Load
 	CheckFalse(GetController()->IsLocalController());
 	TFunction<void(int32, ASkillActor*)> func;
 	func = [this](int32 Idx, ASkillActor* Actor)
