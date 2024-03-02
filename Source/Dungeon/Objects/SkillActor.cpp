@@ -96,12 +96,21 @@ void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 {
 	bCoolDown_Server = 1;
 	StartServerWorldTime = GetWorld()->GetTimeSeconds();
+	if (OwnerCharacter)
+	{
+		//ui 쿨다운 돌리기
+		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OwnerCharacter);
+		CheckNull(skill);
+		StartWorldTime = StartServerWorldTime;
+		skill->SetCoolDown(this);
+	}
 
 	FTimerHandle WaitHandle;
 	float WaitTime = Data.CoolDown;
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
 	{
 		bCoolDown_Server = 0;
+		bCoolDown_Client = 0;
 	}), WaitTime, false);
 
 	Multicast_Use(Exception);
