@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
+#include "Interfaces/ISave.h"
 #include "DungeonCharacter.generated.h"
 
 /**
@@ -28,7 +29,7 @@ struct FSkillData;
 enum class EItemMode : uint8;
 
 UCLASS(Blueprintable)
-class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface
+class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface, public IISave
 {
 	GENERATED_BODY()
 
@@ -115,6 +116,11 @@ public:
 	//widget Toggle
 	void ToggleSkillTree();
 	void ToggleInventory();
+
+	//Save Load
+	virtual	FString GetUniqueSaveName() override;
+	virtual	void OnBeforeSave(USaveGameData* SaveData) override;
+	virtual	void OnAfterLoad(USaveGameData* const ReadData) override;
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

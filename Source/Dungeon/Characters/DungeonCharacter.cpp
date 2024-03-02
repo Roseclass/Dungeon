@@ -13,6 +13,7 @@
 #include "Engine/World.h"
 #include "Engine/TextureRenderTarget2D.h"
 
+#include "SaveManager.h"
 #include "DungeonPlayerController.h"
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
@@ -342,4 +343,58 @@ void ADungeonCharacter::ToggleInventory()
 		OffAllWidget();
 		Inventory->OnWidget();
 	}
+}
+
+FString ADungeonCharacter::GetUniqueSaveName()
+{
+	return "Player";
+}
+
+void ADungeonCharacter::OnBeforeSave(USaveGameData* SaveData)
+{
+	//Inventory
+	//PresetData
+	{
+		SaveData->PlayerData.PresetClasses.Empty();
+		SaveData->PlayerData.PresetClasses.Init(nullptr, 3);
+		for (int32 i = 0; i < 3; i++)
+		{
+			AWeapon* weapon = Inventory->GetPresetItems(i);
+			if (!weapon)continue;
+			SaveData->PlayerData.PresetClasses[i] = weapon->GetClass();
+		}
+	}
+
+	//InventoryData
+	{
+		TMap<AWeapon*, TTuple<int32, int32>> m;
+		Inventory->GetAllItems(m);
+		for (auto i : m)
+		{
+			if (!i.Key)continue;
+			AWeapon* weapon = i.Key;
+			if (!weapon)continue;
+			SaveData->PlayerData.InventoryClasses.Add(weapon->GetClass());
+		}
+	}
+
+	////SkillTree
+	////SkillPoints
+	//SaveData->PlayerData.SkillPoints = SkillTree->GetSkillPoints();
+
+	////SkillData
+	//SkillTree->GetAcquiredSkills(SaveData->PlayerData.AcquiredSkills);
+
+	////SlotData
+	//SkillTree->GetSlotClassData(SaveData->PlayerData.SlotSkills);
+}
+
+void ADungeonCharacter::OnAfterLoad(USaveGameData* const ReadData)
+{
+	FString name = GetUniqueSaveName();
+	CheckNull(ReadData);
+
+	//Reset();
+	//Inventory->LoadData(ReadData);
+	//SkillTree->LoadData(ReadData);
 }
