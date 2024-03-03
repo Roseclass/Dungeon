@@ -68,10 +68,6 @@ private:
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
 	bool GetItemAtIndex(int32 InIndex, AWeapon** OutObject);
-
-	//드래그 드롭으로 배열에 변화를 주지 못한 경우 OnRep_Items 실행 안돼서
-	//아이템 위젯만 날아가니 강제 갱신 시켜줌
-	void TryRefreshGridIfFirstItem(AWeapon* InObject);
 protected:
 public:
 	void OnCollision();

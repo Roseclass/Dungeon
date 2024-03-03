@@ -81,7 +81,10 @@ void USaveManager::LoadGame()
 
 	// Loop over all the actors that need to load data nad load their data
 	for (auto& i : SaveInterfaces)
+	{
 		if (!i.GetObject())continue;
+		i->OnAfterLoad(saveGameData);
+	}
 }
 
 void USaveManager::DeleteSlot(const FString SlotName)
