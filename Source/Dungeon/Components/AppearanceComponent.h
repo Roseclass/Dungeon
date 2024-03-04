@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
+#include "Characters/CharcterAppearanceData.h"
 #include "AppearanceComponent.generated.h"
 
 /**
@@ -10,52 +11,14 @@
  */
 
 class USkeletalMesh;
-
-UENUM(BlueprintType)
-enum class EAppearancePart : uint8
-{
-	HeadCoverings_BaseHair,
-	HeadCoverings_NoFacialHair,
-	HeadCoverings_NoHair,
-	Hair,
-	HeadAttachment_Hair,
-	HeadAttachment_Helmet,
-	ChestAttachment,
-	BackAttachment,
-	ShoulderAttachment_Right,
-	ShoulderAttachment_Left,
-	ElbowAttachment_Right,
-	ElbowAttachment_Left,
-	HipsAttachment,
-	KneeAttachment_Right,
-	KneeAttachment_Left,
-	Extra,
-	Head_AllElements,
-	Head_NoElements,
-	Eyebrows,
-	FacialHair,
-	Torso,
-	ArmUpperRight,
-	ArmUpperLeft,
-	ArmLowerRight,
-	ArmLowerLeft,
-	HandRight,
-	HandLeft,
-	Hips,
-	LegRight,
-	LegLeft,
-	Max
-};
+class USkeletalMeshComponent;
 
 USTRUCT()
-struct FAppearanceData : public FTableRowBase
+struct FAppearanceDataTable : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
-		FString AssetID;
-	
 	UPROPERTY(EditAnywhere)
 		EAppearancePart MeshPart;
 	
@@ -77,11 +40,17 @@ public:
 
 	//property
 private:
+	TArray<USkeletalMeshComponent*> Meshes;
+	TArray<TArray<TSoftObjectPtr<USkeletalMesh>>> AppearanceAssets;
 protected:
+	UPROPERTY(EditDefaultsOnly)
+		UDataTable* DataTable;
 public:
 
 	//function
 private:
 protected:
 public:
+	UFUNCTION(BlueprintCallable)void Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes);
+	UFUNCTION(BlueprintCallable)void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
 };

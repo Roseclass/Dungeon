@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Characters/CharcterAppearanceData.h"
 #include "InventoryComponent.generated.h"
 
 /**
@@ -14,6 +15,7 @@ class UUW_Inventory;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquipWeapon, AWeapon*, InAttachment);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryPresetChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryItemChanged, EAppearancePart, InMeshPart, int32, InIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UInventoryComponent : public UActorComponent
@@ -57,6 +59,7 @@ public:
 	FInventoryChanged OnInventoryChanged;
 	FInventoryEquipWeapon OnInventoryEquipWeapon;
 	FInventoryPresetChanged OnInventoryPresetChanged;
+	FInventoryItemChanged OnInventoryItemChanged;
 
 	//function
 private:

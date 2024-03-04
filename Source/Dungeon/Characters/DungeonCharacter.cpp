@@ -15,6 +15,8 @@
 
 #include "SaveManager.h"
 #include "DungeonPlayerController.h"
+#include "Components/AppearanceComponent.h"
+#include "Components/AppearanceMeshComponent.h"
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
@@ -62,6 +64,7 @@ ADungeonCharacter::ADungeonCharacter()
 	MinimapIcon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//actor
+	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
@@ -96,6 +99,19 @@ FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 
 void ADungeonCharacter::Init()
 {
+	//Apperance
+	{
+		TMap<EAppearancePart, USkeletalMeshComponent*> map;
+		TArray<UAppearanceMeshComponent*> meshComponents;
+		GetComponents<UAppearanceMeshComponent>(meshComponents);
+		for (UAppearanceMeshComponent* component : meshComponents)
+		{
+			if (!component)continue;
+			map[component->GetAppearancePart()] = component;
+		}
+		Appearance->Init(map);
+	}
+
 	//Skillcomp
 	Skill->SpawnSkillActors();
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
@@ -109,6 +125,9 @@ void ADungeonCharacter::Init()
 		if (HasAuthority())
 			InitClientWidget();
 	}
+	
+	//Inventory
+	Inventory->OnInventoryItemChanged.AddDynamic(this, &ADungeonCharacter::ChangeAppearance);
 
 	//init minimap
 	MinimapIcon->CreateDynamicMaterialInstance(0);
@@ -197,6 +216,12 @@ void ADungeonCharacter::InitClientWidget()
 		ChangeQuickSlotData(Idx, Actor);
 	};
 	SkillTree->Init(Skill->GetSkillActors(), func);
+}
+
+void ADungeonCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
+{
+	//인벤토리에서 템바꾸면 모든 클라에서 다보여야됨
+	Appearance->ChangeAppearance(InMeshPart, InIndex);
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)

@@ -15,6 +15,7 @@ class UCameraComponent;
 class USceneCaptureComponent2D;
 class USpringArmComponent;
 class UStaticMeshComponent;
+class UAppearanceComponent;
 class USkillComponent;
 class USkillTreeComponent;
 class UMontageComponent;
@@ -59,6 +60,9 @@ private:
 
 	//actor
 	UPROPERTY(VisibleDefaultsOnly)
+		UAppearanceComponent* Appearance;
+
+	UPROPERTY(VisibleDefaultsOnly)
 		USkillComponent* Skill;
 
 	UPROPERTY(VisibleDefaultsOnly)
@@ -85,6 +89,10 @@ private:
 protected:
 public:
 	void InitClientWidget();
+	
+	//Appearance
+	UFUNCTION()void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
+	
 	//Skill
 	void UseSkill(int32 Idx);
 	void UseLeft();
