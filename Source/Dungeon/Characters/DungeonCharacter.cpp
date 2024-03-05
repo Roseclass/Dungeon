@@ -99,7 +99,7 @@ FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
 
 void ADungeonCharacter::Init()
 {
-	//Apperance
+	//Appearance
 	{
 		TMap<EAppearancePart, USkeletalMeshComponent*> map;
 		TArray<UAppearanceMeshComponent*> meshComponents;
@@ -108,6 +108,7 @@ void ADungeonCharacter::Init()
 		{
 			if (!component)continue;
 			map[component->GetAppearancePart()] = component;
+			component->SetMasterPoseComponent(GetMesh());
 		}
 		Appearance->Init(map);
 	}

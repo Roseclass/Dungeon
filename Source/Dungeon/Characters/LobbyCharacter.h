@@ -1,11 +1,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "GameFramework/Actor.h"
 #include "LobbyCharacter.generated.h"
 
+/*
+* 캐릭터 선택창에서 보여줄 캐릭터
+* 복제 필요 x
+*/
+
+class USkeletalMeshComponent;
+class UAppearanceComponent;
+
+enum class EAppearancePart : uint8;
+
 UCLASS()
-class DUNGEON_API ALobbyCharacter : public ACharacter
+class DUNGEON_API ALobbyCharacter : public AActor
 {
 	GENERATED_BODY()
 
@@ -15,6 +25,21 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	//property
+private:
+protected:
+	UPROPERTY(VisibleDefaultsOnly)
+		USkeletalMeshComponent* RootMesh;
 
+	UPROPERTY(VisibleDefaultsOnly)
+		UAppearanceComponent* Appearance;
+public:
+
+	//function
+private:
+protected:
+public:
+	//Appearance
+	void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
 };

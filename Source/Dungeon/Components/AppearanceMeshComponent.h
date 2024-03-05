@@ -12,13 +12,14 @@
 
 enum class EAppearancePart : uint8;
 
-UCLASS()
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class DUNGEON_API UAppearanceMeshComponent : public USkeletalMeshComponent
 {
 	GENERATED_BODY()
 
-private:
-	EAppearancePart AppearancePart;
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		EAppearancePart AppearancePart;
 public:
 	FORCEINLINE EAppearancePart GetAppearancePart() {return AppearancePart;}
 };
