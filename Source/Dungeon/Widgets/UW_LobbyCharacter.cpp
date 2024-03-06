@@ -4,6 +4,90 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/Border.h"
+#include "Components/TextBlock.h"
+
+#include "Characters/LobbyCharacter.h"
+
+/////////////////////////
+// UUW_LobbyCharacterPart
+/////////////////////////
+
+void UUW_LobbyCharacterPart::OnPrevClicked()
+{
+	if (Index <= 0) 
+	{
+		Index = 0; return;
+	}
+	--Index;
+
+	for(auto i : Parts)
+		Parent->Target->ChangeAppearance(i, Index);
+
+	FString numb = FString::FromInt(Index);
+	FString add;
+	for (int32 i = numb.Len(); i <= 2; ++i)add += '0';
+	FString text = PartText + add + numb;
+	Text->SetText(FText::FromString(text));
+}
+
+void UUW_LobbyCharacterPart::OnNextClicked()
+{
+	++Index;
+
+	for (auto i : Parts)
+		Parent->Target->ChangeAppearance(i, Index);
+
+	FString numb = FString::FromInt(Index);
+	FString add;
+	for (int32 i = numb.Len(); i <= 2; ++i)add += '0';
+	FString text = PartText + add + numb;
+	Text->SetText(FText::FromString(text));
+}
+
+void UUW_LobbyCharacterPart::OnPaletteClicked()
+{
+	Parent->CurrentTab = this;
+}
+
+void UUW_LobbyCharacterPart::Init(UUW_LobbyCharacter* InParent)
+{
+	Parent = InParent;
+}
+
+void UUW_LobbyCharacterPart::ChangeColor(float X, float Y)
+{
+	CLog::Print("color");
+}
+
+FLinearColor UUW_LobbyCharacterPart::GetColor(float X, float Y)
+{
+	FLinearColor result;
+	result = OnCreateColor.Execute(X,Y);
+	return result;
+}
+
+/////////////////////////
+// UUW_LobbyCharacter
+/////////////////////////
+
+void UUW_LobbyCharacter::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	Hair->Init(this);
+	Hair->OnCreateColor.BindUFunction(this,"Palette_RGB");
+
+	UpperBody->Init(this);
+	UpperBody->OnCreateColor.BindUFunction(this,"Palette_RGB");
+
+	LowerBody->Init(this);
+	LowerBody->OnCreateColor.BindUFunction(this,"Palette_RGB");
+
+	Skin->Init(this);
+	Skin->OnCreateColor.BindUFunction(this,"Palette_Skin");
+
+	CurrentTab = Hair;
+}
 
 FEventReply UUW_LobbyCharacter::OnColorPaletteMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent)
 {
@@ -16,13 +100,8 @@ FEventReply UUW_LobbyCharacter::OnColorPaletteMouseButtonDown(FGeometry MyGeomet
 	pos = (pos - topLeft) / size;
 	x = pos.X;y = pos.Y;
 
-	if(!OnColorPalette.IsBound())
-		return UWidgetBlueprintLibrary::Unhandled();
-
-	FVector color = OnColorPalette.Execute(x, y);
-
-	if (OnColorPalettePicked.IsBound())
-		OnColorPalettePicked.Broadcast(color);
+	if (CurrentTab)
+		CurrentTab->ChangeColor(x, y);
 
 	return UWidgetBlueprintLibrary::Handled();
 }
@@ -72,29 +151,3 @@ FLinearColor UUW_LobbyCharacter::Palette_Skin(float X, float Y)
 	return result;
 }
 
-void UUW_LobbyCharacter::OnColorPalettePicked()
-{
-	//메시 부위 색 변경
-}
-
-void UUW_LobbyCharacter::OnPrevClicked()
-{
-	//지정된 인덱스 -1 후 clamp, 외형변경
-}
-
-void UUW_LobbyCharacter::OnNextClicked()
-{
-	//지정된 인덱스 +1 후 clamp
-}
-
-void UUW_LobbyCharacter::OnPaletteClicked()
-{
-	OnColorPalette.Unbind();
-	OnColorPalette.BindUFunction(this, "Palette_RGB");
-}
-
-void UUW_LobbyCharacter::OnSkinPaletteClicked()
-{
-	OnColorPalette.Unbind();
-	OnColorPalette.BindUFunction(this, "Palette_Skin");
-}
