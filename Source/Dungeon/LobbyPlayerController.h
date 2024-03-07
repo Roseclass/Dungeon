@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,9 +7,28 @@
 /**
  * 
  */
+
+class ALobbyCharacter;
+
 UCLASS()
 class DUNGEON_API ALobbyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+protected:
+	virtual void BeginPlay() override;
+
+	//property
+private:
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<ALobbyCharacter> LobbyCharacterClass;
+public:
+
+	//function
+private:
+protected:
+public:
 };
+//
+// 데이터 슬롯 수만큼 스폰,로드,링크
+//

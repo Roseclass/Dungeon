@@ -5,8 +5,10 @@
 #include "GameFramework/SaveGame.h"
 #include "RunTime/Core/Public/Misc/DateTime.h"
 #include "Interfaces/ISave.h"
+#include "Components/AppearanceComponent.h"
 #include "SaveManager.generated.h"
 
+class USkeletalMeshComponent;
 class AWeapon;
 class ASkillActor;
 
@@ -40,6 +42,10 @@ struct FPlayerSaveData
 {
 	GENERATED_BODY()
 public:
+	//Appearance
+	TArray<int32> MeshIndices;
+	TArray<TArray<FAppearancePartColor>> AppearanceColors;
+
 	//Inventory
 	UPROPERTY(VisibleAnywhere)
 		TArray<TSubclassOf<AWeapon>> PresetClasses;

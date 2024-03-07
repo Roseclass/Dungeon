@@ -4,42 +4,50 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/Border.h"
+#include "Components/Button.h"
 #include "Components/TextBlock.h"
 
+#include "SaveManager.h"
 #include "Characters/LobbyCharacter.h"
 
 /////////////////////////
 // UUW_LobbyCharacterPart
 /////////////////////////
 
-void UUW_LobbyCharacterPart::OnPrevClicked()
+void UUW_LobbyCharacterPart::NativeConstruct()
 {
-	if (Index <= 0) 
-	{
-		Index = 0; return;
-	}
-	--Index;
+	Super::NativeConstruct();
 
-	for(auto i : Parts)
-		Parent->Target->ChangeAppearance(i, Index);
-
-	FString numb = FString::FromInt(Index);
-	FString add;
-	for (int32 i = numb.Len(); i <= 2; ++i)add += '0';
-	FString text = PartText + add + numb;
-	Text->SetText(FText::FromString(text));
+	Prev->OnClicked.AddDynamic(this,&UUW_LobbyCharacterPart::OnPrevClicked);
+	Next->OnClicked.AddDynamic(this,&UUW_LobbyCharacterPart::OnNextClicked);
+	Palette->OnClicked.AddDynamic(this, &UUW_LobbyCharacterPart::OnPaletteClicked);
 }
 
-void UUW_LobbyCharacterPart::OnNextClicked()
-{
-	++Index;
+void UUW_LobbyCharacterPart::OnPrevClicked()
+{	
+	if (--Index <= 0)
+		Index = MaxCount-1;
 
 	for (auto i : Parts)
 		Parent->Target->ChangeAppearance(i, Index);
 
 	FString numb = FString::FromInt(Index);
 	FString add;
-	for (int32 i = numb.Len(); i <= 2; ++i)add += '0';
+	for (int32 i = numb.Len(); i < 2; ++i)add += '0';
+	FString text = PartText + add + numb;
+	Text->SetText(FText::FromString(text));
+}
+
+void UUW_LobbyCharacterPart::OnNextClicked()
+{
+	if (++Index >= MaxCount)Index = 0;
+
+	for (auto i : Parts)
+		Parent->Target->ChangeAppearance(i, Index);
+
+	FString numb = FString::FromInt(Index);
+	FString add;
+	for (int32 i = numb.Len(); i < 2; ++i)add += '0';
 	FString text = PartText + add + numb;
 	Text->SetText(FText::FromString(text));
 }
@@ -47,6 +55,7 @@ void UUW_LobbyCharacterPart::OnNextClicked()
 void UUW_LobbyCharacterPart::OnPaletteClicked()
 {
 	Parent->CurrentTab = this;
+	OnPaletteButtonClicked.ExecuteIfBound();
 }
 
 void UUW_LobbyCharacterPart::Init(UUW_LobbyCharacter* InParent)
@@ -56,7 +65,10 @@ void UUW_LobbyCharacterPart::Init(UUW_LobbyCharacter* InParent)
 
 void UUW_LobbyCharacterPart::ChangeColor(float X, float Y)
 {
-	CLog::Print("color");
+	FLinearColor color = GetColor(X, Y);
+
+	for (auto i : Parts)
+		Parent->Target->ChangeColorData(i, ColorParameterName, color);
 }
 
 FLinearColor UUW_LobbyCharacterPart::GetColor(float X, float Y)
@@ -74,19 +86,42 @@ void UUW_LobbyCharacter::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	ColorPalette->OnMouseButtonDownEvent.BindUFunction(this, "OnColorPaletteMouseButtonDown");
+	Confirm->OnClicked.AddDynamic(this, &UUW_LobbyCharacter::OnConfirmClicked);
+	Cancel->OnClicked.AddDynamic(this, &UUW_LobbyCharacter::OnCancelClicked);
+
 	Hair->Init(this);
 	Hair->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	Hair->OnPaletteButtonClicked.BindUFunction(this,"SetRGBPallette");
 
-	UpperBody->Init(this);
-	UpperBody->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	Eyebrows->Init(this);
+	Eyebrows->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	Eyebrows->OnPaletteButtonClicked.BindUFunction(this,"SetRGBPallette");
 
-	LowerBody->Init(this);
-	LowerBody->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	Head->Init(this);
+	Head->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	Head->OnPaletteButtonClicked.BindUFunction(this,"SetRGBPallette");
+
+	FacialHair->Init(this);
+	FacialHair->OnCreateColor.BindUFunction(this,"Palette_RGB");
+	FacialHair->OnPaletteButtonClicked.BindUFunction(this,"SetRGBPallette");
 
 	Skin->Init(this);
 	Skin->OnCreateColor.BindUFunction(this,"Palette_Skin");
+	Skin->OnPaletteButtonClicked.BindUFunction(this,"SetSkinPallette");
 
 	CurrentTab = Hair;
+
+	Target = Cast<ALobbyCharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), ALobbyCharacter::StaticClass()));
+}
+
+FReply UUW_LobbyCharacter::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	float y = InMouseEvent.GetGestureDelta().Y;
+	
+	if (Target)Target->OnWheel(y);
+
+	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 
 FEventReply UUW_LobbyCharacter::OnColorPaletteMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent)
@@ -151,3 +186,24 @@ FLinearColor UUW_LobbyCharacter::Palette_Skin(float X, float Y)
 	return result;
 }
 
+void UUW_LobbyCharacter::OnConfirmClicked()
+{
+	//save datas and back to session
+	USaveManager::QueryAllSaveInterfaces();
+	USaveManager::SaveGame();
+}
+
+void UUW_LobbyCharacter::OnCancelClicked()
+{
+	//delete character and back to session
+}
+
+void UUW_LobbyCharacter::SetRGBPallette()
+{
+	ColorPalette->SetBrushFromMaterial(Material_RGB);
+}
+
+void UUW_LobbyCharacter::SetSkinPallette()
+{
+	ColorPalette->SetBrushFromMaterial(Material_Skin);
+}

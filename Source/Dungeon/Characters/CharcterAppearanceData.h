@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 		EAppearancePart PartType;
 
+	UPROPERTY(EditAnywhere)
+		FLinearColor PartColor;
+
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "PartType == EAppearancePart::HeadCoverings_BaseHair", EditConditionHides))
 		int32 HeadCoverings_BaseHair;
 

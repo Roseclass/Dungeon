@@ -9,6 +9,7 @@
  */
 
 class UBorder;
+class UMaterialInterface;
 class UButton;
 class UTextBlock;
 class UEditableTextBox;
@@ -19,18 +20,28 @@ enum class EAppearancePart : uint8;
 
 DECLARE_DELEGATE_RetVal_TwoParams(FLinearColor, FCreateColor, float, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FColorPalettePicked, FLinearColor);
+DECLARE_DELEGATE(FPaletteButtonClicked);
 
 UCLASS()
 class DUNGEON_API UUW_LobbyCharacterPart : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual void NativeConstruct()override;
+
 	//property
 private:
 	int32 Index;
 	UUW_LobbyCharacter* Parent;
 protected:
 	UPROPERTY(EditDefaultsOnly)
+		FName ColorParameterName;
+
+	UPROPERTY(EditDefaultsOnly)
 		FString PartText;
+
+	UPROPERTY(EditDefaultsOnly)
+		int32 MaxCount;
 
 	UPROPERTY(EditDefaultsOnly)
 		TArray<EAppearancePart> Parts;
@@ -49,6 +60,7 @@ protected:
 		UTextBlock* Text;
 public:
 	FCreateColor OnCreateColor;
+	FPaletteButtonClicked OnPaletteButtonClicked;
 
 	//function
 private:
@@ -69,6 +81,7 @@ class DUNGEON_API UUW_LobbyCharacter : public UUserWidget
 	GENERATED_BODY()
 protected:
 	virtual void NativeConstruct()override;
+	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)override;
 
 	//property
 private:
@@ -77,6 +90,12 @@ private:
 	UUW_LobbyCharacterPart* CurrentTab;
 	ALobbyCharacter* Target;
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "PaletteMaterial")
+		UMaterialInterface* Material_RGB;
+
+	UPROPERTY(EditDefaultsOnly, Category = "PaletteMaterial")
+		UMaterialInterface* Material_Skin;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* ColorPalette;
 
@@ -84,16 +103,19 @@ protected:
 		UUW_LobbyCharacterPart* Hair;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UUW_LobbyCharacterPart* UpperBody;
+		UUW_LobbyCharacterPart* Eyebrows;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UUW_LobbyCharacterPart* LowerBody;
+		UUW_LobbyCharacterPart* Head;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_LobbyCharacterPart* FacialHair;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_LobbyCharacterPart* Skin;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UButton* Cofirm;
+		UButton* Confirm;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UButton* Cancel;
@@ -105,7 +127,12 @@ private:
 	UFUNCTION()FEventReply OnColorPaletteMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent);
 	UFUNCTION()FLinearColor Palette_RGB(float X, float Y);
 	UFUNCTION()FLinearColor Palette_Skin(float X, float Y);
+	UFUNCTION()void OnConfirmClicked();
+	UFUNCTION()void OnCancelClicked();
+	UFUNCTION()void SetRGBPallette();
+	UFUNCTION()void SetSkinPallette();
 
 protected:
 public:
+	FORCEINLINE void SetTarget(ALobbyCharacter* InTarget) { Target = InTarget; }
 };

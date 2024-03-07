@@ -12,6 +12,7 @@
 
 class USkeletalMesh;
 class USkeletalMeshComponent;
+class USaveGameData;
 
 USTRUCT()
 struct FAppearanceDataTable : public FTableRowBase
@@ -24,6 +25,15 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 		TSoftObjectPtr<USkeletalMesh> Asset;
+};
+
+USTRUCT()
+struct FAppearancePartColor
+{
+	GENERATED_BODY()
+public:
+	FName Parameter;
+	FLinearColor Color;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -41,7 +51,9 @@ public:
 	//property
 private:
 	TArray<USkeletalMeshComponent*> Meshes;
+	TArray<int32> MeshIndices;
 	TArray<TArray<TSoftObjectPtr<USkeletalMesh>>> AppearanceAssets;
+	TArray<TArray<FAppearancePartColor>> AppearanceColors;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UDataTable* DataTable;
@@ -49,8 +61,13 @@ public:
 
 	//function
 private:
+	void ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
 protected:
 public:
 	UFUNCTION(BlueprintCallable)void Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes);
 	UFUNCTION(BlueprintCallable)void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
+	void ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+
+	void SaveData(USaveGameData* SaveData);
+	void LoadData(USaveGameData* const ReadData);
 };
