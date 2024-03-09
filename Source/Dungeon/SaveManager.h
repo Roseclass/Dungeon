@@ -43,8 +43,11 @@ struct FPlayerSaveData
 	GENERATED_BODY()
 public:
 	//Appearance
-	TArray<int32> MeshIndices;
-	TArray<TArray<FAppearancePartColor>> AppearanceColors;
+	UPROPERTY(VisibleAnywhere)
+		TArray<int32> MeshIndices;
+
+	UPROPERTY(VisibleAnywhere)
+		TMap<EAppearancePart, FAppearancePartColor> AppearanceColors;
 
 	//Inventory
 	UPROPERTY(VisibleAnywhere)

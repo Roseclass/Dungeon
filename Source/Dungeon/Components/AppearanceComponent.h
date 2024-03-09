@@ -32,8 +32,7 @@ struct FAppearancePartColor
 {
 	GENERATED_BODY()
 public:
-	FName Parameter;
-	FLinearColor Color;
+	UPROPERTY()TMap<FName,FLinearColor>VectorParams;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -53,7 +52,7 @@ private:
 	TArray<USkeletalMeshComponent*> Meshes;
 	TArray<int32> MeshIndices;
 	TArray<TArray<TSoftObjectPtr<USkeletalMesh>>> AppearanceAssets;
-	TArray<TArray<FAppearancePartColor>> AppearanceColors;
+	TMap<EAppearancePart, FAppearancePartColor> AppearanceColors;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UDataTable* DataTable;

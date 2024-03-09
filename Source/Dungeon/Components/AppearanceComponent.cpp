@@ -12,7 +12,6 @@ UAppearanceComponent::UAppearanceComponent()
 	Meshes.Init(nullptr, int32(EAppearancePart::Max));
 	MeshIndices.Init(0, int32(EAppearancePart::Max));
 	AppearanceAssets.Init(TArray<TSoftObjectPtr<USkeletalMesh>>(), int32(EAppearancePart::Max));
-	AppearanceColors.Init(TArray<FAppearancePartColor>(), int32(EAppearancePart::Max));
 }
 
 void UAppearanceComponent::BeginPlay()
@@ -72,51 +71,44 @@ void UAppearanceComponent::ChangeAppearance(EAppearancePart InMeshPart, int32 In
 
 	Meshes[idx]->SetSkeletalMesh(mesh);
 	MeshIndices[idx] = InIndex;
-	CheckFalse(AppearanceColors[idx].IsValidIndex(InIndex));
-	for (auto i : AppearanceColors[idx])
-		ChangeColor(InMeshPart, i.Parameter, i.Color);
+	CheckFalse(AppearanceColors.Contains(InMeshPart));
+	for (auto i : AppearanceColors[InMeshPart].VectorParams)
+		ChangeColor(InMeshPart, i.Key, i.Value);
 }
 
 void UAppearanceComponent::ChangeColorData(EAppearancePart InMeshPart,FName Parameter, FLinearColor NewColor)
 {
-	int32 idx = int32(InMeshPart);
-	CheckFalse(AppearanceColors.IsValidIndex(idx));
+	if (!AppearanceColors.Contains(InMeshPart))
+		AppearanceColors.Add(InMeshPart);
 	ChangeColor(InMeshPart, Parameter, NewColor);
-	for (auto i : AppearanceColors[idx])
-	{
-		if (i.Parameter == Parameter)
-		{
-			i.Color = NewColor;
-			return;
-		}
-	}
-	FAppearancePartColor f;
-	f.Parameter = Parameter;
-	f.Color = NewColor;
-	AppearanceColors[idx].Add(f);
+	
+	if (!AppearanceColors[InMeshPart].VectorParams.Contains(Parameter))
+		AppearanceColors[InMeshPart].VectorParams.Add(Parameter);
+
+	AppearanceColors[InMeshPart].VectorParams[Parameter] = NewColor;
 }
 
 void UAppearanceComponent::SaveData(USaveGameData* SaveData)
 {
-	SaveData->PlayerData.AppearanceColors.Init(TArray<FAppearancePartColor>(),AppearanceColors.Num());
-	for (int32 i = 0; i < AppearanceColors.Num(); ++i)
-		for (auto f : AppearanceColors[i])
-			SaveData->PlayerData.AppearanceColors[i].Add(f);
+	SaveData->PlayerData.AppearanceColors.Empty();
+	for (auto map : AppearanceColors)
+	{
+		SaveData->PlayerData.AppearanceColors.Add(map.Key);
+		for (auto param : map.Value.VectorParams)
+			SaveData->PlayerData.AppearanceColors[map.Key].VectorParams.Emplace(param.Key, param.Value);
+	}
 
 	SaveData->PlayerData.MeshIndices.Init(0, MeshIndices.Num());
 	for (int32 i = 0; i < MeshIndices.Num(); ++i)
 		SaveData->PlayerData.MeshIndices[i] = MeshIndices[i];
-
-	CLog::Print(SaveData->PlayerData.AppearanceColors.Num());
-	CLog::Print(SaveData->PlayerData.MeshIndices.Num());
 }
 
 void UAppearanceComponent::LoadData(USaveGameData* const ReadData)
 {
-	AppearanceColors = ReadData->PlayerData.AppearanceColors;
-	for (int32 i = 0; i < AppearanceColors.Num(); ++i)
-		for(auto f : AppearanceColors[i])
-			ChangeColorData(EAppearancePart(i), f.Parameter,f.Color);
+	AppearanceColors.Empty();
+	for (auto map : ReadData->PlayerData.AppearanceColors)
+		for (auto param : map.Value.VectorParams)
+			ChangeColorData(map.Key, param.Key, param.Value);
 
 	MeshIndices = ReadData->PlayerData.MeshIndices;
 	for (int32 i = 0; i < MeshIndices.Num(); ++i)

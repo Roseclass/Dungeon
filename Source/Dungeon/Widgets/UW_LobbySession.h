@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "UW_LobbySession.generated.h"
 
 /**
@@ -17,8 +18,13 @@ UCLASS()
 class DUNGEON_API UUW_LobbySession : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual void NativeConstruct()override;
+
 	//property
 private:
+	int32 MaxNumPlayers;
+	bool bIsLAN;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCheckBox* MaxPlayers_2;
@@ -48,15 +54,36 @@ protected:
 		UButton* Create;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UEditableTextBox* SessionName;
+		UEditableTextBox* SessionNameBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UVerticalBox* SessionList;
 
 public:
+	FOnCreateSessionCompleteDelegate OnCreateSessionComplete;
+	FOnCreateSessionCompleteDelegate OnStartSessionComplete;
+	FDelegateHandle CreateSessionCompleteHandle;
+	FDelegateHandle StartSessionCompleteHandle;
+	
+	FOnFindSessionsCompleteDelegate OnFindSessions;
+	FDelegateHandle FindSessionsHandle;
+	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
+
+	FOnJoinSessionCompleteDelegate OnJoinSessionComplete;
+	FDelegateHandle JoinSessionCompleteHandle;
 
 	//function
 private:
+	//create session
+	UFUNCTION()void OnCreateButtonClicked();
+	UFUNCTION()void OnCreateSessionCompleted(FName SessionName, bool bWasSuccessful);
+	UFUNCTION()void OnStartSessionCompleted(FName SessionName, bool bWasSuccessful);
+	//find sessions
+	UFUNCTION()void OnFindButtonClicked();
+	UFUNCTION()void OnFindSessionsCompleted(bool bSuccess);
+	//join
+	UFUNCTION()void OnJoinButtonClicked();
+	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 protected:
 public:
 };
