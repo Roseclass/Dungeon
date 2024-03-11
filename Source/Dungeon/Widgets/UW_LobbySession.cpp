@@ -8,6 +8,9 @@
 #include "GameFramework/PlayerState.h"
 #include "OnlineSubsystem.h"
 
+#include "SaveManager.h"
+#include "LobbyPlayerController.h"
+
 /////////////////////////////////
 /// UUW_LobbySessionTab
 /////////////////////////////////
@@ -98,6 +101,19 @@ void UUW_LobbySessionTab::SetResult(const FOnlineSessionSearchResult& Result)
 void UUW_LobbySession::NativeConstruct()
 {
 	Super::NativeConstruct();
+	MaxPlayers_2->OnCheckStateChanged.AddDynamic(this, &UUW_LobbySession::OnMaxPlayers_2StateChanged);
+	MaxPlayers_3->OnCheckStateChanged.AddDynamic(this, &UUW_LobbySession::OnMaxPlayers_3StateChanged);
+	MaxPlayers_4->OnCheckStateChanged.AddDynamic(this, &UUW_LobbySession::OnMaxPlayers_4StateChanged);
+	Lan->OnCheckStateChanged.AddDynamic(this, &UUW_LobbySession::OnLanStateChanged);
+
+	MaxPlayers_2->SetIsChecked(1);
+
+	New->OnClicked.AddDynamic(this, &UUW_LobbySession::OnNewButtonClicked);
+	Delete->OnClicked.AddDynamic(this, &UUW_LobbySession::OnDeleteButtonClicked);
+
+	Prev->OnClicked.AddDynamic(this, &UUW_LobbySession::OnPrevButtonClicked);
+	Next->OnClicked.AddDynamic(this, &UUW_LobbySession::OnNextButtonClicked);
+
 	Create->OnClicked.AddDynamic(this, &UUW_LobbySession::OnCreateButtonClicked);
 	OnCreateSessionComplete = FOnCreateSessionCompleteDelegate::CreateUObject(this, &UUW_LobbySession::OnCreateSessionCompleted);
 	OnStartSessionComplete = FOnCreateSessionCompleteDelegate::CreateUObject(this, &UUW_LobbySession::OnStartSessionCompleted);
@@ -105,7 +121,92 @@ void UUW_LobbySession::NativeConstruct()
 	Find->OnClicked.AddDynamic(this, &UUW_LobbySession::OnFindButtonClicked);
 	OnFindSessions = FOnFindSessionsCompleteDelegate::CreateUObject(this, &UUW_LobbySession::OnFindSessionsCompleted);
 
-	MaxPlayers_2->SetIsChecked(1);
+}
+
+void UUW_LobbySession::OnMaxPlayers_2StateChanged(bool bIsChecked)
+{
+	if (bIsChecked)
+	{
+		MaxNumPlayers = 2;
+		MaxPlayers_3->SetIsChecked(0);
+		MaxPlayers_4->SetIsChecked(0);
+	}
+	else if(!MaxPlayers_3->IsChecked()&&!MaxPlayers_4->IsChecked())
+		MaxPlayers_2->SetIsChecked(1);
+}
+
+void UUW_LobbySession::OnMaxPlayers_3StateChanged(bool bIsChecked)
+{
+	if (bIsChecked)
+	{
+		MaxNumPlayers = 3;
+		MaxPlayers_2->SetIsChecked(0);
+		MaxPlayers_4->SetIsChecked(0);
+	}
+	else if (!MaxPlayers_2->IsChecked() && !MaxPlayers_4->IsChecked())
+		MaxPlayers_3->SetIsChecked(1);
+}
+
+void UUW_LobbySession::OnMaxPlayers_4StateChanged(bool bIsChecked)
+{
+	if (bIsChecked)
+	{
+		MaxNumPlayers = 4;
+		MaxPlayers_2->SetIsChecked(0);
+		MaxPlayers_3->SetIsChecked(0);
+	}
+	else if (!MaxPlayers_2->IsChecked() && !MaxPlayers_3->IsChecked())
+		MaxPlayers_4->SetIsChecked(1);
+}
+
+void UUW_LobbySession::OnLanStateChanged(bool bIsChecked)
+{
+	bIsLAN = 1;
+}
+
+void UUW_LobbySession::OnNewButtonClicked()
+{
+	//
+	// hide this widget
+	// reveal character widget
+	// send save data to character widget
+	//
+
+	SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UUW_LobbySession::OnDeleteButtonClicked()
+{
+	//
+	// hide character
+	// set deactivate data
+	//
+
+
+}
+
+void UUW_LobbySession::OnPrevButtonClicked()
+{
+	//
+	// change index
+	//
+
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+	++SlotIndex %= USaveManager::GetMaxSize();
+	controller->SetViewTarget(SlotIndex);
+}
+
+void UUW_LobbySession::OnNextButtonClicked()
+{
+	//
+	// change index
+	//
+
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+	if (--SlotIndex < 0)SlotIndex = 0;
+	controller->SetViewTarget(SlotIndex);
 }
 
 void UUW_LobbySession::OnCreateButtonClicked()

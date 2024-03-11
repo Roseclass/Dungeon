@@ -62,8 +62,10 @@ protected:
 
 	//property
 private:
-	int32 MaxNumPlayers=2;
+	int32 MaxNumPlayers = 2;
 	bool bIsLAN;
+
+	int32 SlotIndex = 0;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCheckBox* MaxPlayers_2;
@@ -116,6 +118,17 @@ public:
 
 	//function
 private:
+	//checkbox
+	UFUNCTION()void OnMaxPlayers_2StateChanged(bool bIsChecked);
+	UFUNCTION()void OnMaxPlayers_3StateChanged(bool bIsChecked);
+	UFUNCTION()void OnMaxPlayers_4StateChanged(bool bIsChecked);
+	UFUNCTION()void OnLanStateChanged(bool bIsChecked);
+	//create, delete character
+	UFUNCTION()void OnNewButtonClicked();
+	UFUNCTION()void OnDeleteButtonClicked();
+	//select character
+	UFUNCTION()void OnPrevButtonClicked();
+	UFUNCTION()void OnNextButtonClicked();
 	//create session
 	UFUNCTION()void OnCreateButtonClicked();
 	void OnCreateSessionCompleted(FName SessionName, bool bWasSuccessful);

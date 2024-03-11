@@ -2,14 +2,14 @@
 #include "Global.h"
 
 static const FString kMetadataSaveSlot = "SaveGameMetadata";
-static const int32 kMaxSaveSlot = 100;
+static const int32 kMaxSaveSlot = 4;
 
 FString USaveManager::CurrentSaveSlot;
 TArray<TScriptInterface<IISave>> USaveManager::SaveInterfaces;
 
 void USaveManager::Init()
 {
-	CurrentSaveSlot = "Default";
+	CurrentSaveSlot = "SaveSlot" + FString::FromInt(0);
 
 	// Make sure the metadata file exists incase the game has never been ran
 	USaveGame* saveGameMetaData = UGameplayStatics::LoadGameFromSlot(kMetadataSaveSlot, 0);
@@ -17,8 +17,18 @@ void USaveManager::Init()
 	if (!saveGameMetaData)
 	{
 		// since the metadata file doesn't exist, we need to create one
-		USaveGame* saveGameOjbect = UGameplayStatics::CreateSaveGameObject(USaveGameMetaData::StaticClass());
+		USaveGameMetaData* saveGameOjbect = Cast<USaveGameMetaData>(UGameplayStatics::CreateSaveGameObject(USaveGameMetaData::StaticClass()));
+		for (int32 i = 0; i < kMaxSaveSlot; i++)
+		{
+			FSaveMetaData& saveMetadata = saveGameOjbect->SavedGamesMetaData.FindOrAdd("SaveSlot" + FString::FromInt(i));
+			saveMetadata.SlotName = "SaveSlot" + FString::FromInt(i);
+			saveMetadata.Date = FDateTime::Now();
+			saveMetadata.Activate = 0;
 
+			USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::CreateSaveGameObject(USaveGameData::StaticClass()));
+			UGameplayStatics::SaveGameToSlot(saveGameData, saveMetadata.SlotName, 0);
+
+		}
 		UGameplayStatics::SaveGameToSlot(saveGameOjbect, kMetadataSaveSlot, 0);
 	}
 }
@@ -150,4 +160,9 @@ TArray<FSaveMetaData> USaveManager::GetAllSaveMetaData()
 	}
 
 	return metadata;
+}
+
+int32 USaveManager::GetMaxSize()
+{
+	return kMaxSaveSlot;
 }

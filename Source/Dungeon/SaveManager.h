@@ -25,6 +25,9 @@ public:
 	// the date that the slot was created (or the game was saved)
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
 		FDateTime Date;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default")
+		bool Activate;
 };
 
 UCLASS()
@@ -42,6 +45,10 @@ struct FPlayerSaveData
 {
 	GENERATED_BODY()
 public:
+	//Lobby
+	UPROPERTY(VisibleAnywhere)
+		FString PlayerName;
+
 	//Appearance
 	UPROPERTY(VisibleAnywhere)
 		TArray<int32> MeshIndices;
@@ -127,5 +134,9 @@ public:
 	// Gets all the saved game
 	UFUNCTION(BlueprintPure, Category = "SaveLoad")
 		static TArray<FSaveMetaData> GetAllSaveMetaData();
+
+	// Gets max size of slot
+	UFUNCTION(BlueprintPure, Category = "SaveLoad")
+		static int32 GetMaxSize();
 };
 

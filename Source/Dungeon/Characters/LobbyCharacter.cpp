@@ -62,9 +62,6 @@ void ALobbyCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Paramete
 
 void ALobbyCharacter::OnWheel(float Delta)
 {
-	FVector minLoc = { 50,30,120 }; float minLen = 300;
-	FVector maxLoc = { 20,10,150 }; float maxLen = 100;
-
 	if (Delta > 0) ZoomRate = UKismetMathLibrary::Clamp(++ZoomRate, 0, 5);
 	else ZoomRate = UKismetMathLibrary::Clamp(--ZoomRate, 0, 5);
 

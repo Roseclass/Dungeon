@@ -47,6 +47,19 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		FString UniqueName = "Player";
+
+	UPROPERTY(EditDefaultsOnly, Category = "Zoom")
+		FVector minLoc = { 50,30,120 }; 
+
+	UPROPERTY(EditDefaultsOnly, Category = "Zoom")
+		FVector maxLoc = { 20,10,150 }; 
+
+	UPROPERTY(EditDefaultsOnly, Category = "Zoom")
+		float minLen = 300;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Zoom")
+		float maxLen = 100;
+
 public:
 
 	//function

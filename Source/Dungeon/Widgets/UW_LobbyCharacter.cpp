@@ -189,13 +189,15 @@ FLinearColor UUW_LobbyCharacter::Palette_Skin(float X, float Y)
 void UUW_LobbyCharacter::OnConfirmClicked()
 {
 	//save datas and back to session
+	//TODO::~~~
 	USaveManager::QueryAllSaveInterfaces();
 	USaveManager::SaveGame();
 }
 
 void UUW_LobbyCharacter::OnCancelClicked()
 {
-	//delete character and back to session
+	//reset character and back to session
+	//TODO::~~~
 }
 
 void UUW_LobbyCharacter::SetRGBPallette()
