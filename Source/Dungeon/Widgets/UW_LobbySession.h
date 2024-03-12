@@ -16,6 +16,8 @@ class UTextBlock;
 class UEditableTextBox;
 class UVerticalBox;
 
+DECLARE_DELEGATE(FLobbySession);
+
 UCLASS()
 class DUNGEON_API UUW_LobbySessionTab : public UUserWidget
 {
@@ -115,6 +117,9 @@ public:
 	FOnFindSessionsCompleteDelegate OnFindSessions;
 	FDelegateHandle FindSessionsHandle;
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+	FLobbySession OnNewButtonClickedDelegate;
+	FLobbySession OnDeleteButtonClickedDelegate;
 
 	//function
 private:

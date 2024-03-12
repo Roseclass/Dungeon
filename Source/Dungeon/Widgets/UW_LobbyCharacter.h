@@ -21,6 +21,7 @@ enum class EAppearancePart : uint8;
 DECLARE_DELEGATE_RetVal_TwoParams(FLinearColor, FCreateColor, float, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FColorPalettePicked, FLinearColor);
 DECLARE_DELEGATE(FPaletteButtonClicked);
+DECLARE_DELEGATE(FLobbyCharacter);
 
 UCLASS()
 class DUNGEON_API UUW_LobbyCharacterPart : public UUserWidget
@@ -120,7 +121,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UButton* Cancel;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UEditableTextBox* NameBox;
+
 public:
+	FLobbyCharacter OnConfirmButtonClickedDelegate;
+	FLobbyCharacter OnCancelButtonClickedDelegate;
+
 
 	//function
 private:

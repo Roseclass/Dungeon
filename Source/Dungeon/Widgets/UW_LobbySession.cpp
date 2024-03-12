@@ -167,34 +167,59 @@ void UUW_LobbySession::OnLanStateChanged(bool bIsChecked)
 void UUW_LobbySession::OnNewButtonClicked()
 {
 	//
+	// is current slot is deactive?
+	// 
+	// reveal character
 	// hide this widget
 	// reveal character widget
 	// send save data to character widget
 	//
 
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+
+	CheckTrue(controller->IsCurrentSlotActive());
+
+	controller->RevealCharater(SlotIndex);
 	SetVisibility(ESlateVisibility::Collapsed);
+	OnNewButtonClickedDelegate.ExecuteIfBound();
 }
 
 void UUW_LobbySession::OnDeleteButtonClicked()
 {
 	//
+	// is current slot is Active?
+	// 
 	// hide character
 	// set deactivate data
 	//
 
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
 
+	CheckFalse(controller->IsCurrentSlotActive());
+
+	controller->DeleteCharacter();
+	OnDeleteButtonClickedDelegate.ExecuteIfBound();
 }
 
 void UUW_LobbySession::OnPrevButtonClicked()
 {
 	//
 	// change index
+	// if index is minus disable button
 	//
 
 	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
 	CheckNull(controller);
-	++SlotIndex %= USaveManager::GetMaxSize();
+	if (--SlotIndex <= 0)
+	{
+		SlotIndex = 0;
+		Prev->SetIsEnabled(0);
+	}
+	Next->SetIsEnabled(1);
 	controller->SetViewTarget(SlotIndex);
+	controller->RefreshCurrentSlot();
 }
 
 void UUW_LobbySession::OnNextButtonClicked()
@@ -205,8 +230,14 @@ void UUW_LobbySession::OnNextButtonClicked()
 
 	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
 	CheckNull(controller);
-	if (--SlotIndex < 0)SlotIndex = 0;
+	if (++SlotIndex >= USaveManager::GetMaxSize()-1)
+	{
+		SlotIndex %= USaveManager::GetMaxSize();
+		Next->SetIsEnabled(0);
+	}
+	Prev->SetIsEnabled(1);
 	controller->SetViewTarget(SlotIndex);
+	controller->RefreshCurrentSlot();
 }
 
 void UUW_LobbySession::OnCreateButtonClicked()

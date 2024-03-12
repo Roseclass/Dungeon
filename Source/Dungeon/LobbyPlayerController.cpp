@@ -39,17 +39,12 @@ void ALobbyPlayerController::BeginPlay()
 	SetInputMode(FInputModeUIOnly());
 }
 
-bool ALobbyPlayerController::TryAddNewCharacter(int32 InIndex)
+bool ALobbyPlayerController::IsCurrentSlotActive()
 {
-	if (!SlotNames.IsValidIndex(InIndex))return 0;
-	if (!Characters.IsValidIndex(InIndex))return 0;
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("SlotNames.IsValidIndex"); return 0; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("Characters.IsValidIndex"); return 0; }
 
-	//lobby->SetActorTransform(OriginDisplayTransform);
-	//lobby->AddActorWorldOffset(Offset * InIndex);
-	//SlotNames[InIndex] = "Temp" + FString::FromInt(InIndex);
-	//Characters[InIndex] = lobby;
-
-	return 1;
+	return USaveManager::IsActivate(SlotNames[CurrentCharacter]);
 }
 
 void ALobbyPlayerController::SetViewTarget(int32 InIndex)
@@ -59,6 +54,14 @@ void ALobbyPlayerController::SetViewTarget(int32 InIndex)
 
 	CurrentCharacter = InIndex;
 	SetViewTargetWithBlend(Characters[InIndex]);
+	USaveManager::SetCurrentSaveSlot(SlotNames[InIndex]);
+}
+
+void ALobbyPlayerController::RefreshCurrentSlot()
+{
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("RefreshCurrentSlot SlotNames.IsValidIndex"); return; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("RefreshCurrentSlot Characters.IsValidIndex"); return; }
+	USaveManager::SetCurrentSaveSlot(SlotNames[CurrentCharacter]);
 }
 
 void ALobbyPlayerController::HideCharater(int32 InIndex)
@@ -70,6 +73,17 @@ void ALobbyPlayerController::HideCharater(int32 InIndex)
 	else CLog::Print("Characters[InIndex] is nullptr");
 }
 
+void ALobbyPlayerController::HideCharater(ALobbyCharacter* InCharacter)
+{
+	for (int32 i = 0; i < Characters.Num(); ++i)
+		if (Characters[i] == InCharacter)
+		{
+			HideCharater(i);
+			return;
+		}
+	CLog::Print("Characters not contains InCharacter");
+}
+
 void ALobbyPlayerController::RevealCharater(int32 InIndex)
 {
 	if (!SlotNames.IsValidIndex(InIndex)) { CLog::Print("SlotNames.IsValidIndex"); return; }
@@ -77,4 +91,35 @@ void ALobbyPlayerController::RevealCharater(int32 InIndex)
 
 	if (Characters[InIndex])Characters[InIndex]->SetActorHiddenInGame(0);
 	else CLog::Print("Characters[InIndex] is nullptr");
+}
+
+void ALobbyPlayerController::RevealCharater(ALobbyCharacter* InCharacter)
+{
+	for (int32 i = 0; i < Characters.Num(); ++i)
+		if (Characters[i] == InCharacter)
+		{
+			RevealCharater(i);
+			return;
+		}
+	CLog::Print("Characters not contains InCharacter");
+}
+
+void ALobbyPlayerController::CreateCharacter(FString InCharacterName)
+{
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("SlotNames.IsValidIndex"); return; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("Characters.IsValidIndex"); return; }
+
+	TScriptInterface<IISave> ptr = Characters[CurrentCharacter];
+	USaveManager::SaveActor(ptr);
+	USaveManager::SaveCharacterName(InCharacterName);
+	USaveManager::ActivateSlot();
+}
+
+void ALobbyPlayerController::DeleteCharacter()
+{
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("SlotNames.IsValidIndex"); return; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("Characters.IsValidIndex"); return; }
+	USaveManager::SetCurrentSaveSlot(SlotNames[CurrentCharacter]);
+	USaveManager::ResetSlot();
+	HideCharater(CurrentCharacter);
 }

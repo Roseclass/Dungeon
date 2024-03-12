@@ -5,9 +5,11 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 
 #include "SaveManager.h"
+#include "LobbyPlayerController.h"
 #include "Characters/LobbyCharacter.h"
 
 /////////////////////////
@@ -188,16 +190,35 @@ FLinearColor UUW_LobbyCharacter::Palette_Skin(float X, float Y)
 
 void UUW_LobbyCharacter::OnConfirmClicked()
 {
-	//save datas and back to session
-	//TODO::~~~
-	USaveManager::QueryAllSaveInterfaces();
-	USaveManager::SaveGame();
+	//
+	// save specific actor 
+	// hide character widget
+	// reveal session widget
+	//
+
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+
+	FString name = NameBox->GetText().ToString();
+
+	controller->CreateCharacter(name);
+	SetVisibility(ESlateVisibility::Collapsed);
+	OnConfirmButtonClickedDelegate.ExecuteIfBound();
 }
 
 void UUW_LobbyCharacter::OnCancelClicked()
 {
-	//reset character and back to session
-	//TODO::~~~
+	//
+	// hide target
+	// hide character widget
+	// reveal session widget
+	//
+
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+	controller->HideCharater(Target);
+	SetVisibility(ESlateVisibility::Collapsed);
+	OnCancelButtonClickedDelegate.ExecuteIfBound();
 }
 
 void UUW_LobbyCharacter::SetRGBPallette()

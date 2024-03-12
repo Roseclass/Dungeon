@@ -47,11 +47,13 @@ public:
 private:
 protected:
 public:
-	bool TryAddNewCharacter(int32 InIndex);
+	bool IsCurrentSlotActive();
 	void SetViewTarget(int32 InIndex);
+	void RefreshCurrentSlot();
 	void HideCharater(int32 InIndex);
+	void HideCharater(ALobbyCharacter* InCharacter);
 	void RevealCharater(int32 InIndex);
+	void RevealCharater(ALobbyCharacter* InCharacter);
+	void CreateCharacter(FString InCharacterName);
+	void DeleteCharacter();
 };
-//
-// 데이터 슬롯 수만큼 스폰,로드,링크
-//

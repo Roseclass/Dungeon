@@ -47,7 +47,7 @@ struct FPlayerSaveData
 public:
 	//Lobby
 	UPROPERTY(VisibleAnywhere)
-		FString PlayerName;
+		FString CharacterName;
 
 	//Appearance
 	UPROPERTY(VisibleAnywhere)
@@ -109,7 +109,15 @@ public:
 
 	// Save the current state of the game
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
-		static void SaveGame();
+		static void SaveGame();	
+	
+	// Save the specific actor
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
+		static void SaveActor(TScriptInterface<IISave> InActor);
+
+	// Set CharacterName
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
+		static void SaveCharacterName(FString InCharacterName);
 
 	// Loads the current state of the game
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
@@ -118,6 +126,14 @@ public:
 	// Deletes the specified slot
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
 		static void DeleteSlot(const FString SlotName);
+
+	// Activate Current Slot Data
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
+		static void ActivateSlot();
+
+	// Reset Current Slot Data
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad")
+		static void ResetSlot();
 
 	// Gets a new, unused slot
 	UFUNCTION(BlueprintPure, Category = "SaveLoad")
@@ -138,5 +154,9 @@ public:
 	// Gets max size of slot
 	UFUNCTION(BlueprintPure, Category = "SaveLoad")
 		static int32 GetMaxSize();
+
+	// Gets max size of slot
+	UFUNCTION(BlueprintPure, Category = "SaveLoad")
+		static bool IsActivate(const FString& slot);
 };
 

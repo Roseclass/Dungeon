@@ -14,6 +14,8 @@ UCLASS()
 class DUNGEON_API UUW_Lobby : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual void NativeConstruct()override;
 
 	//property
 private:
@@ -27,6 +29,9 @@ public:
 
 	//function
 private:
+	UFUNCTION() void OnSessionWidgetNewButtonClicked();
+	UFUNCTION() void OnCharacterWidgetConfirmButtonClicked();
+	UFUNCTION() void OnCharacterWidgetCancelButtonClicked();
 protected:
 public:
 	FORCEINLINE UUW_LobbyCharacter* GetCharacterWidget(){return CharacterWidget;}

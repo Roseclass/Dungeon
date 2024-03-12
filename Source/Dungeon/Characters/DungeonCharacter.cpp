@@ -420,6 +420,7 @@ void ADungeonCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	FString name = GetUniqueSaveName();
 	CheckNull(ReadData);
 
+	Appearance->LoadData(ReadData);
 	//Reset();
 	//Inventory->LoadData(ReadData);
 	//SkillTree->LoadData(ReadData);
