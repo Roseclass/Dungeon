@@ -1,6 +1,7 @@
 #include "Widgets/UW_Lobby.h"
 #include "Global.h"
 
+#include "LobbyPlayerController.h"
 #include "Widgets/UW_LobbyCharacter.h"
 #include "Widgets/UW_LobbySession.h"
 
@@ -14,7 +15,12 @@ void UUW_Lobby::NativeConstruct()
 
 void UUW_Lobby::OnSessionWidgetNewButtonClicked()
 {
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+	CheckNull(controller->GetCurrentCharacter());
+
 	CharacterWidget->SetVisibility(ESlateVisibility::Visible);
+	CharacterWidget->SetTarget(controller->GetCurrentCharacter());
 }
 
 void UUW_Lobby::OnCharacterWidgetConfirmButtonClicked()

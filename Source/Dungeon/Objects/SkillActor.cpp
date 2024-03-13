@@ -63,6 +63,17 @@ void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_CONDITION(ASkillActor, StartServerWorldTime, COND_None);
 }
 
+void ASkillActor::OnRep_ChildrenSkills()
+{
+	int32 cnt = 0;
+	for (auto i : ChildrenSkills)
+		if (i)++cnt;
+	if (ChildrenSkills.Num() == cnt)
+	{
+		Load();
+	}
+}
+
 void ASkillActor::OnRep_CoolDown_Server()
 {
 	if (bCoolDown_Server && OwnerCharacter)

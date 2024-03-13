@@ -83,12 +83,14 @@ public:
 private:
 	UPROPERTY(Replicated)ADungeonCharacter* OwnerCharacter;
 	UPROPERTY(Replicated)ASkillActor* ParentSkill;
-	UPROPERTY(Replicated)TArray<ASkillActor*> ChildrenSkills;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_ChildrenSkills")TArray<ASkillActor*> ChildrenSkills;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_CoolDown_Server")bool bCoolDown_Server;
 	UPROPERTY(Replicated)float StartServerWorldTime;
 
 	bool bCoolDown_Client;
 	float StartWorldTime;
+
+	bool bLoad;
 protected:
 	//트리형태로 스킬트리가될 예정
 	UPROPERTY(EditDefaultsOnly)
@@ -103,6 +105,7 @@ public:
 	FSkillTreeSkillStateChanged OnAcquired;
 	//function
 private:
+	UFUNCTION()void OnRep_ChildrenSkills();
 	UFUNCTION()void OnRep_CoolDown_Server();
 protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);

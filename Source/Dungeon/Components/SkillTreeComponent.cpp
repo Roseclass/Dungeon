@@ -38,8 +38,8 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 		CheckNull(controller);
 
 		Widget = CreateWidget<UUW_SkillTree, ADungeonPlayerController>(controller, WidgetClass);
-		Widget->Init(Array, this, OnPopupClicked);
 		Widget->AddToViewport();
+		Widget->Init(Array, this, OnPopupClicked);
 	}
 }
 

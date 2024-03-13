@@ -52,12 +52,12 @@ void ALobbyCharacter::Tick(float DeltaTime)
 
 void ALobbyCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
 {
-	Appearance->ChangeAppearance(InMeshPart, InIndex);
+	Appearance->Server_ChangeAppearance(InMeshPart, InIndex);
 }
 
 void ALobbyCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
 {
-	Appearance->ChangeColorData(InMeshPart, Parameter, NewColor);
+	Appearance->Server_ChangeColor(InMeshPart, Parameter, NewColor);
 }
 
 void ALobbyCharacter::OnWheel(float Delta)

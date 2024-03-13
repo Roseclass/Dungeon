@@ -107,7 +107,9 @@ void ADungeonCharacter::Init()
 		for (UAppearanceMeshComponent* component : meshComponents)
 		{
 			if (!component)continue;
-			map[component->GetAppearancePart()] = component;
+			EAppearancePart part = component->GetAppearancePart();
+			if (part == EAppearancePart::Max)continue;
+			map.Add({ part,component });
 			component->SetMasterPoseComponent(GetMesh());
 		}
 		Appearance->Init(map);
@@ -200,6 +202,14 @@ void ADungeonCharacter::Init()
 		CHelpers::GetAssetDynamic(&target, "TextureRenderTarget2D'/Game/Widgets/Minimap/RT_Minimap.RT_Minimap'");
 		MinimapCapture->TextureTarget = target;
 	}
+
+	//Load appearance data if its client
+	if (controller && controller->IsLocalController())
+	{
+		USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(USaveManager::GetCurrentSaveSlot(), 0));
+		if (!saveGameData) { CLog::Print("saveGameData is nullptr"); return; }
+		OnAfterLoad(saveGameData);
+	}
 }
 
 void ADungeonCharacter::OffAllWidget()
@@ -209,8 +219,7 @@ void ADungeonCharacter::OffAllWidget()
 
 void ADungeonCharacter::InitClientWidget()
 {
-	CheckNull(GetController());//::Load
-	CheckFalse(GetController()->IsLocalController());
+	CheckFalse(IsLocallyControlled());
 	TFunction<void(int32, ASkillActor*)> func;
 	func = [this](int32 Idx, ASkillActor* Actor)
 	{
@@ -221,8 +230,12 @@ void ADungeonCharacter::InitClientWidget()
 
 void ADungeonCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
 {
-	//인벤토리에서 템바꾸면 모든 클라에서 다보여야됨
-	Appearance->ChangeAppearance(InMeshPart, InIndex);
+	Appearance->Server_ChangeAppearance(InMeshPart, InIndex);
+}
+
+void ADungeonCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
+{
+	Appearance->Server_ChangeColor(InMeshPart, Parameter, NewColor);
 }
 
 void ADungeonCharacter::UseSkill(int32 Idx)

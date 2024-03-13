@@ -5,13 +5,18 @@
 #include "Engine/StreamableManager.h"
 
 #include "SaveManager.h"
+#include "Characters/DungeonCharacter.h"
 
 UAppearanceComponent::UAppearanceComponent()
 {
+	SetIsReplicatedByDefault(1);
 	PrimaryComponentTick.bCanEverTick = true;
 	Meshes.Init(nullptr, int32(EAppearancePart::Max));
-	MeshIndices.Init(0, int32(EAppearancePart::Max));
 	AppearanceAssets.Init(TArray<TSoftObjectPtr<USkeletalMesh>>(), int32(EAppearancePart::Max));
+	MeshIndices.Init(0, int32(EAppearancePart::Max));
+	AppearanceColors.Init(FAppearancePartColor(), int32(EAppearancePart::Max));
+	MeshIndices_Client.Init(0, int32(EAppearancePart::Max));
+	AppearanceColors_Client.Init(FAppearancePartColor(), int32(EAppearancePart::Max));
 }
 
 void UAppearanceComponent::BeginPlay()
@@ -22,6 +27,68 @@ void UAppearanceComponent::BeginPlay()
 void UAppearanceComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UAppearanceComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(UAppearanceComponent, MeshIndices, COND_None);
+	DOREPLIFETIME_CONDITION(UAppearanceComponent, AppearanceColors, COND_None);
+}
+
+void UAppearanceComponent::OnRep_Meshindices()
+{
+	for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
+	{
+		if (MeshIndices[i] == MeshIndices_Client[i])continue;
+		MeshIndices_Client[i] = MeshIndices[i];
+		ChangeAppearance(EAppearancePart(i), MeshIndices[i]);
+	}
+}
+
+void UAppearanceComponent::OnRep_AppearanceColors()
+{
+	for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
+	{
+		FAppearancePartColor& params = AppearanceColors_Client[i];
+		for (int32 j = 0; j < AppearanceColors[i].VectorParams.Num(); ++j)
+		{
+			bool flag = 0;
+			for (auto& param : params.VectorParams)
+			{
+				if (param.Name == AppearanceColors[i].VectorParams[j].Name)flag = 1;
+				if (flag && param.Color != AppearanceColors[i].VectorParams[j].Color)
+				{
+					param.Color = AppearanceColors[i].VectorParams[j].Color;
+					ChangeColor(EAppearancePart(i), param.Name, param.Color);
+				}
+			}
+			if (!flag)
+			{
+				FAppearanceVectorParam x;
+				x.Name = AppearanceColors[i].VectorParams[j].Name;
+				x.Color = AppearanceColors[i].VectorParams[j].Color;
+				params.VectorParams.Add(x);
+				ChangeColor(EAppearancePart(i), x.Name, x.Color);
+			}
+		}
+	}
+}
+
+void UAppearanceComponent::LoadSkeletalMeshAsync(const FSoftObjectPath& AssetRef, TFunction<void(USkeletalMesh*)> OnLoaded)
+{
+	FStreamableManager& AssetLoader = UAssetManager::GetStreamableManager();
+	AssetLoader.RequestAsyncLoad(AssetRef, [OnLoaded, AssetRef]()
+	{
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(AssetRef.TryLoad());
+
+		if (OnLoaded && LoadedMesh)
+		{
+			OnLoaded(LoadedMesh);
+		}
+	});
 }
 
 void UAppearanceComponent::ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
@@ -39,6 +106,30 @@ void UAppearanceComponent::ChangeColor(EAppearancePart InMeshPart, FName Paramet
 	mat->SetVectorParameterValue(Parameter, NewColor);
 }
 
+void UAppearanceComponent::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
+{
+	int32 idx = int32(InMeshPart);
+	CheckNull(Meshes[idx]);
+	CheckFalse(AppearanceAssets[idx].IsValidIndex(InIndex));
+
+	USkeletalMesh* mesh = nullptr;
+
+	if (!AppearanceAssets[idx][InIndex].IsValid())
+	{
+		const FSoftObjectPath& AssetRef = AppearanceAssets[idx][InIndex].ToSoftObjectPath();
+		auto& assetLoader = UAssetManager::GetStreamableManager();
+		mesh = Cast<USkeletalMesh>(assetLoader.LoadSynchronous(AssetRef));
+	}
+	else 
+	{ 
+		mesh = Cast<USkeletalMesh>(AppearanceAssets[idx][InIndex].Get());
+	}
+
+	Meshes[idx]->SetSkeletalMesh(mesh);
+	for (auto i : AppearanceColors[idx].VectorParams)
+		ChangeColor(InMeshPart, i.Name, i.Color);
+}
+
 void UAppearanceComponent::Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes)
 {
 	for (auto i : InMeshes)
@@ -51,51 +142,61 @@ void UAppearanceComponent::Init(const TMap<EAppearancePart, USkeletalMeshCompone
 		for (auto data : datas)
 			AppearanceAssets[int32(data->MeshPart)].Add(data->Asset);
 	}
+
+	for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
+		ChangeAppearance(EAppearancePart(i), MeshIndices_Client[i]);
+
+	// avoid race condition with OnRep_Meshindices
+	FTimerHandle WaitHandle;
+	float WaitTime = 0.1;
+	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+	{
+		for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
+			ChangeAppearance(EAppearancePart(i), MeshIndices[i]);
+	}), WaitTime, false);
 }
 
-void UAppearanceComponent::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
+void UAppearanceComponent::Server_ChangeAppearance_Implementation(EAppearancePart InMeshPart, int32 InIndex)
 {
 	int32 idx = int32(InMeshPart);
-	CheckNull(Meshes[idx]);
-	CheckFalse(AppearanceAssets[idx].IsValidIndex(InIndex));
-
-	USkeletalMesh* mesh = nullptr;
-
-	if (AppearanceAssets[idx][InIndex].IsPending())
-	{
-		const FSoftObjectPath& AssetRef = AppearanceAssets[idx][InIndex].ToSoftObjectPath();
-		auto& assetLoader = UAssetManager::GetStreamableManager();
-		mesh = Cast<USkeletalMesh>(assetLoader.LoadSynchronous(AssetRef));
-	}
-	else mesh = Cast<USkeletalMesh>(AppearanceAssets[idx][InIndex].Get());
-
-	Meshes[idx]->SetSkeletalMesh(mesh);
 	MeshIndices[idx] = InIndex;
-	CheckFalse(AppearanceColors.Contains(InMeshPart));
-	for (auto i : AppearanceColors[InMeshPart].VectorParams)
-		ChangeColor(InMeshPart, i.Key, i.Value);
+	ChangeAppearance(InMeshPart, InIndex);
 }
 
-void UAppearanceComponent::ChangeColorData(EAppearancePart InMeshPart,FName Parameter, FLinearColor NewColor)
+void UAppearanceComponent::Server_ChangeColor_Implementation(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
 {
-	if (!AppearanceColors.Contains(InMeshPart))
-		AppearanceColors.Add(InMeshPart);
+	int32 idx = int32(InMeshPart);
+	FAppearancePartColor& params = AppearanceColors[idx];
+	bool flag = 0;
+	for (int32 j = 0; j < params.VectorParams.Num(); ++j)
+	{
+		if (params.VectorParams[j].Name == Parameter)flag = 1;
+		if (flag && params.VectorParams[j].Color != NewColor)
+			params.VectorParams[j].Color = NewColor;
+	}
+	if (!flag)
+	{
+		FAppearanceVectorParam x;
+		x.Name = Parameter;
+		x.Color = NewColor;
+		params.VectorParams.Add(x);
+	}
 	ChangeColor(InMeshPart, Parameter, NewColor);
-	
-	if (!AppearanceColors[InMeshPart].VectorParams.Contains(Parameter))
-		AppearanceColors[InMeshPart].VectorParams.Add(Parameter);
-
-	AppearanceColors[InMeshPart].VectorParams[Parameter] = NewColor;
 }
 
 void UAppearanceComponent::SaveData(USaveGameData* SaveData)
 {
 	SaveData->PlayerData.AppearanceColors.Empty();
-	for (auto map : AppearanceColors)
+	for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
 	{
-		SaveData->PlayerData.AppearanceColors.Add(map.Key);
-		for (auto param : map.Value.VectorParams)
-			SaveData->PlayerData.AppearanceColors[map.Key].VectorParams.Emplace(param.Key, param.Value);
+		SaveData->PlayerData.AppearanceColors.Add(EAppearancePart(i));
+		for (int32 j = 0; j < AppearanceColors[i].VectorParams.Num(); ++j)
+		{
+			FAppearanceVectorParam x;
+			x.Name = AppearanceColors[i].VectorParams[j].Name;
+			x.Color = AppearanceColors[i].VectorParams[j].Color;
+			SaveData->PlayerData.AppearanceColors[EAppearancePart(i)].VectorParams.Add(x);
+		}
 	}
 
 	SaveData->PlayerData.MeshIndices.Init(0, MeshIndices.Num());
@@ -105,12 +206,11 @@ void UAppearanceComponent::SaveData(USaveGameData* SaveData)
 
 void UAppearanceComponent::LoadData(USaveGameData* const ReadData)
 {
-	AppearanceColors.Empty();
 	for (auto map : ReadData->PlayerData.AppearanceColors)
 		for (auto param : map.Value.VectorParams)
-			ChangeColorData(map.Key, param.Key, param.Value);
+			Server_ChangeColor(map.Key, param.Name, param.Color);
 
 	MeshIndices = ReadData->PlayerData.MeshIndices;
 	for (int32 i = 0; i < MeshIndices.Num(); ++i)
-		ChangeAppearance(EAppearancePart(i), MeshIndices[i]);
+		Server_ChangeAppearance(EAppearancePart(i), MeshIndices[i]);
 }

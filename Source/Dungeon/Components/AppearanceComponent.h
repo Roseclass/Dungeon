@@ -28,11 +28,20 @@ public:
 };
 
 USTRUCT()
+struct FAppearanceVectorParam
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()FName Name;
+	UPROPERTY()FLinearColor Color;
+};
+
+USTRUCT()
 struct FAppearancePartColor
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY()TMap<FName,FLinearColor>VectorParams;
+	UPROPERTY()TArray<FAppearanceVectorParam>VectorParams;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -50,9 +59,11 @@ public:
 	//property
 private:
 	TArray<USkeletalMeshComponent*> Meshes;
-	TArray<int32> MeshIndices;
 	TArray<TArray<TSoftObjectPtr<USkeletalMesh>>> AppearanceAssets;
-	TMap<EAppearancePart, FAppearancePartColor> AppearanceColors;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_Meshindices")TArray<int32> MeshIndices;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_AppearanceColors")TArray<FAppearancePartColor> AppearanceColors;
+	TArray<int32> MeshIndices_Client;
+	TArray<FAppearancePartColor> AppearanceColors_Client;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UDataTable* DataTable;
@@ -60,12 +71,16 @@ public:
 
 	//function
 private:
+	UFUNCTION()void OnRep_Meshindices();
+	UFUNCTION()void OnRep_AppearanceColors();
+	void LoadSkeletalMeshAsync(const FSoftObjectPath& AssetRef, TFunction<void(USkeletalMesh*)> OnLoaded);
 	void ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+	void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
 protected:
 public:
-	UFUNCTION(BlueprintCallable)void Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes);
-	UFUNCTION(BlueprintCallable)void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
-	void ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+	void Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes);
+	UFUNCTION(Reliable, Server)void Server_ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
+	UFUNCTION(Reliable, Server)void Server_ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
 
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);

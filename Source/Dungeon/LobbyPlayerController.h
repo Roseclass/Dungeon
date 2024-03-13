@@ -56,4 +56,6 @@ public:
 	void RevealCharater(ALobbyCharacter* InCharacter);
 	void CreateCharacter(FString InCharacterName);
 	void DeleteCharacter();
+
+	ALobbyCharacter* GetCurrentCharacter();
 };

@@ -106,8 +106,8 @@ void ALobbyPlayerController::RevealCharater(ALobbyCharacter* InCharacter)
 
 void ALobbyPlayerController::CreateCharacter(FString InCharacterName)
 {
-	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("SlotNames.IsValidIndex"); return; }
-	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("Characters.IsValidIndex"); return; }
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("CreateCharacter SlotNames.IsValidIndex"); return; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("CreateCharacter Characters.IsValidIndex"); return; }
 
 	TScriptInterface<IISave> ptr = Characters[CurrentCharacter];
 	USaveManager::SaveActor(ptr);
@@ -117,9 +117,16 @@ void ALobbyPlayerController::CreateCharacter(FString InCharacterName)
 
 void ALobbyPlayerController::DeleteCharacter()
 {
-	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("SlotNames.IsValidIndex"); return; }
-	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("Characters.IsValidIndex"); return; }
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("DeleteCharacter SlotNames.IsValidIndex"); return; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("DeleteCharacter Characters.IsValidIndex"); return; }
 	USaveManager::SetCurrentSaveSlot(SlotNames[CurrentCharacter]);
 	USaveManager::ResetSlot();
 	HideCharater(CurrentCharacter);
+}
+
+ALobbyCharacter* ALobbyPlayerController::GetCurrentCharacter()
+{
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCurrentCharacter SlotNames.IsValidIndex"); return nullptr; }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCurrentCharacter Characters.IsValidIndex"); return nullptr; }
+	return Characters[CurrentCharacter];
 }

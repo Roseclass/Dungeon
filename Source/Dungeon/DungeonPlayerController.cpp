@@ -29,6 +29,7 @@ void ADungeonPlayerController::BeginPlay()
 		ItemManager->SetOwner(this);
 		if (IsLocalController())OnRep_ItemManager();
 	}
+	SetInputMode(FInputModeGameOnly());
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)

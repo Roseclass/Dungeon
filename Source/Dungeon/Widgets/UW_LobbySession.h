@@ -108,6 +108,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<UUW_LobbySessionTab> JoinWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly)
+		FName LevelName = "TopDownMap";
+
 public:
 	FOnCreateSessionCompleteDelegate OnCreateSessionComplete;
 	FOnCreateSessionCompleteDelegate OnStartSessionComplete;

@@ -315,6 +315,7 @@ void UUW_LobbySession::OnStartSessionCompleted(FName SessionName, bool bWasSucce
 	{
 		//·¹º§¿ÀÇÂ
 		CLog::Print("Success", -1, 10.f, FColor::Green);
+		UGameplayStatics::OpenLevel(GetWorld(), LevelName, 1, "listen");
 	}
 	else
 	{

@@ -28,6 +28,7 @@ class AWeapon;
 struct FSkillData;
 
 enum class EItemMode : uint8;
+enum class EAppearancePart : uint8;
 
 UCLASS(Blueprintable)
 class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface, public IISave
@@ -92,7 +93,8 @@ public:
 	
 	//Appearance
 	UFUNCTION()void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
-	
+	UFUNCTION()void ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+
 	//Skill
 	void UseSkill(int32 Idx);
 	void UseLeft();
