@@ -7,6 +7,7 @@
 
 class UNiagaraSystem;
 class ADungeonCharacter;
+class AEnemy;
 class AItemManager;
 class AWeapon;
 class UUW_Main;
@@ -32,7 +33,7 @@ private:
 	bool bInputPressed;
 	float FollowTime;
 
-	ADungeonCharacter* Target;
+	AEnemy* Target;
 	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
 	AWeapon* Item;
 protected:

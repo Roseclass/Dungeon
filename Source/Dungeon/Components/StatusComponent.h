@@ -12,29 +12,38 @@
  * canmove,canuse는 어디서 갱신되나요? >> 몽타주에 노티파이로 붙여놨습니다
  */
 
+DECLARE_DELEGATE_OneParam(FStatusCurrentHealthChanged, float);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UStatusComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	//property
-private:
-	bool bCanUse = 1;
-	bool bCanMove = 1;
-protected:
-public:
-
-	//engine
-private:
-protected:
 public:
 	UStatusComponent();
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//function
+	//property
 private:
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_Level")uint8 Level;
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_MaxHealth")float MaxHealth;
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_CurrentHealth")float CurrentHealth;
+
+	bool bCanUse = 1;
+	bool bCanMove = 1;
 protected:
 public:
+	FStatusCurrentHealthChanged OnCurrentHealthChanged;
+
+	//function
+private:
+	UFUNCTION()void OnRep_Level();
+	UFUNCTION()void OnRep_MaxHealth();
+	UFUNCTION()void OnRep_CurrentHealth();
+protected:
+public:
+	void AdjustCurrentHealth(float InValue);
+
 	void SetUse();
 	void SetCannotUse();
 

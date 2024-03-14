@@ -9,6 +9,7 @@
 #include "AIController.h"
 
 #include "Characters/DungeonCharacter.h"
+#include "Characters/Enemy.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
@@ -29,7 +30,6 @@ void ADungeonPlayerController::BeginPlay()
 		ItemManager->SetOwner(this);
 		if (IsLocalController())OnRep_ItemManager();
 	}
-	SetInputMode(FInputModeGameOnly());
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)
@@ -75,7 +75,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 		HitLocation = Hit.Location;
 
-		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+		AEnemy* const other = Cast<AEnemy>(Hit.GetActor());
 		float dist = 1e9;
 		if (other)
 		{
@@ -208,7 +208,7 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 
-		ADungeonCharacter* const other = Cast<ADungeonCharacter>(Hit.GetActor());
+		AEnemy* const other = Cast<AEnemy>(Hit.GetActor());
 		AWeapon* const otherWeapon = Cast<AWeapon>(Hit.GetActor());
 
 		if (other && other->GetGenericTeamId() != myPawn->GetGenericTeamId())

@@ -36,7 +36,6 @@ void ALobbyPlayerController::BeginPlay()
 	SetViewTarget(CurrentCharacter);
 	Widget = CreateWidget<UUW_Lobby, APlayerController>(this, LobbyWidgetClass);
 	Widget->AddToViewport();
-	SetInputMode(FInputModeUIOnly());
 }
 
 bool ALobbyPlayerController::IsCurrentSlotActive()

@@ -23,8 +23,6 @@ void AProjectile::BeginPlay()
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	CLog::Print(HasAuthority(),23,0);
 }
 
 FGenericTeamId AProjectile::GetGenericTeamId() const
@@ -58,8 +56,6 @@ void AProjectile::FindCollision()
 
 void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	CheckFalse(bCanCollide);
-
 	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
 	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
 	if (!other && !otherCh)

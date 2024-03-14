@@ -98,8 +98,6 @@ void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
 {
 	CheckFalse(RemainingCoolDowns.IsValidIndex(Index));
 	RemainingCoolDowns[Index] = Time;
-	CLog::Print(Index);
-	CLog::Print(Time);
 }
 
 void UUW_QuickSlot::ConnectComponent(USkillComponent* InSkillComponent)
