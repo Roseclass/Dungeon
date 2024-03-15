@@ -5,16 +5,25 @@
 #include "GenericTeamAgentInterface.h"
 #include "Enemy.generated.h"
 
+/**
+ * enemy character's basic class
+ *
+ */
+
+class UBehaviorTree;
 class USceneComponent;
 class UWidgetComponent;
 class UStaticMeshComponent;
 class USkillComponent;
 class UMontageComponent;
 class UStatusComponent;
+class UStateComponent;
 class UInventoryComponent;
 class UItemObject;
 class ASkillActor;
 class UUW_HealthBar;
+
+
 
 UCLASS()
 class DUNGEON_API AEnemy : public ACharacter, public IGenericTeamAgentInterface
@@ -48,7 +57,14 @@ private:
 		UMontageComponent* Montage;
 
 	UPROPERTY(VisibleDefaultsOnly)
+		UStateComponent* State;
+
+	UPROPERTY(VisibleDefaultsOnly)
 		UStatusComponent* Status;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+		UBehaviorTree* BehaviorTree;
+
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 		uint8 TeamID = 2;
@@ -67,5 +83,7 @@ private:
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 protected:
 public:	
+	void UseSkill(int32 InIndex);
 
+	FORCEINLINE class UBehaviorTree* GetBehaviorTree() { return BehaviorTree; }
 };

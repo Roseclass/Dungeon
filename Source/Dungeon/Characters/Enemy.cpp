@@ -6,6 +6,7 @@
 
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
+#include "Components/StateComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Widgets/UW_HealthBar.h"
@@ -23,6 +24,7 @@ AEnemy::AEnemy()
 	//actor
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
+	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 }
 
@@ -66,4 +68,9 @@ void AEnemy::ChangeHealthBarPercent(float NewPercent)
 		return;
 	}
 	HealthBarWidget->SetPercent(NewPercent);
+}
+
+void AEnemy::UseSkill(int32 InIndex)
+{
+	CLog::Print("UseSkill " + FString::FromInt(InIndex));
 }

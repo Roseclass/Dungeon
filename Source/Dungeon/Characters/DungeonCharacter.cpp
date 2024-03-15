@@ -20,6 +20,7 @@
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
+#include "Components/StateComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/Projectile.h"
@@ -68,6 +69,7 @@ ADungeonCharacter::ADungeonCharacter()
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
+	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
 	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 }

@@ -5,7 +5,7 @@
 #include "PlayerAnimInstance.generated.h"
 
 /**
- * 플레이어 캐릭터를 위한 애님인스턴스
+ * animinsatnce for player character
  */
 
 class ACharacter;

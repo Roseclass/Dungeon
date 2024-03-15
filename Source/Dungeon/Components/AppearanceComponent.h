@@ -7,7 +7,7 @@
 #include "AppearanceComponent.generated.h"
 
 /**
- * 정해진 데이터를 기반으로 캐릭터의 외형을 변경
+ * change appearance by data table
  */
 
 class USkeletalMesh;

@@ -6,8 +6,9 @@
 #include "LobbyCharacter.generated.h"
 
 /*
-* 캐릭터 선택창에서 보여줄 캐릭터
-* 복제 필요 x
+* showing only on lobby
+* no need to replicated
+* cause lobby isnt multiplayed
 */
 
 class UCameraComponent;

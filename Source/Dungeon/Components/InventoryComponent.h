@@ -6,7 +6,7 @@
 #include "InventoryComponent.generated.h"
 
 /**
- * 아이템 장착 및 보관
+ * equip items, store items
  */
 
 class AWeapon;

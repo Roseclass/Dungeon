@@ -6,7 +6,7 @@
 #include "AppearanceObject.generated.h"
 
 /**
- * 
+ * Item(except weapon)'s Data class
  */
 
 UCLASS(Blueprintable)

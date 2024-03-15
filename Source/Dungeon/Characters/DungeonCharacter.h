@@ -7,8 +7,8 @@
 #include "DungeonCharacter.generated.h"
 
 /**
- * 캐릭터 기본 베이스(플레이어,몬스터)
- * TODO::분리가 필요할듯?
+ * player character's basic class
+ * 
  */
 
 class UCameraComponent;
@@ -20,6 +20,7 @@ class USkillComponent;
 class USkillTreeComponent;
 class UMontageComponent;
 class UStatusComponent;
+class UStateComponent;
 class UInventoryComponent;
 class UItemObject;
 class ASkillActor;
@@ -71,6 +72,9 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UMontageComponent* Montage;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UStateComponent* State;
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UStatusComponent* Status;

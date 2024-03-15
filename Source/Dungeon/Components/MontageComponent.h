@@ -5,7 +5,7 @@
 #include "MontageComponent.generated.h"
 
 /**
- * 몽타주 재생을 담당하는 컴포넌트 ex)사망,피격...
+ * playing anim montages ex)dead, hitted...
  */
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
