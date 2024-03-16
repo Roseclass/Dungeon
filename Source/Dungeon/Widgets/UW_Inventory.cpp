@@ -7,7 +7,6 @@
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 
-#include "Characters/DungeonCharacter.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"

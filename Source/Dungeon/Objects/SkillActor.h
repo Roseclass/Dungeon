@@ -9,7 +9,7 @@
  */
 
 class AProjectile;
-class ADungeonCharacter;
+class ADungeonCharacterBase;
 class ADungeonPlayerController;
 class UImage;
 
@@ -81,7 +81,7 @@ public:
 
 	//property
 private:
-	UPROPERTY(Replicated)ADungeonCharacter* OwnerCharacter;
+	UPROPERTY(Replicated)ADungeonCharacterBase* OwnerCharacter;
 	UPROPERTY(Replicated)ASkillActor* ParentSkill;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_ChildrenSkills")TArray<ASkillActor*> ChildrenSkills;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_CoolDown_Server")bool bCoolDown_Server;
@@ -111,7 +111,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
 	UFUNCTION(Reliable, Server)virtual void Server_Use(ADungeonPlayerController* Exception);
 
-	FORCEINLINE ADungeonCharacter* GetOwnerCharacter() { return OwnerCharacter; }
+	FORCEINLINE ADungeonCharacterBase* GetOwnerCharacter() { return OwnerCharacter; }
 public:
 	virtual void Load();
 	UFUNCTION(Client, Reliable)virtual void Client_Use();
@@ -127,7 +127,7 @@ public:
 	float GetRemainingCoolDown() const;
 
 	//setter
-	FORCEINLINE void SetOwnerCharacter(ADungeonCharacter* InCharacter) { OwnerCharacter = InCharacter; };
+	FORCEINLINE void SetOwnerCharacter(ADungeonCharacterBase* InCharacter) { OwnerCharacter = InCharacter; };
 	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { ParentSkill = InSkillActor; };
 	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { ChildrenSkills.Add(InSkillActor); };
 	void SetLocked();

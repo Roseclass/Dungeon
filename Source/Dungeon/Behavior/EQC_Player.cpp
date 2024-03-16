@@ -3,7 +3,7 @@
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "EnvironmentQuery/Items/EnvQueryItemType_Actor.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Components/BehaviorComponent.h"
 

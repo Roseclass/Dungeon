@@ -3,7 +3,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/ShapeComponent.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/DungeonCharacterBase.h"
 
 AProjectile::AProjectile()
 {

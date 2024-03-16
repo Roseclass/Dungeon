@@ -8,7 +8,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 

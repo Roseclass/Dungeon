@@ -49,8 +49,9 @@ private:
 	UFUNCTION() void OnRep_SkillActors();
 protected:
 public:
-	UFUNCTION(Reliable, Server)void SpawnSkillActors();
+	void SpawnSkillActors();
 	void UseSkill(int32 Idx);
+	void UseQuickSlotSkill(int32 Idx);
 	void SpawnProjectile();
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
 	void SetCoolDown(ASkillActor* InSkillActor);

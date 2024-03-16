@@ -1,7 +1,8 @@
 #include "Components/SkillComponent.h"
 #include "Global.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/DungeonCharacterBase.h"
+#include "Characters/PlayerCharacter.h"
 #include "Objects/SkillActor.h"
 
 USkillComponent::USkillComponent()
@@ -14,7 +15,7 @@ USkillComponent::USkillComponent()
 void USkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if(bAutoGenerate)SpawnSkillActors();
+	if (bAutoGenerate && GetOwner()->HasAuthority())SpawnSkillActors();
 }
 
 void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -37,15 +38,19 @@ void USkillComponent::OnRep_SkillActors()
 		if (i)++cnt;
 	if (SkillActors.Num() == cnt)
 	{
-		ADungeonCharacter* const owner = Cast<ADungeonCharacter>(GetOwner());
+		APlayerCharacter* const owner = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(owner);
 		owner->InitClientWidget();
 	}
 }
 
-void USkillComponent::SpawnSkillActors_Implementation()
+void USkillComponent::SpawnSkillActors()
 {
-	if (!SkillActors.IsEmpty())return;
+	if (!SkillActors.IsEmpty())
+	{
+		CLog::Print(GetOwner()->GetName() + "wtf", -1, 10, FColor::Yellow);
+		return;
+	}
 	TArray<ASkillActor*> Array;
 	for (auto i : SkillActorClasses)
 		Array.Add(GetWorld()->SpawnActor<ASkillActor>(i));
@@ -54,7 +59,7 @@ void USkillComponent::SpawnSkillActors_Implementation()
 
 	for (auto i : SkillActors)
 	{
-		i->SetOwnerCharacter(Cast<ADungeonCharacter>(GetOwner()));
+		i->SetOwnerCharacter(Cast<ADungeonCharacterBase>(GetOwner()));
 		i->SetOwner(GetOwner());
 	}
 
@@ -70,6 +75,14 @@ void USkillComponent::SpawnSkillActors_Implementation()
 }
 
 void USkillComponent::UseSkill(int32 Idx)
+{
+	CheckFalse(SkillActors.IsValidIndex(Idx));
+	CheckNull(SkillActors[Idx]);
+	CurrentSkill = SkillActors[Idx];
+	SkillActors[Idx]->Client_Use();
+}
+
+void USkillComponent::UseQuickSlotSkill(int32 Idx)
 {
 	CheckFalse(QuickSlotSkillActors.IsValidIndex(Idx));
 	CheckNull(QuickSlotSkillActors[Idx]);

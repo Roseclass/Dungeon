@@ -5,7 +5,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Components/BehaviorComponent.h"
 
@@ -72,10 +72,10 @@ void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
 	TArray<AActor*> actors;
 	Perception->GetCurrentlyPerceivedActors(nullptr, actors);
 
-	TArray<ADungeonCharacter*> players;
+	TArray<APlayerCharacter*> players;
 	for (AActor* actor : actors)
 	{
-		ADungeonCharacter* player = Cast<ADungeonCharacter>(actor);
+		APlayerCharacter* player = Cast<APlayerCharacter>(actor);
 		if (!player)continue;
 		players.Add(player);
 	}

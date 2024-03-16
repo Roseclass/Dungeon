@@ -2,7 +2,7 @@
 #include "Global.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 
 UBehaviorComponent::UBehaviorComponent()
 {
@@ -103,9 +103,9 @@ bool UBehaviorComponent::IsStrafingMode()
 	return GetType() == EBehaviorType::Strafing;
 }
 
-ADungeonCharacter* UBehaviorComponent::GetTarget()
+APlayerCharacter* UBehaviorComponent::GetTarget()
 {
-	return Cast<ADungeonCharacter>(Blackboard->GetValueAsObject(TargetKey));
+	return Cast<APlayerCharacter>(Blackboard->GetValueAsObject(TargetKey));
 }
 
 FVector UBehaviorComponent::GetGoalLocation()

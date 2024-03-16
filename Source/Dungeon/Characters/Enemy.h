@@ -83,7 +83,7 @@ private:
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 protected:
 public:	
-	void UseSkill(int32 InIndex);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
 
 	FORCEINLINE class UBehaviorTree* GetBehaviorTree() { return BehaviorTree; }
 };

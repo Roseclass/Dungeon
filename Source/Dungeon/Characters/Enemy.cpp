@@ -36,6 +36,9 @@ void AEnemy::BeginPlay()
 	HealthBarWidget->Init(Name, Level);
 
 	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
+
+	if (HasAuthority())
+		Skill->SpawnSkillActors();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -70,7 +73,8 @@ void AEnemy::ChangeHealthBarPercent(float NewPercent)
 	HealthBarWidget->SetPercent(NewPercent);
 }
 
-void AEnemy::UseSkill(int32 InIndex)
+void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 {
 	CLog::Print("UseSkill " + FString::FromInt(InIndex));
+	Skill->UseSkill(InIndex);
 }

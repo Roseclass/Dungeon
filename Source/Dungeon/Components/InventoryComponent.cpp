@@ -1,7 +1,7 @@
 #include "Components/InventoryComponent.h"
 #include "Global.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "DungeonPlayerController.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
@@ -18,7 +18,7 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
 	if (pc && pc->IsLocalController())InitWidget();
 	if (owner->HasAuthority())InitDefault();
@@ -40,7 +40,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void UInventoryComponent::InitDefault()
 {
-	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 	int32 num = UGameplayStatics::GetNumLocalPlayerControllers(GetWorld());
 	AItemManager* manager = nullptr;
 	for (int32 i = 0; i < num; i++)
@@ -76,7 +76,7 @@ void UInventoryComponent::InitWidget()
 {
 	if (WidgetClass)
 	{
-		ADungeonCharacter* character = Cast<ADungeonCharacter>(GetOwner());
+		APlayerCharacter* character = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(character);
 		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(character->GetController());
 		CheckNull(controller);
@@ -319,7 +319,7 @@ void UInventoryComponent::Equip(AWeapon* InData)
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
 
-	ADungeonCharacter* owner = Cast<ADungeonCharacter>(GetOwner());
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 
 	if (!InData)
 	{

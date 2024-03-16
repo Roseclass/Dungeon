@@ -1,4 +1,4 @@
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Global.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -31,7 +31,7 @@
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"
 
-ADungeonCharacter::ADungeonCharacter()
+APlayerCharacter::APlayerCharacter()
 {
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -66,26 +66,21 @@ ADungeonCharacter::ADungeonCharacter()
 
 	//actor
 	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
-	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
-	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
-	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
-	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
-	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 }
 
-void ADungeonCharacter::BeginPlay()
+void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Init();
 }
 
-void ADungeonCharacter::Tick(float DeltaSeconds)
+void APlayerCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 }
 
-float ADungeonCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+float APlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -94,13 +89,19 @@ float ADungeonCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	return result;
 }
 
-FGenericTeamId ADungeonCharacter::GetGenericTeamId() const
+FGenericTeamId APlayerCharacter::GetGenericTeamId() const
 {
 	return TeamID;
 }
 
-void ADungeonCharacter::Init()
+void APlayerCharacter::OffAllWidget()
 {
+
+}
+
+void APlayerCharacter::Init()
+{
+	Super::Init();
 	//Appearance
 	{
 		TMap<EAppearancePart, USkeletalMeshComponent*> map;
@@ -118,7 +119,7 @@ void ADungeonCharacter::Init()
 	}
 
 	//Skillcomp
-	Skill->SpawnSkillActors();
+	if (HasAuthority())Skill->SpawnSkillActors();
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
 	if (controller)
 	{
@@ -127,12 +128,12 @@ void ADungeonCharacter::Init()
 		{
 			mainWidget->GetQuickSlot()->ConnectComponent(Skill);
 		}
-		if (HasAuthority())
+		if (HasAuthority()) // client : initwidget in onrep
 			InitClientWidget();
 	}
 	
 	//Inventory
-	Inventory->OnInventoryItemChanged.AddDynamic(this, &ADungeonCharacter::ChangeAppearance);
+	Inventory->OnInventoryItemChanged.AddDynamic(this, &APlayerCharacter::ChangeAppearance);
 
 	//init minimap
 	MinimapIcon->CreateDynamicMaterialInstance(0);
@@ -214,12 +215,7 @@ void ADungeonCharacter::Init()
 	}
 }
 
-void ADungeonCharacter::OffAllWidget()
-{
-
-}
-
-void ADungeonCharacter::InitClientWidget()
+void APlayerCharacter::InitClientWidget()
 {
 	CheckFalse(IsLocallyControlled());
 	TFunction<void(int32, ASkillActor*)> func;
@@ -230,22 +226,22 @@ void ADungeonCharacter::InitClientWidget()
 	SkillTree->Init(Skill->GetSkillActors(), func);
 }
 
-void ADungeonCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
+void APlayerCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
 {
 	Appearance->Server_ChangeAppearance(InMeshPart, InIndex);
 }
 
-void ADungeonCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
+void APlayerCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
 {
 	Appearance->Server_ChangeColor(InMeshPart, Parameter, NewColor);
 }
 
-void ADungeonCharacter::UseSkill(int32 Idx)
+void APlayerCharacter::UseSkill(int32 Idx)
 {
-	Skill->UseSkill(Idx);
+	Skill->UseQuickSlotSkill(Idx);
 }
 
-void ADungeonCharacter::UseLeft()
+void APlayerCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(0));
@@ -254,7 +250,7 @@ void ADungeonCharacter::UseLeft()
 	UseSkill(0);
 }
 
-void ADungeonCharacter::UseRight()
+void APlayerCharacter::UseRight()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(1));
@@ -263,7 +259,7 @@ void ADungeonCharacter::UseRight()
 	UseSkill(1);
 }
 
-void ADungeonCharacter::UseQ()
+void APlayerCharacter::UseQ()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(2));
@@ -272,7 +268,7 @@ void ADungeonCharacter::UseQ()
 	UseSkill(2);
 }
 
-void ADungeonCharacter::UseW()
+void APlayerCharacter::UseW()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(3));
@@ -281,7 +277,7 @@ void ADungeonCharacter::UseW()
 	UseSkill(3);
 }
 
-void ADungeonCharacter::UseE()
+void APlayerCharacter::UseE()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(4));
@@ -290,7 +286,7 @@ void ADungeonCharacter::UseE()
 	UseSkill(4);
 }
 
-void ADungeonCharacter::UseR()
+void APlayerCharacter::UseR()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(5));
@@ -299,72 +295,17 @@ void ADungeonCharacter::UseR()
 	UseSkill(5);
 }
 
-void ADungeonCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
+void APlayerCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
 {
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
-void ADungeonCharacter::TryAddItem(AWeapon* InObject)
+void APlayerCharacter::TryAddItem(AWeapon* InObject)
 {
 	Inventory->Server_TryAddItem(InObject);
 }
 
-bool ADungeonCharacter::CanUse()
-{
-	return Status->CanUse();
-}
-
-bool ADungeonCharacter::CanMove()
-{
-	return Status->CanMove();
-}
-
-void ADungeonCharacter::SetUse()
-{
-	Status->SetUse();
-}
-
-void ADungeonCharacter::SetCannotUse()
-{
-	Status->SetCannotUse();
-}
-
-void ADungeonCharacter::SetMove()
-{
-	Status->SetMove();
-}
-
-void ADungeonCharacter::SetStop()
-{
-	Status->SetStop();
-}
-
-void ADungeonCharacter::UnsetSkill()
-{
-
-}
-
-void ADungeonCharacter::SpawnProjectile()
-{
-	Skill->SpawnProjectile();
-}
-
-void ADungeonCharacter::OnCollision()
-{
-	Inventory->OnCollision();
-}
-
-void ADungeonCharacter::OffCollision()
-{
-	Inventory->OffCollision();
-}
-
-void ADungeonCharacter::ResetHittedActors()
-{
-	Inventory->ResetHittedActors();
-}
-
-void ADungeonCharacter::ToggleSkillTree()
+void APlayerCharacter::ToggleSkillTree()
 {
 	if (SkillTree->IsWidgetVisible())
 		SkillTree->OffWidget();
@@ -375,7 +316,7 @@ void ADungeonCharacter::ToggleSkillTree()
 	}
 }
 
-void ADungeonCharacter::ToggleInventory()
+void APlayerCharacter::ToggleInventory()
 {
 	if (Inventory->IsWidgetVisible())
 		Inventory->OffWidget();
@@ -386,12 +327,12 @@ void ADungeonCharacter::ToggleInventory()
 	}
 }
 
-FString ADungeonCharacter::GetUniqueSaveName()
+FString APlayerCharacter::GetUniqueSaveName()
 {
 	return "Player";
 }
 
-void ADungeonCharacter::OnBeforeSave(USaveGameData* SaveData)
+void APlayerCharacter::OnBeforeSave(USaveGameData* SaveData)
 {
 	//Inventory
 	//PresetData
@@ -430,7 +371,7 @@ void ADungeonCharacter::OnBeforeSave(USaveGameData* SaveData)
 	//SkillTree->GetSlotClassData(SaveData->PlayerData.SlotSkills);
 }
 
-void ADungeonCharacter::OnAfterLoad(USaveGameData* const ReadData)
+void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 {
 	FString name = GetUniqueSaveName();
 	CheckNull(ReadData);

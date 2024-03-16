@@ -6,7 +6,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/DungeonCharacterBase.h"
 
 AProjectile_Mage21::AProjectile_Mage21()
 {

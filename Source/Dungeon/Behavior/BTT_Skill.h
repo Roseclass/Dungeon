@@ -5,7 +5,7 @@
 #include "BTT_Skill.generated.h"
 
 /**
- * 
+ * use skill by index
  */
 
 UCLASS()

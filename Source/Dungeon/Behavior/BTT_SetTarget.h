@@ -8,7 +8,7 @@
  * find target from Percepted Players, with condition
  */
 
-class ADungeonCharacter;
+class APlayerCharacter;
 class AEnemy;
 class UBlackBoardPlayerArrayObject;
 
@@ -42,9 +42,9 @@ public:
 
 	//function
 private:
-	ADungeonCharacter* FindClosest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
-	ADungeonCharacter* FindFarthest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
-	ADungeonCharacter* FindRandom(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
+	APlayerCharacter* FindClosest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
+	APlayerCharacter* FindFarthest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
+	APlayerCharacter* FindRandom(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others);
 protected:
 public:
 };

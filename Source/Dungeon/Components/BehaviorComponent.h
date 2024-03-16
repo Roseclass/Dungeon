@@ -5,7 +5,7 @@
 #include "BehaviorComponent.generated.h"
 
 class UBlackboardComponent;
-class ADungeonCharacter;
+class APlayerCharacter;
 
 UENUM(BlueprintType)
 enum class EBehaviorType : uint8
@@ -21,17 +21,17 @@ class DUNGEON_API UBlackBoardPlayerArrayObject : public UObject
 	GENERATED_BODY()
 	//property
 private:
-	TArray<ADungeonCharacter*> Players;
+	TArray<APlayerCharacter*> Players;
 protected:
 public:
 	//function
 private:
 protected:
 public:
-	FORCEINLINE void AddPlayer(ADungeonCharacter* NewPlayer) { Players.Add(NewPlayer); };
-	FORCEINLINE void RemovePlayer(ADungeonCharacter* NewPlayer) { Players.Remove(NewPlayer); };
-	FORCEINLINE void SetPlayers(const TArray<ADungeonCharacter*>& NewPlayers) { Players = NewPlayers; };
-	FORCEINLINE const TArray<ADungeonCharacter*>& GetPlayers()const { return Players; };
+	FORCEINLINE void AddPlayer(APlayerCharacter* NewPlayer) { Players.Add(NewPlayer); };
+	FORCEINLINE void RemovePlayer(APlayerCharacter* NewPlayer) { Players.Remove(NewPlayer); };
+	FORCEINLINE void SetPlayers(const TArray<APlayerCharacter*>& NewPlayers) { Players = NewPlayers; };
+	FORCEINLINE const TArray<APlayerCharacter*>& GetPlayers()const { return Players; };
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -93,7 +93,7 @@ public:
 	bool IsSkillMode();
 	bool IsStrafingMode();
 
-	ADungeonCharacter* GetTarget();
+	APlayerCharacter* GetTarget();
 	FVector GetGoalLocation();
 
 	float GetSkillRange(int32 InIndex);

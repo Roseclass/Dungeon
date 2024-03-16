@@ -2,7 +2,7 @@
 
 #include "DungeonGameMode.h"
 #include "DungeonPlayerController.h"
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 ADungeonGameMode::ADungeonGameMode()

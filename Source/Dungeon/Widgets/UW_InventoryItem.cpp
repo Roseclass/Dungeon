@@ -11,7 +11,6 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Blueprint/DragDropOperation.h"
 
-#include "Characters/DungeonCharacter.h"
 #include "Components/InventoryComponent.h"
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"

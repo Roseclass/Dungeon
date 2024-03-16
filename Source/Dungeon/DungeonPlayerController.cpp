@@ -8,7 +8,7 @@
 #include "Engine/World.h"
 #include "AIController.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemManager.h"
@@ -36,7 +36,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 
 	if (Target)
@@ -172,14 +172,14 @@ void ADungeonPlayerController::Server_ReplicateRotation_Implementation(FRotator 
 void ADungeonPlayerController::Multicast_ReplicateRotation_Implementation(FRotator NewRotation, ADungeonPlayerController* Exception)
 {
 	CheckTrue(Exception && Exception->IsLocalController());
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->SetActorRotation(NewRotation);
 }
 
 void ADungeonPlayerController::Client_ReplicateRotation_Implementation(FRotator NewRotation)
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->SetActorRotation(NewRotation);
 	Server_ReplicateRotation(NewRotation, this);
@@ -198,7 +198,7 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 	// Player is no longer pressing the input
 	bInputPressed = false;
 
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 
 	if(!myPawn->CanMove())return;
@@ -231,49 +231,49 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 
 void ADungeonPlayerController::OnRightClick()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseRight();
 }
 
 void ADungeonPlayerController::OnQuickSlot0()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseQ();
 }
 
 void ADungeonPlayerController::OnQuickSlot1()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseW();
 }
 
 void ADungeonPlayerController::OnQuickSlot2()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseE();
 }
 
 void ADungeonPlayerController::OnQuickSlot3()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->UseR();
 }
 
 void ADungeonPlayerController::OnSkillTree()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->ToggleSkillTree();
 }
 
 void ADungeonPlayerController::OnInventory()
 {
-	ADungeonCharacter* const myPawn = Cast<ADungeonCharacter>(GetPawn());
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->ToggleInventory();
 }

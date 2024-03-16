@@ -2,7 +2,7 @@
 #include "Global.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "Characters/EnemyAIController.h"
 #include "Characters/Enemy.h"
 #include "Components/BehaviorComponent.h"
@@ -11,6 +11,9 @@ UBTT_SetTarget::UBTT_SetTarget()
 {
 	NodeName = "Target";
 	bNotifyTick = true;
+
+    PerceptedPlayerObject.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_SetTarget, PerceptedPlayerObject), UBlackBoardPlayerArrayObject::StaticClass());
+    Target.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_SetTarget, Target), APlayerCharacter::StaticClass());
 }
 
 EBTNodeResult::Type UBTT_SetTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -30,7 +33,7 @@ EBTNodeResult::Type UBTT_SetTarget::ExecuteTask(UBehaviorTreeComponent& OwnerCom
     if (!obj)return EBTNodeResult::Failed;
     if (!obj->GetPlayers().Num())return EBTNodeResult::Failed;
 
-    ADungeonCharacter* NewTarget = nullptr;
+    APlayerCharacter* NewTarget = nullptr;
 
     switch (Option)
     {
@@ -45,10 +48,10 @@ EBTNodeResult::Type UBTT_SetTarget::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	return EBTNodeResult::Succeeded;
 }
 
-ADungeonCharacter* UBTT_SetTarget::FindClosest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
+APlayerCharacter* UBTT_SetTarget::FindClosest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
 {
-    ADungeonCharacter* result = nullptr;
-    const TArray<ADungeonCharacter*>& arr = Others->GetPlayers();
+    APlayerCharacter* result = nullptr;
+    const TArray<APlayerCharacter*>& arr = Others->GetPlayers();
     int32 idx = 0; float dist = 1e9;
     for (int32 i = 0; i < arr.Num(); ++i)
     {
@@ -60,10 +63,10 @@ ADungeonCharacter* UBTT_SetTarget::FindClosest(AEnemy* Origin, UBlackBoardPlayer
     return result;
 }
 
-ADungeonCharacter* UBTT_SetTarget::FindFarthest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
+APlayerCharacter* UBTT_SetTarget::FindFarthest(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
 {
-    ADungeonCharacter* result = nullptr;
-    const TArray<ADungeonCharacter*>& arr = Others->GetPlayers();
+    APlayerCharacter* result = nullptr;
+    const TArray<APlayerCharacter*>& arr = Others->GetPlayers();
     int32 idx = 0; float dist = -1e9;
     for (int32 i = 0; i < arr.Num(); ++i)
     {
@@ -75,10 +78,10 @@ ADungeonCharacter* UBTT_SetTarget::FindFarthest(AEnemy* Origin, UBlackBoardPlaye
     return result;
 }
 
-ADungeonCharacter* UBTT_SetTarget::FindRandom(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
+APlayerCharacter* UBTT_SetTarget::FindRandom(AEnemy* Origin, UBlackBoardPlayerArrayObject* Others)
 {
-    ADungeonCharacter* result = nullptr;
-    const TArray<ADungeonCharacter*>& arr = Others->GetPlayers();
+    APlayerCharacter* result = nullptr;
+    const TArray<APlayerCharacter*>& arr = Others->GetPlayers();
     int32 idx = UKismetMathLibrary::RandomIntegerInRange(0, arr.Num() - 1);
     if (arr.IsValidIndex(idx))result = arr[idx];
     return result;

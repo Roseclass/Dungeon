@@ -21,7 +21,6 @@ void UUW_HealthBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if (DelayPercent > HealthBar->Percent)
 	{
-		CLog::Print(DelayPercent, -1, 10, FColor::Black);
 		DelayPercent = UKismetMathLibrary::FInterpTo(DelayPercent, HealthBar->Percent, InDeltaTime, DelaySpeed);
 		Delay->SetRenderScale(FVector2D(DelayPercent, 1));
 	}

@@ -3,7 +3,7 @@
 #include "GameFramework/GameState.h"
 
 #include "DungeonPlayerController.h"
-#include "Characters/DungeonCharacter.h"
+#include "Characters/DungeonCharacterBase.h"
 #include "Components/SkillComponent.h"
 #include "Objects/Projectile.h"
 

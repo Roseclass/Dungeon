@@ -5,7 +5,8 @@
 #include "BTT_Approach.generated.h"
 
 /**
- * 
+ * approach to target or location
+ * duration over? return success
  */
 
 UCLASS()

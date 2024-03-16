@@ -1,10 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "GenericTeamAgentInterface.h"
+#include "Characters/DungeonCharacterBase.h"
 #include "Interfaces/ISave.h"
-#include "DungeonCharacter.generated.h"
+#include "PlayerCharacter.generated.h"
 
 /**
  * player character's basic class
@@ -16,15 +15,7 @@ class USceneCaptureComponent2D;
 class USpringArmComponent;
 class UStaticMeshComponent;
 class UAppearanceComponent;
-class USkillComponent;
 class USkillTreeComponent;
-class UMontageComponent;
-class UStatusComponent;
-class UStateComponent;
-class UInventoryComponent;
-class UItemObject;
-class ASkillActor;
-class AWeapon;
 
 struct FSkillData;
 
@@ -32,12 +23,12 @@ enum class EItemMode : uint8;
 enum class EAppearancePart : uint8;
 
 UCLASS(Blueprintable)
-class ADungeonCharacter : public ACharacter, public IGenericTeamAgentInterface, public IISave
+class APlayerCharacter : public ADungeonCharacterBase, public IISave
 {
 	GENERATED_BODY()
 
 public:
-	ADungeonCharacter();
+	APlayerCharacter();
 protected:
 	virtual void BeginPlay() override;
 public:
@@ -65,33 +56,15 @@ private:
 		UAppearanceComponent* Appearance;
 
 	UPROPERTY(VisibleDefaultsOnly)
-		USkillComponent* Skill;
-
-	UPROPERTY(VisibleDefaultsOnly)
 		USkillTreeComponent* SkillTree;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UMontageComponent* Montage;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStateComponent* State;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStatusComponent* Status;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UInventoryComponent* Inventory;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-		uint8 TeamID = 1;
 protected:
 public:
 
 	//function
 private:
-	void Init();
 	void OffAllWidget();
 protected:
+	virtual void Init()override;
 public:
 	void InitClientWidget();
 	
@@ -100,7 +73,7 @@ public:
 	UFUNCTION()void ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
 
 	//Skill
-	void UseSkill(int32 Idx);
+	virtual void UseSkill(int32 Idx)override;
 	void UseLeft();
 	void UseRight();
 	void UseQ();
@@ -110,22 +83,7 @@ public:
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
 
 	//Inventory
-	void TryAddItem(AWeapon* InObject);
-
-	//getter
-	bool CanUse();
-	bool CanMove();
-
-	//for notify
-	UFUNCTION(BlueprintCallable)void SetUse();
-	UFUNCTION(BlueprintCallable)void SetCannotUse();
-	UFUNCTION(BlueprintCallable)void SetMove();
-	UFUNCTION(BlueprintCallable)void SetStop();
-	UFUNCTION(BlueprintCallable)void UnsetSkill();
-	UFUNCTION(BlueprintCallable)void SpawnProjectile();
-	UFUNCTION(BlueprintCallable)void OnCollision();
-	UFUNCTION(BlueprintCallable)void OffCollision();
-	UFUNCTION(BlueprintCallable)void ResetHittedActors();
+	virtual void TryAddItem(AWeapon* InObject);
 
 	//widget Toggle
 	void ToggleSkillTree();

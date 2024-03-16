@@ -6,7 +6,7 @@
 #include "DungeonPlayerController.generated.h"
 
 class UNiagaraSystem;
-class ADungeonCharacter;
+class APlayerCharacter;
 class AEnemy;
 class AItemManager;
 class AWeapon;

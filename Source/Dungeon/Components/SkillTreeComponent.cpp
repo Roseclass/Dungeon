@@ -1,7 +1,7 @@
 #include "Components/SkillTreeComponent.h"
 #include "Global.h"
 
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 #include "DungeonPlayerController.h"
 #include "Objects/SkillActor.h"
 #include "Widgets/UW_SkillTree.h"
@@ -32,7 +32,7 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 
 	if (WidgetClass)
 	{
-		ADungeonCharacter* character = Cast<ADungeonCharacter>(GetOwner());
+		APlayerCharacter* character = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(character);
 		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(character->GetController());
 		CheckNull(controller);

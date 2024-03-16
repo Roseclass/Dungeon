@@ -5,7 +5,7 @@
 #include "Engine/StreamableManager.h"
 
 #include "SaveManager.h"
-#include "Characters/DungeonCharacter.h"
+#include "Characters/PlayerCharacter.h"
 
 UAppearanceComponent::UAppearanceComponent()
 {

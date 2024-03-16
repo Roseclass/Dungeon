@@ -18,7 +18,7 @@ EBTNodeResult::Type UBTT_Skill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 	// use skill by index in enemy
 	AEnemyAIController* controller = Cast<AEnemyAIController>(OwnerComp.GetOwner());
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
-	aiPawn->UseSkill(SkillIndex);
+	aiPawn->Multicast_UseSkill(SkillIndex);
 
 	// update elapsed time
 	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
