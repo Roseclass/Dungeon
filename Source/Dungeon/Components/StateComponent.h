@@ -11,7 +11,7 @@
 UENUM()
 enum class EStateType : uint8
 {
-	Idle, Evade, BackStep, Equip, Action, Hitted, Dead, Max
+	Idle, Skill, Hitted, Dead, Max
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FStateTypeChanged, EStateType, EStateType);
@@ -42,18 +42,12 @@ private:
 protected:
 public:
 	void SetIdleMode();
-	void SetEvadeMode();
-	void SetBackStepMode();
-	void SetEquipMode();
-	void SetActionMode();
+	void SetSkillMode();
 	void SetHittedMode();
 	void SetDeadMode(); 
 
 	FORCEINLINE bool IsIdleMode() { return Type == EStateType::Idle; }
-	FORCEINLINE bool IsEvadeMode() { return Type == EStateType::Evade; }
-	FORCEINLINE bool IsBackStepMode() { return Type == EStateType::BackStep; }
-	FORCEINLINE bool IsEquipMode() { return Type == EStateType::Equip; }
-	FORCEINLINE bool IsActionMode() { return Type == EStateType::Action; }
+	FORCEINLINE bool IsActionMode() { return Type == EStateType::Skill; }
 	FORCEINLINE bool IsHittedMode() { return Type == EStateType::Hitted; }
 	FORCEINLINE bool IsDeadMode() { return Type == EStateType::Dead; }
 	FORCEINLINE bool IsHitable() { return !IsHittedMode() || !bIsInvincible; }

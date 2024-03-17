@@ -1,8 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "GenericTeamAgentInterface.h"
+#include "Characters/DungeonCharacterBase.h"
 #include "Enemy.generated.h"
 
 /**
@@ -26,7 +25,7 @@ class UUW_HealthBar;
 
 
 UCLASS()
-class DUNGEON_API AEnemy : public ACharacter, public IGenericTeamAgentInterface
+class DUNGEON_API AEnemy : public ADungeonCharacterBase
 {
 	GENERATED_BODY()
 public:
@@ -40,6 +39,12 @@ public:
 
 	//property
 private:
+	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
+		FText Name = FText::FromString("Monster");
+
+	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
+		uint8 Level = 1;
+protected:
 	UUW_HealthBar* HealthBarWidget;
 
 	//scene
@@ -50,40 +55,21 @@ private:
 		UWidgetComponent* HealthBar;
 
 	//actor
-	UPROPERTY(VisibleDefaultsOnly)
-		USkillComponent* Skill;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UMontageComponent* Montage;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStateComponent* State;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStatusComponent* Status;
-
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		UBehaviorTree* BehaviorTree;
 
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-		uint8 TeamID = 2;
-
-	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
-		FText Name = FText::FromString("Monster");
-
-	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
-		uint8 Level = 1;
-
-protected:
 public:
 
 	//function
 private:
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
-protected:
-public:	
 	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
+protected:
+	virtual void Init()override;
+public:	
 
 	FORCEINLINE class UBehaviorTree* GetBehaviorTree() { return BehaviorTree; }
+
+	//Skill
+	virtual void UseSkill(int32 Idx)override;
 };

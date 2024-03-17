@@ -238,6 +238,7 @@ void APlayerCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Paramet
 
 void APlayerCharacter::UseSkill(int32 Idx)
 {
+	Super::UseSkill(Idx);
 	Skill->UseQuickSlotSkill(Idx);
 }
 

@@ -30,24 +30,9 @@ void UStateComponent::SetIdleMode()
 	ChangeType(EStateType::Idle);
 }
 
-void UStateComponent::SetEvadeMode()
+void UStateComponent::SetSkillMode()
 {
-	ChangeType(EStateType::Evade);
-}
-
-void UStateComponent::SetBackStepMode()
-{
-	ChangeType(EStateType::BackStep);
-}
-
-void UStateComponent::SetEquipMode()
-{
-	ChangeType(EStateType::Equip);
-}
-
-void UStateComponent::SetActionMode()
-{
-	ChangeType(EStateType::Action);
+	ChangeType(EStateType::Skill);
 }
 
 void UStateComponent::SetHittedMode()

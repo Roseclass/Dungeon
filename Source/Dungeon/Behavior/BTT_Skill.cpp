@@ -3,6 +3,7 @@
 #include "Characters/EnemyAIController.h"
 #include "Characters/Enemy.h"
 #include "Components/SkillComponent.h"
+#include "Components/StateComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTT_Skill::UBTT_Skill()
@@ -18,10 +19,7 @@ EBTNodeResult::Type UBTT_Skill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 	// use skill by index in enemy
 	AEnemyAIController* controller = Cast<AEnemyAIController>(OwnerComp.GetOwner());
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
-	aiPawn->Multicast_UseSkill(SkillIndex);
-
-	// update elapsed time
-	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
+	aiPawn->UseSkill(SkillIndex);
 
 	return EBTNodeResult::InProgress;
 }
@@ -33,16 +31,11 @@ void UBTT_Skill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	// is enemy's state IDLE?
 	// that means skill sequence's end
 
-
 	AAIController* controller = Cast<AAIController>(OwnerComp.GetOwner());
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 
-	//UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
-	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
+	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
 
-	//if (state->IsIdleMode())
-	//{
-	//	behavior->ResumeDelay();
-	//	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	//}
+	if (state->IsIdleMode())
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }

@@ -9,11 +9,13 @@
 #include "Components/StateComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
+
 #include "Widgets/UW_HealthBar.h"
 
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	TeamID = 2;
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
@@ -22,23 +24,12 @@ AEnemy::AEnemy()
 	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
-	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
-	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
-	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
-	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
-	HealthBarWidget->Init(Name, Level);
-
-	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
-
-	if (HasAuthority())
-		Skill->SpawnSkillActors();
+	Init();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -77,4 +68,24 @@ void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 {
 	CLog::Print("UseSkill " + FString::FromInt(InIndex));
 	Skill->UseSkill(InIndex);
+}
+
+void AEnemy::Init()
+{
+	Super::Init();
+
+	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+	HealthBarWidget->Init(Name, Level);
+
+	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
+
+	if (HasAuthority())
+		Skill->SpawnSkillActors();
+}
+
+void AEnemy::UseSkill(int32 Idx)
+{
+	Super::UseSkill(Idx);
+	State->SetSkillMode();
+	Multicast_UseSkill(Idx);
 }

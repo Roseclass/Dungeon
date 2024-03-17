@@ -14,6 +14,8 @@ class UItemObject;
 class ASkillActor;
 class AWeapon;
 
+enum class EStateType : uint8;
+
 UCLASS()
 class DUNGEON_API ADungeonCharacterBase : public ACharacter, public IGenericTeamAgentInterface
 {
@@ -55,6 +57,9 @@ public:
 private:
 protected:
 	virtual void Init();
+
+	//State
+	UFUNCTION()virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:
 	//Skill
 	virtual void UseSkill(int32 Idx) {};
@@ -76,4 +81,8 @@ public:
 	UFUNCTION(BlueprintCallable)virtual void OnCollision();
 	UFUNCTION(BlueprintCallable)virtual void OffCollision();
 	UFUNCTION(BlueprintCallable)virtual void ResetHittedActors();
+	UFUNCTION(BlueprintCallable)virtual void SetIdleMode();
+	UFUNCTION(BlueprintCallable)virtual void SetSkillMode();
+	UFUNCTION(BlueprintCallable)virtual void SetHittedMode();
+	UFUNCTION(BlueprintCallable)virtual void SetDeadMode();
 };

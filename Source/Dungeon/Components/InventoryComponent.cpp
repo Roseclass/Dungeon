@@ -2,6 +2,7 @@
 #include "Global.h"
 
 #include "Characters/PlayerCharacter.h"
+#include "Characters/Enemy.h"
 #include "DungeonPlayerController.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
@@ -18,7 +19,7 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
 	if (pc && pc->IsLocalController())InitWidget();
 	if (owner->HasAuthority())InitDefault();

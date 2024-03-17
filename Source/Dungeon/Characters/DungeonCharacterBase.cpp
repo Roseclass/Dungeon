@@ -52,7 +52,15 @@ FGenericTeamId ADungeonCharacterBase::GetGenericTeamId() const
 
 void ADungeonCharacterBase::Init()
 {
+	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
+}
 
+void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
+{
+	if (NewType == EStateType::Dead)
+	{
+		// play dead montage
+	}
 }
 
 bool ADungeonCharacterBase::CanUse()
@@ -107,4 +115,24 @@ void ADungeonCharacterBase::OffCollision()
 void ADungeonCharacterBase::ResetHittedActors()
 {
 	Inventory->ResetHittedActors();
+}
+
+void ADungeonCharacterBase::SetIdleMode()
+{
+	State->SetIdleMode();
+}
+
+void ADungeonCharacterBase::SetSkillMode()
+{
+	State->SetSkillMode();
+}
+
+void ADungeonCharacterBase::SetHittedMode()
+{
+	State->SetHittedMode();
+}
+
+void ADungeonCharacterBase::SetDeadMode()
+{
+	State->SetDeadMode();
 }
