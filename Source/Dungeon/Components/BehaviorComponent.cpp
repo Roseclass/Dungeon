@@ -33,6 +33,11 @@ EBehaviorType UBehaviorComponent::GetType()
 	return (EBehaviorType)Blackboard->GetValueAsEnum(BehaviorKey);
 }
 
+void UBehaviorComponent::TaskStart()
+{
+	TaskStartTime = GetWorld()->GetTimeSeconds();
+}
+
 void UBehaviorComponent::SetWaitMode()
 {
 	ChangeType(EBehaviorType::Wait);
@@ -68,6 +73,11 @@ void UBehaviorComponent::SetStrafingMode()
 	ChangeType(EBehaviorType::Strafing);
 }
 
+void UBehaviorComponent::SetSequenceMode()
+{
+	ChangeType(EBehaviorType::Sequence);
+}
+
 bool UBehaviorComponent::IsWaitMode()
 {
 	return GetType() == EBehaviorType::Wait;
@@ -101,6 +111,11 @@ bool UBehaviorComponent::IsSkillMode()
 bool UBehaviorComponent::IsStrafingMode()
 {
 	return GetType() == EBehaviorType::Strafing;
+}
+
+bool UBehaviorComponent::IsSequenceMode()
+{
+	return GetType() == EBehaviorType::Sequence;
 }
 
 APlayerCharacter* UBehaviorComponent::GetTarget()

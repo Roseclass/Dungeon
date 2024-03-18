@@ -6,11 +6,17 @@
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
 #include "Components/StateComponent.h"
+#include "Components/StatusComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTS_OrcElite::UBTS_OrcElite()
 {
 	NodeName = "OrcElite";
+
+	PerceptedPlayerObject.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_OrcElite, PerceptedPlayerObject), UBlackBoardPlayerArrayObject::StaticClass());
+	Target.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_OrcElite, Target), APlayerCharacter::StaticClass());
+	Phase.AddIntFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_OrcElite, Phase));
+	Sequence.AddIntFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_OrcElite, Sequence));
 }
 
 void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -25,17 +31,39 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(aiPawn);
 
-	UBlackBoardPlayerArrayObject* obj = Cast<UBlackBoardPlayerArrayObject>(BlackboardComp->GetValueAsObject(behavior->GetPerceptedPlayersKey()));
-	if (!obj)CLog::Print("obj null", 223, 10, FColor::Blue);
-	else if (!obj->GetPlayers().Num())CLog::Print("obj empty", 223, 1, FColor::Blue);
-	else if (obj->GetPlayers().Num())
+	// print percepted players
 	{
-		for (int32 i = 0; i < obj->GetPlayers().Num(); ++i)
-			CLog::Print(obj->GetPlayers()[i]->GetName(), 223 + i, 1, FColor::Blue);
+		UBlackBoardPlayerArrayObject* obj = Cast<UBlackBoardPlayerArrayObject>(BlackboardComp->GetValueAsObject(PerceptedPlayerObject.SelectedKeyName));
+		if (!obj)CLog::Print("obj null", 223, 10, FColor::Blue);
+		else if (!obj->GetPlayers().Num())CLog::Print("obj empty", 223, 1, FColor::Blue);
+		else if (obj->GetPlayers().Num())
+		{
+			for (int32 i = 0; i < obj->GetPlayers().Num(); ++i)
+				CLog::Print(obj->GetPlayers()[i]->GetName(), 223 + i, 1, FColor::Blue);
+		}
+	}
+
+	// print target
+	{
+		APlayerCharacter* target = Cast<APlayerCharacter>(BlackboardComp->GetValueAsObject(Target.SelectedKeyName));
+		if (target == nullptr)CLog::Print("target null", 222, 1, FColor::Black);
+		else CLog::Print("target on", 222, 1, FColor::Black);
 	}
 
 	CheckTrue(state->IsDeadMode());	
+	CheckTrue(state->IsSequenceMode());
+
+	int32 prevPhase = BlackboardComp->GetValueAsInt(Phase.SelectedKeyName);
+	int32 phase = CheckPhase(status->GetCurrentHealth() / status->GetMaxHealth(), prevPhase);
+	CLog::Print(phase, 224, 1, FColor::Purple);
+
+	if (phase != prevPhase)
+	{
+		behavior->SetSequenceMode();
+		return;
+	}
 
 	if (state->IsHittedMode())		
 	{
@@ -43,17 +71,15 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		return;
 	}
 
-	APlayerCharacter* target = behavior->GetTarget();
+	APlayerCharacter* target = Cast<APlayerCharacter>(BlackboardComp->GetValueAsObject(Target.SelectedKeyName));
 
 	if (target == nullptr)
 	{
-		CLog::Print("target null", 222, 1, FColor::Black);
 		behavior->SetWaitMode();
 		return;
 	}
 	else
 	{
-		CLog::Print("target on", 222, 1, FColor::Black);
 		UStateComponent* targetState = CHelpers::GetComponent<UStateComponent>(target);
 		if (targetState->IsDeadMode())
 		{
@@ -61,7 +87,13 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 			return;
 		}
 	}
+}
 
-	float distance = aiPawn->GetDistanceTo(target);
+int32 UBTS_OrcElite::CheckPhase(float HealthRate, int32 PrevPhase)
+{
+	int32 result = 0;
+	if (HealthRate <= 0.5 && PrevPhase == 0)
+		result = 1;
 
+	return result;
 }

@@ -52,4 +52,6 @@ public:
 
 	FORCEINLINE bool CanUse() {return bCanUse;}
 	FORCEINLINE bool CanMove() {return bCanMove;}
+	FORCEINLINE float GetMaxHealth() {return MaxHealth;}
+	FORCEINLINE float GetCurrentHealth() {return CurrentHealth;}
 };

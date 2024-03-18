@@ -140,3 +140,19 @@ bool USkillComponent::IsQuickSlotCoolDown(int32 Index)
 	if (!QuickSlotSkillActors[Index])return 1;
 	return QuickSlotSkillActors[Index]->IsCoolDown();
 }
+
+bool USkillComponent::GetSkillRange(int32 InIndex, float& Range)
+{
+	if (!SkillActors.IsValidIndex(InIndex))return 0;
+	if (!SkillActors[InIndex])return 0;
+	Range = SkillActors[InIndex]->GetSkillData()->Range;
+	return 1;
+}
+
+bool USkillComponent::GetQuickSlotSkillRange(int32 InIndex, float& Range)
+{
+	if (!QuickSlotSkillActors.IsValidIndex(InIndex))return 0;
+	if (!QuickSlotSkillActors[InIndex])return 0;
+	Range = QuickSlotSkillActors[InIndex]->GetSkillData()->Range;
+	return 1;
+}

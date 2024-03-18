@@ -4,7 +4,6 @@
 #include "Characters/Enemy.h"
 #include "Components/SkillComponent.h"
 #include "Components/StateComponent.h"
-#include "Components/BehaviorComponent.h"
 
 UBTT_Skill::UBTT_Skill()
 {

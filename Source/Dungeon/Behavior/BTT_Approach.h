@@ -9,6 +9,12 @@
  * duration over? return success
  */
 
+UENUM(BlueprintType)
+enum class ESuccessRange : uint8
+{
+	Fixed, Skill
+};
+
 UCLASS()
 class DUNGEON_API UBTT_Approach : public UBTTask_MoveTo
 {
@@ -19,13 +25,20 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	virtual EBTNodeResult::Type PerformMoveTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	//property
 private:
-	float StartTime;
 protected:
 	UPROPERTY(EditAnywhere)
 		float Duration = 10.0f;
+
+	UPROPERTY(EditAnywhere)
+		ESuccessRange RangeType;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "RangeType == ESuccessRange::Skill", EditConditionHides))
+		int32 SkillIndex;
+
 public:
 
 	//function

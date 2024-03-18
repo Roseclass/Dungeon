@@ -57,6 +57,9 @@ public:
 	void SetCoolDown(ASkillActor* InSkillActor);
 	bool GetQuickSlotCoolDown(int32 Index, float& Result);
 	bool IsQuickSlotCoolDown(int32 Index);
+	bool GetSkillRange(int32 InIndex, float& Range);
+	bool GetQuickSlotSkillRange(int32 InIndex, float& Range);
+
 
 	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
 	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };

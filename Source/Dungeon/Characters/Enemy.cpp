@@ -70,6 +70,16 @@ void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 	Skill->UseSkill(InIndex);
 }
 
+void AEnemy::SequenceStart()
+{
+	State->SetSequenceMode();
+}
+
+void AEnemy::SequenceEnd()
+{
+	State->SetIdleMode();
+}
+
 void AEnemy::Init()
 {
 	Super::Init();

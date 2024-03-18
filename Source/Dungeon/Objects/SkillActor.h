@@ -64,6 +64,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "CoolDown")
 		float CoolDown = 10.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Range")
+		float Range = 10.0f;
 };
 
 UCLASS()

@@ -10,7 +10,7 @@ class APlayerCharacter;
 UENUM(BlueprintType)
 enum class EBehaviorType : uint8
 {
-	Wait, Approach, Skill, Patrol, Hitted, Avoid, Strafing, MAX
+	Wait, Approach, Skill, Patrol, Hitted, Avoid, Strafing, Sequence, MAX
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FBehaviorTypeChanged, EBehaviorType, EBehaviorType);
@@ -68,6 +68,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "BehaviorTree")
 		float StrafingRange = 300.0f;
 
+	UPROPERTY(EditAnywhere, Category = "BehaviorTree")
+		float TaskStartTime;
+
 public:
 	FBehaviorTypeChanged OnBehaviorTypeChanged;
 
@@ -77,6 +80,8 @@ private:
 	EBehaviorType GetType();
 protected:
 public:
+	void TaskStart();
+
 	void SetWaitMode();
 	void SetApproachMode();
 	void SetPatrolMode();
@@ -84,6 +89,7 @@ public:
 	void SetAvoidMode();
 	void SetSkillMode();
 	void SetStrafingMode();
+	void SetSequenceMode();
 
 	bool IsWaitMode();
 	bool IsApproachMode();
@@ -92,6 +98,7 @@ public:
 	bool IsAvoidMode();
 	bool IsSkillMode();
 	bool IsStrafingMode();
+	bool IsSequenceMode();
 
 	APlayerCharacter* GetTarget();
 	FVector GetGoalLocation();
@@ -99,6 +106,7 @@ public:
 	float GetSkillRange(int32 InIndex);
 	FORCEINLINE float GetAvoidRange() { return AvoidRange; }
 	FORCEINLINE float GetStrafingRange() { return StrafingRange; }
+	FORCEINLINE float GetTaskStartTime() { return TaskStartTime; }
 	FORCEINLINE FName GetBehaviorKey() { return BehaviorKey; }
 	FORCEINLINE FName GetTargetKey() { return TargetKey; }
 	FORCEINLINE FName GetPerceptedPlayersKey() { return PerceptedPlayersKey; }

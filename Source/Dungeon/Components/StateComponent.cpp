@@ -44,3 +44,8 @@ void UStateComponent::SetDeadMode()
 {
 	ChangeType(EStateType::Dead);
 }
+
+void UStateComponent::SetSequenceMode()
+{
+	ChangeType(EStateType::Sequence);
+}
