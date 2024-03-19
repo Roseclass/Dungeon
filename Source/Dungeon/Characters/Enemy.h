@@ -64,12 +64,13 @@ public:
 private:
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
-	UFUNCTION(BlueprintCallable) void SequenceStart();
-	UFUNCTION(BlueprintCallable) void SequenceEnd();
+	void SequenceStart();
+	UFUNCTION(BlueprintCallable)void SequenceEnd();
 protected:
 	virtual void Init()override;
 public:	
-	UFUNCTION(BlueprintImplementableEvent)void PlaySequence(int32 InIndex);
+	UFUNCTION(BlueprintNativeEvent)void PlaySequence(int32 InIndex);
+	void PlaySequence_Implementation(int32 InIndex);
 	
 
 	FORCEINLINE class UBehaviorTree* GetBehaviorTree() { return BehaviorTree; }

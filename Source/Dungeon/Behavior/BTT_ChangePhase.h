@@ -1,31 +1,32 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTT_Sequence.generated.h"
+#include "BTT_ChangePhase.generated.h"
 
 /**
  * 
  */
 
 UCLASS()
-class DUNGEON_API UBTT_Sequence : public UBTTaskNode
+class DUNGEON_API UBTT_ChangePhase : public UBTTaskNode
 {
 	GENERATED_BODY()
 public:
-	UBTT_Sequence();
+	UBTT_ChangePhase();
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-	
+
 	//property
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Behavior;
+		FBlackboardKeySelector Phase;
 
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Sequence;
+		int32 NextPhase;
 public:
 
 	//function

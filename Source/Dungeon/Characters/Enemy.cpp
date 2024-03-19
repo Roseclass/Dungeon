@@ -93,6 +93,11 @@ void AEnemy::Init()
 		Skill->SpawnSkillActors();
 }
 
+void AEnemy::PlaySequence_Implementation(int32 InIndex)
+{
+	SequenceStart();
+}
+
 void AEnemy::UseSkill(int32 Idx)
 {
 	Super::UseSkill(Idx);

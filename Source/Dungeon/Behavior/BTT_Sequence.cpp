@@ -4,12 +4,15 @@
 
 #include "Characters/EnemyAIController.h"
 #include "Characters/Enemy.h"
+#include "Components/BehaviorComponent.h"
 #include "Components/StateComponent.h"
 
 UBTT_Sequence::UBTT_Sequence()
 {
 	NodeName = "Sequence";
+	bNotifyTick = true;
 
+	Behavior.AddEnumFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_Sequence, Behavior), StaticEnum<EBehaviorType>());
 	Sequence.AddIntFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_Sequence, Sequence));
 }
 
@@ -36,7 +39,7 @@ void UBTT_Sequence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 	// is enemy's state IDLE?
-	// that means skill sequence's end
+	// that means sequence's end
 
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	AAIController* controller = Cast<AAIController>(OwnerComp.GetOwner());
@@ -48,6 +51,7 @@ void UBTT_Sequence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	{
 		int32 sequence = BlackboardComp->GetValueAsInt(Sequence.SelectedKeyName);
 		BlackboardComp->SetValueAsInt(Sequence.SelectedKeyName,++sequence);
+		BlackboardComp->SetValueAsEnum(Behavior.SelectedKeyName, uint8(EBehaviorType::Wait));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }

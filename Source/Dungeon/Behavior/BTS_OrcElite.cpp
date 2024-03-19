@@ -91,7 +91,7 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 
 int32 UBTS_OrcElite::CheckPhase(float HealthRate, int32 PrevPhase)
 {
-	int32 result = 0;
+	int32 result = PrevPhase;
 	if (HealthRate <= 0.5 && PrevPhase == 0)
 		result = 1;
 
