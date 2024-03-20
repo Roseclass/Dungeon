@@ -10,6 +10,7 @@ class APlayerCharacter;
 class AEnemy;
 class AItemManager;
 class AWeapon;
+class IIInteractable;
 class UUW_Main;
 
 UCLASS()
@@ -36,6 +37,7 @@ private:
 	AEnemy* Target;
 	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
 	AWeapon* Item;
+	IIInteractable* Iteractable;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		float ShortPressThreshold;

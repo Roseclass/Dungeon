@@ -14,6 +14,8 @@
 #include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
 
+#include "Interfaces/IInteractable.h"
+
 ADungeonPlayerController::ADungeonPlayerController()
 {
 	bShowMouseCursor = true;
@@ -62,6 +64,18 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 			StopMovement();
 			myPawn->TryAddItem(Item);
 			Item = nullptr;
+		}
+		return;
+	}
+
+	if (Iteractable)
+	{
+		AActor* inter = Cast<AActor>(Iteractable->_getUObject());
+		if (myPawn->IsOverlappingActor(inter))
+		{
+			StopMovement();
+			Iteractable->Interact(myPawn);
+			Iteractable = nullptr;
 		}
 		return;
 	}
@@ -189,6 +203,7 @@ void ADungeonPlayerController::OnSetDestinationPressed()
 {
 	Target = nullptr;
 	Item = nullptr;
+	Iteractable = nullptr;
 	bInputPressed = true;
 	StopMovement();
 }
@@ -210,6 +225,7 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 
 		AEnemy* const other = Cast<AEnemy>(Hit.GetActor());
 		AWeapon* const otherWeapon = Cast<AWeapon>(Hit.GetActor());
+		IIInteractable* const otherInter = Cast<IIInteractable>(Hit.GetActor());
 
 		if (other && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
@@ -220,6 +236,12 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 		{
 			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, otherWeapon);
 			Item = otherWeapon;
+		}
+		else if (otherInter)
+		{
+			AActor* inter = Cast<AActor>(otherInter->_getUObject());
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, inter);
+			Iteractable = otherInter;
 		}
 		else
 		{
