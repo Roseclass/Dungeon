@@ -4,6 +4,7 @@
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+
 #include "Widgets/UW_DialogEntry.h"
 
 FReply UUW_Dialog::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -98,24 +99,24 @@ void UUW_Dialog::Reply(TArray<FText> Replies)
 		UDialogReplyObject* obj = NewObject<UDialogReplyObject>(this);
 		obj->SetText(i);
 		RepliesListView->AddItem(obj);
-		obj->OnClicked.AddUFunction(this, "OnReplyClicked");
+		//obj->OnClicked.AddUFunction(this, "OnReplyClicked");
 	}
 	SetDialogState(EDialogState::Reply);
 }
 
-//void UUW_Dialog::Quest(const TArray<FQuestTreeData>& Quests)
-//{
-//	RepliesListView->ClearListItems();
-//	for (auto i : Quests)
-//	{
-//		UDialogReplyObject* obj = NewObject<UDialogReplyObject>(this);
-//		obj->SetText(i.QuestName);
-//		obj->SetData(i);
-//		RepliesListView->AddItem(obj);
-//		obj->OnClicked.AddDynamic(this, &UUW_Dialog::OnQuestClicked);
-//	}
-//	SetDialogState(EDialogState::Reply);
-//}
+void UUW_Dialog::Quest(const TArray<FQuestTreeData>& Quests)
+{
+	RepliesListView->ClearListItems();
+	for (auto i : Quests)
+	{
+		UDialogReplyObject* obj = NewObject<UDialogReplyObject>(this);
+		obj->SetText(i.QuestName);
+		obj->SetData(i);
+		RepliesListView->AddItem(obj);
+		//obj->OnClicked.AddDynamic(this, &UUW_Dialog::OnQuestClicked);
+	}
+	SetDialogState(EDialogState::Reply);
+}
 
 void UUW_Dialog::Point(FText InText, bool Clear)
 {

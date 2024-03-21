@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/QuestListComponent.h"
 #include "UW_Dialog.generated.h"
 
 /**
@@ -79,7 +80,7 @@ public:
 	void SetDialogState(EDialogState InState);
 	void Speak(FText InText);
 	void Reply(TArray<FText> Replies);
-	//void Quest(const TArray<struct FQuestTreeData>& Quests);
+	void Quest(const TArray<FQuestTreeData>& Quests);
 	void Point(FText InText, bool Clear = 0);
 	void Exit();
 

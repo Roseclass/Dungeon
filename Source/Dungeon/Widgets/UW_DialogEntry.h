@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "Components/QuestListComponent.h"
 #include "UW_DialogEntry.generated.h"
 
 /**
@@ -23,7 +24,7 @@ class DUNGEON_API UDialogReplyObject : public UObject
 		//property
 private:
 	FText Reply;
-	//FQuestTreeData QuestData;
+	FQuestTreeData QuestData;
 protected:
 public:
 	FDialogReplyObject_OnClicked OnClicked;
@@ -36,18 +37,18 @@ public:
 	{
 		Reply = InText;
 	}
-	//void SetData(FQuestTreeData InData)
-	//{
-	//	QuestData = InData;
-	//}
+	void SetData(FQuestTreeData InData)
+	{
+		QuestData = InData;
+	}
 	FText GetText()
 	{
 		return Reply;
 	}
-	//FQuestTreeData GetData()
-	//{
-	//	return QuestData;
-	//}
+	FQuestTreeData GetData()
+	{
+		return QuestData;
+	}
 };
 
 UCLASS()
@@ -58,7 +59,7 @@ protected:
 	virtual void NativeOnInitialized()override;
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject)override;
 
-		//property
+	//property
 private:
 	UDialogReplyObject* DialogReplyObject;
 protected:
