@@ -37,34 +37,16 @@ void UQuestComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UQuestComponent::Reset()
+void UQuestComponent::SetQuest(AQuest* InQuest)
 {
-	for (auto i : Quests)
-	{
-		i->OnDestroyed.Clear();
-		i->Destroy();
-	}
-	Quests.Empty();
-}
-
-void UQuestComponent::AddQuest(AQuest* InQuest)
-{
-	Quests.AddUnique(InQuest);
+	Quest = InQuest;
 }
 
 void UQuestComponent::RemoveQuest(AQuest* InQuest)
 {
-	Quests.Remove(InQuest);
-	InQuest->Destroy();
-}
-
-AQuest* UQuestComponent::FindQuest(TSubclassOf<AQuest> InQuestClass)
-{
-	for (auto i : Quests)
-	{
-		if (i->GetClass() == InQuestClass)return i;
-	}
-	return nullptr;
+	CheckFalse(Quest == InQuest);
+	Quest->Destroy();
+	Quest = nullptr;
 }
 
 void UQuestComponent::ToggleWidget()
@@ -100,37 +82,5 @@ void UQuestComponent::OffWidget()
 	//{
 	//	UWidgetBlueprintLibrary::SetInputMode_GameOnly(controller);
 	//	controller->SetShowMouseCursor(0);
-	//}
-}
-
-void UQuestComponent::GetQuestArray(TArray<AQuest*>& InArray)
-{
-	for (auto i : Quests)InArray.Add(i);
-}
-
-AQuest* UQuestComponent::GetCompletedQuest()
-{
-	//for (auto i : Quests)
-	//{
-	//	if (!i->GetRootObjectCollection()->GetIsCollectionCompleted())continue;
-	//	return i;
-	//}
-	return nullptr;
-}
-
-void UQuestComponent::FindInteractQuest(AActor* InActor)
-{
-	CheckNull(InActor);
-
-	//for (auto i : Quests)
-	//{
-	//	if (!i)continue;
-	//	UCQuest_ObjectiveCollection* col = i->GetRootObjectCollection();
-	//	if (!col)continue;
-	//	UCQuest_Objective* obj = col->FindNextIncompleteObject();
-	//	if (!obj)continue;
-	//	UCQuest_ObjectiveInteract* inter = Cast<UCQuest_ObjectiveInteract>(obj);
-	//	if (!inter)continue;
-	//	inter->CheckTargetActor(InActor);
 	//}
 }

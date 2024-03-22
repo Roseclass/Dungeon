@@ -16,13 +16,21 @@ enum class EQuestConditionType : uint8
 	Max
 };
 
+UENUM(BlueprintType)
+enum class EQuestObjectiveState : uint8
+{
+	Main,
+	Additive,
+	Max
+};
+
 USTRUCT(BlueprintType)
 struct FQuestCondition
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly)
-		FText Summary;
+		FString Summary;
 
 	UPROPERTY(EditDefaultsOnly)
 		EQuestConditionType Type;
@@ -40,6 +48,27 @@ public:
 };
 
 UCLASS()
+class UQuest_Objective : public UObject
+{
+	GENERATED_BODY()
+	//property
+private:
+	TArray<FQuestCondition> QuestConditions;
+	EQuestObjectiveState State;
+protected:
+public:
+
+	//function
+private:
+protected:
+public:
+	FORCEINLINE void SetQuestConditions(const TArray<FQuestCondition>& InArray) { QuestConditions = InArray; }
+
+	FORCEINLINE const TArray<FQuestCondition>& GetQuestConditions() const { return QuestConditions; }
+	FORCEINLINE EQuestObjectiveState GetState() const { return State; }
+};
+
+UCLASS()
 class DUNGEON_API AQuest : public AActor
 {
 	GENERATED_BODY()
@@ -53,6 +82,8 @@ public:
 
 	//property
 private:
+	UPROPERTY()UQuest_Objective* MainQuestOjbective;
+	UPROPERTY()UQuest_Objective* AdditiveQuestOjbective;
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FText Name;
@@ -75,8 +106,7 @@ public:
 private:
 	UFUNCTION() void OnQuestDestroyed(AActor* DestroyedActor);
 protected:
-	//UFUNCTION(BlueprintImplementableEvent) UQuestObjectiveCollection* ConstructRootObjectiveCollection();
-	//UFUNCTION(BlueprintImplementableEvent) void PopulateObjectives(UQuestObjectiveCollection* RootObjectCollection);
 public:
-	//UFUNCTION(BlueprintCallable, BlueprintPure) FORCEINLINE UQuestObjectiveCollection* GetRootObjectCollection() { return RootObjectiveCollection; }
+	FORCEINLINE UQuest_Objective* GetMainQuestOjbective() const { return MainQuestOjbective; }
+	FORCEINLINE UQuest_Objective* GetAdditiveQuestOjbective() const { return AdditiveQuestOjbective; }
 };

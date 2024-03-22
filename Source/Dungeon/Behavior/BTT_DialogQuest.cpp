@@ -89,7 +89,7 @@ void UBTT_DialogQuest::OnQuestReplyFinished(UBehaviorTreeComponent* OwnerComp, U
 		FinishLatentTask(*OwnerComp, EBTNodeResult::Failed);
 	}
 
-	comp->AddQuest(quest);
+	comp->SetQuest(quest);
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
 

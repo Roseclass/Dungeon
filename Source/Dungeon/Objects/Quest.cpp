@@ -12,6 +12,11 @@ void AQuest::BeginPlay()
 {
 	Super::BeginPlay();
 	OnDestroyed.AddDynamic(this, &AQuest::OnQuestDestroyed);
+
+	MainQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
+	MainQuestOjbective->SetQuestConditions(MainConditions);
+	AdditiveQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
+	AdditiveQuestOjbective->SetQuestConditions(AdditiveConditions);
 }
 
 void AQuest::Tick(float DeltaTime)

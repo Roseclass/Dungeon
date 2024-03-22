@@ -5,7 +5,7 @@
 #include "QuestComponent.generated.h"
 
 class AQuest;
-class UQuestObjectiveCollection;
+//class UUW_Quest;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UQuestComponent : public UActorComponent
@@ -21,30 +21,21 @@ public:
 
 	//property
 private:
-	UPROPERTY()TArray<AQuest*> Quests;
-	//UPROPERTY()UCUserWidget_Quest* QuestWidget;
+	AQuest* Quest;
+	//UPROPERTY()UUW_Quest* QuestWidget;
 protected:
 	//UPROPERTY(EditDefaultsOnly)
-	//	TSubclassOf<UCUserWidget_Quest> QuestWidgetClass;
+	//	TSubclassOf<UUW_Quest> QuestWidgetClass;
 public:
 
 	//function
 private:
 protected:
 public:
-	void Reset();
-	UFUNCTION(BlueprintCallable)void AddQuest(AQuest* InQuest);
+	UFUNCTION(BlueprintCallable)void SetQuest(AQuest* InQuest);
 	UFUNCTION(BlueprintCallable)void RemoveQuest(AQuest* InQuest);
-	UFUNCTION(BlueprintCallable, BlueprintPure)AQuest* FindQuest(TSubclassOf<AQuest> InQuestClass);
 
 	void ToggleWidget();
 	void OnWidget();
 	void OffWidget();
-
-	void GetQuestArray(TArray<AQuest*>& InArray);
-
-	AQuest* GetCompletedQuest();
-
-	void FindInteractQuest(AActor* InActor);
-
 };
