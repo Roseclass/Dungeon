@@ -10,9 +10,12 @@
 
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
+#include "Characters/NPC.h"
+#include "Components/DialogComponent.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
+#include "Widgets/UW_Dialog.h"
 
 #include "Interfaces/IInteractable.h"
 
@@ -74,7 +77,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		if (myPawn->IsOverlappingActor(inter))
 		{
 			StopMovement();
-			Iteractable->Interact(myPawn);
+			Server_Interaction(inter);
 			Iteractable = nullptr;
 		}
 		return;
@@ -199,6 +202,21 @@ void ADungeonPlayerController::Client_ReplicateRotation_Implementation(FRotator 
 	Server_ReplicateRotation(NewRotation, this);
 }
 
+void ADungeonPlayerController::Server_Interaction_Implementation(AActor* InInteractable)
+{
+	IIInteractable* const interactable = Cast<IIInteractable>(InInteractable);
+	CheckNull(interactable);
+	interactable->Interact(this);
+}
+
+void ADungeonPlayerController::Server_SelectReply_Implementation(AActor* InInteractable, int32 NextPoint)
+{
+	CheckNull(InInteractable);
+	UDialogComponent* dialog = CHelpers::GetComponent<UDialogComponent>(InInteractable);
+	CheckNull(dialog);
+	dialog->OnReply(this, NextPoint);
+}
+
 void ADungeonPlayerController::OnSetDestinationPressed()
 {
 	Target = nullptr;
@@ -298,4 +316,51 @@ void ADungeonPlayerController::OnInventory()
 	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 	myPawn->ToggleInventory();
+}
+
+void ADungeonPlayerController::Client_DialogInit_Implementation(ANPC* InNPC)
+{
+	if (!InNPC)
+	{
+		CLog::Print("ADungeonPlayerController::Client_DialogInit_Implementation InNPC is nullptr");
+		return;
+	}
+	if (DialogWidgetClass && !DialogWidget)
+	{
+		DialogWidget = CreateWidget<UUW_Dialog, ADungeonPlayerController>(this, DialogWidgetClass);
+		DialogWidget->AddToViewport();
+	}
+	if (DialogWidget)
+	{
+		DialogWidget->SetVisibility(ESlateVisibility::Visible);
+		DialogWidget->SetInteractingNPC(InNPC);
+		UDialogComponent* dialog = CHelpers::GetComponent<UDialogComponent>(InNPC);
+		DialogWidget->Init(dialog->GetPortrait(), dialog->GetName());
+		DialogWidget->OnSpeakFinished.AddUFunction(this, "Server_Interaction");
+		DialogWidget->OnReplyFinished.AddUFunction(this, "Server_SelectReply");
+	}
+}
+
+void ADungeonPlayerController::Client_DialogSpeak_Implementation(const FText& InText)
+{
+	if (!DialogWidget)
+	{
+		CLog::Print("ADungeonPlayerController::Client_DialogSpeak_Implementation DialogWidget is nullptr");
+		return;
+	}
+
+	DialogWidget->Speak(InText);
+
+}
+
+void ADungeonPlayerController::Client_DialogReply_Implementation(const TArray<FText>& InReplies)
+{
+	if (!DialogWidget)
+	{
+		CLog::Print("ADungeonPlayerController::Client_DialogSpeak_Implementation DialogWidget is nullptr");
+		return;
+	}
+
+	DialogWidget->Reply(InReplies);
+
 }

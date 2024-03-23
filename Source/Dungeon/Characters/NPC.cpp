@@ -26,27 +26,27 @@ void ANPC::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ANPC::Interact(APlayerCharacter* InPlayer)
+void ANPC::Interact(ADungeonPlayerController* InPlayer)
 {
-	IsInteracting = 1;
-	Dialog->OnInteraction(InPlayer);
 	CheckNull(InPlayer);
-	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(InPlayer->GetController());
-	CheckNull(controller);
-	InPlayer->GetCharacterMovement()->DisableMovement();
+	Dialog->OnInteraction(InPlayer);
+
+	APlayerCharacter* playerPawn = Cast<APlayerCharacter>(InPlayer->GetPawn());
+	CheckNull(playerPawn);
+	playerPawn->GetCharacterMovement()->DisableMovement();
 }
 
-void ANPC::PreInteractEvent(APlayerCharacter* InPlayer)
+void ANPC::PreInteractEvent(ADungeonPlayerController* InPlayer)
 {
 
 }
 
-void ANPC::InInteractEvent(APlayerCharacter* InPlayer)
+void ANPC::InInteractEvent(ADungeonPlayerController* InPlayer)
 {
 
 }
 
-void ANPC::PostInteractEvent(APlayerCharacter* InPlayer)
+void ANPC::PostInteractEvent(ADungeonPlayerController* InPlayer)
 {
 
 }

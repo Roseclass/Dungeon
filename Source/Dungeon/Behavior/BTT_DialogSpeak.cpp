@@ -4,35 +4,43 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-#include "Widgets/UW_Dialog.h"
+#include "DungeonPlayerController.h"
+#include "Behavior/PlayerDialogDatas.h"
 
 UBTT_DialogSpeak::UBTT_DialogSpeak()
 {
 	NodeName = "Speak";
 
-	DialogWidget.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogSpeak, DialogWidget), UUW_Dialog::StaticClass());
+	PlayerDatas.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogSpeak, PlayerDatas), UPlayerDialogDatas::StaticClass());
+	InteractingPlayer.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogSpeak, InteractingPlayer), ADungeonPlayerController::StaticClass());
 }
 
 EBTNodeResult::Type UBTT_DialogSpeak::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	UUW_Dialog* widget = nullptr;
-	widget = Cast<UUW_Dialog>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(DialogWidget.SelectedKeyName));
+	// get interacting player controller
+	ADungeonPlayerController* player = nullptr;
+	player = Cast<ADungeonPlayerController>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(InteractingPlayer.SelectedKeyName));
+	if (!player)return EBTNodeResult::Failed;
 
-	if (widget)
+	// change dialog text
+	player->Client_DialogSpeak(Text);
+
+	// save dialog point
+	UPlayerDialogDatas* datas = Cast<UPlayerDialogDatas>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(PlayerDatas.SelectedKeyName));
+	if (!datas)
 	{
-		widget->OnSpeakFinished.AddUFunction(this, "OnSpeakFinished");
-		widget->Speak(Text);
+		CLog::Print("UBTT_DialogSpeak datas is nullptr", -1, 10, FColor::Red);
+		return EBTNodeResult::Failed;
 	}
+	int32& point = datas->PointMap.FindOrAdd(player);
+	point = NextPoint;
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(PlayerDatas.SelectedKeyName, datas);
 
-	return EBTNodeResult::InProgress;
-}
+	// release interacting player
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(InteractingPlayer.SelectedKeyName, nullptr);
 
-void UBTT_DialogSpeak::OnSpeakFinished(UBehaviorTreeComponent* OwnerComp)
-{
-	UUW_Dialog* widget = nullptr;
-	widget = Cast<UUW_Dialog>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(DialogWidget.SelectedKeyName));
-	if (widget)	widget->OnSpeakFinished.Clear();
-	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+	
+	return EBTNodeResult::Succeeded;
 }

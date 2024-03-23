@@ -20,10 +20,10 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Interact(APlayerCharacter* InPlayer)override;
-	virtual void PreInteractEvent(APlayerCharacter* InPlayer)override;
-	virtual void InInteractEvent(APlayerCharacter* InPlayer)override;
-	virtual void PostInteractEvent(APlayerCharacter* InPlayer)override;
+	virtual void Interact(ADungeonPlayerController* InPlayer)override;
+	virtual void PreInteractEvent(ADungeonPlayerController* InPlayer)override;
+	virtual void InInteractEvent(ADungeonPlayerController* InPlayer)override;
+	virtual void PostInteractEvent(ADungeonPlayerController* InPlayer)override;
 	virtual bool IsInteractable()override;
 
 	virtual void Init();

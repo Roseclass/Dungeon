@@ -20,15 +20,20 @@ protected:
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector DialogWidget;
+		FBlackboardKeySelector PlayerDatas;
+
+	UPROPERTY(EditAnywhere)
+		FBlackboardKeySelector InteractingPlayer;
 
 	UPROPERTY(EditAnywhere)
 		FText Text;
+
+	UPROPERTY(EditAnywhere)
+		int32 NextPoint;
 public:
 
 	//function
 private:
-	UFUNCTION() void OnSpeakFinished(UBehaviorTreeComponent* OwnerComp);
 protected:
 public:
 

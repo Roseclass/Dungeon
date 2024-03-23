@@ -4,41 +4,33 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-//#include "Widgets/UW_Dialog.h"
+#include "DungeonPlayerController.h"
+#include "Behavior/PlayerDialogDatas.h"
 
 UBTT_DialogReply::UBTT_DialogReply()
 {
 	NodeName = "Reply";
 
-	//DialogWidget.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogReply, DialogWidget), UUW_Dialog::StaticClass());
-	ReplyIndex.AddIntFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogReply, ReplyIndex));
-	Point.AddIntFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogReply, Point));
+	PlayerDatas.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogReply, PlayerDatas), UPlayerDialogDatas::StaticClass());
+	InteractingPlayer.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogReply, InteractingPlayer), ADungeonPlayerController::StaticClass());
 }
 
 EBTNodeResult::Type UBTT_DialogReply::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	//UUW_Dialog* widget = nullptr;
-	//widget = Cast<UUW_Dialog>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(DialogWidget.SelectedKeyName));
+	// get interacting player controller
+	ADungeonPlayerController* player = nullptr;
+	player = Cast<ADungeonPlayerController>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(InteractingPlayer.SelectedKeyName));
+	if (!player)return EBTNodeResult::Failed;
 
-	//if (widget)
-	//{
-	//	widget->OnReplyFinished.AddDynamic(this, &UBTT_DialogReply::OnReplyFinished);
-	//	TArray<FText> arr;
-	//	for (auto i : Replies)arr.Add(i.Reply);
-	//	widget->Reply(arr);
-	//}
+	// setting Replies
+	TArray<FText> arr;
+	for (auto i : Replies)arr.Add(i.Reply);
+	player->Client_DialogReply(arr);
 
-	return EBTNodeResult::InProgress;
-}
+	// release interacting player
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(InteractingPlayer.SelectedKeyName, nullptr);
 
-void UBTT_DialogReply::OnReplyFinished(int32 InReplyIndex, UBehaviorTreeComponent* OwnerComp)
-{
-	//UUW_Dialog* widget = nullptr;
-	//widget = Cast<UUW_Dialog>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(DialogWidget.SelectedKeyName));
-	//if (widget)	widget->OnReplyFinished.Remove(this, "OnReplyFinished");
-	//OwnerComp->GetBlackboardComponent()->SetValueAsInt(ReplyIndex.SelectedKeyName, InReplyIndex);
-	//OwnerComp->GetBlackboardComponent()->SetValueAsInt(Point.SelectedKeyName, Replies[InReplyIndex].NextPoint);
-	//FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
+	return EBTNodeResult::Succeeded;
 }

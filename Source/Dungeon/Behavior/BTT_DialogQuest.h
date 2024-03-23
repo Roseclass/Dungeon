@@ -20,16 +20,16 @@ class DUNGEON_API UBTT_DialogQuest : public UBTTaskNode
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector DialogWidget;
+		FBlackboardKeySelector PlayerDatas;
 
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Player;
+		FBlackboardKeySelector InteractingPlayer;
 
 	UPROPERTY(EditAnywhere)
 		FBlackboardKeySelector Point;
 
 	UPROPERTY(EditAnywhere)
-		bool bPoint;
+		int32 NextPoint;
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "bPoint", EditConditionHides))
 		int32 PrevPoint;

@@ -35,13 +35,10 @@ protected:
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector DialogWidget;
+		FBlackboardKeySelector PlayerDatas;
 
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector ReplyIndex;
-
-	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Point;
+		FBlackboardKeySelector InteractingPlayer;
 
 	UPROPERTY(EditAnywhere)
 		TArray<FReplyData> Replies;
@@ -49,7 +46,6 @@ public:
 
 	//function
 private:
-	UFUNCTION() void OnReplyFinished(int32 InReplyIndex, UBehaviorTreeComponent* OwnerComp);
 protected:
 public:
 };

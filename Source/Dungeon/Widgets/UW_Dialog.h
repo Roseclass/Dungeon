@@ -15,12 +15,13 @@ class UImage;
 class UTextBlock;
 class UDialogReplyObject;
 class UBehaviorTreeComponent;
+class ADungeonPlayerController;
+class ANPC;
 
 DECLARE_MULTICAST_DELEGATE(FDialogWidget_OnExit);
-DECLARE_MULTICAST_DELEGATE_OneParam(FDialogWidget_OnSpeakFinished, UBehaviorTreeComponent*);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FDialogWidget_OnReplyFinished, int32, UBehaviorTreeComponent*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FDialogWidget_OnSpeakFinished, ANPC*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FDialogWidget_OnReplyFinished, ANPC*, int32);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FDialogWidget_OnQuestReplyFinished, UBehaviorTreeComponent*, UDialogReplyObject*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FDialogWidget_OnPointFinished, UBehaviorTreeComponent*);
 
 UENUM(BlueprintType)
 enum class EDialogState : uint8
@@ -33,12 +34,15 @@ class DUNGEON_API UUW_Dialog : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
+	virtual void NativeConstruct()override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 		//property
 private:
+	ADungeonPlayerController* PlayerController;
 	EDialogState DialogState;
 	UBehaviorTreeComponent* BTComponent;
+	ANPC* InteractingNPC;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* ReplyBorder;
@@ -63,7 +67,6 @@ public:
 	FDialogWidget_OnSpeakFinished OnSpeakFinished;
 	FDialogWidget_OnReplyFinished OnReplyFinished;
 	FDialogWidget_OnQuestReplyFinished OnQuestReplyFinished;
-	FDialogWidget_OnPointFinished OnPointReplyFinished;
 	//function
 private:
 	UFUNCTION() void OnReplyClicked(UDialogReplyObject* ClickedObject);
@@ -76,12 +79,12 @@ private:
 protected:
 public:
 	void Init(UObject* Portrait,FText Name);
-	void SetBTComponent(UBehaviorTreeComponent* InComponent);
+	void SetBTComponent(UBehaviorTreeComponent* NewBTComponent);
+	void SetInteractingNPC(ANPC* NewInteractingNPC);
 	void SetDialogState(EDialogState InState);
 	void Speak(FText InText);
 	void Reply(TArray<FText> Replies);
 	void Quest(const TArray<FQuestTreeData>& Quests);
-	void Point(FText InText, bool Clear = 0);
 	void Exit();
 
 };

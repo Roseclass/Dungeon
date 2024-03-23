@@ -8,10 +8,12 @@
 class UNiagaraSystem;
 class APlayerCharacter;
 class AEnemy;
+class ANPC;
 class AItemManager;
 class AWeapon;
 class IIInteractable;
 class UUW_Main;
+class UUW_Dialog;
 
 UCLASS()
 class ADungeonPlayerController : public APlayerController
@@ -48,8 +50,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 		TSubclassOf<UUW_Main> MainWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Dialog")
+		TSubclassOf<UUW_Dialog> DialogWidgetClass;
+
 	uint32 bMoveToMouseCursor : 1;
 	UPROPERTY()UUW_Main* MainWidget;
+	UPROPERTY()UUW_Dialog* DialogWidget;
 public:
 
 	//function
@@ -62,6 +68,8 @@ private:
 	UFUNCTION(NetMulticast, Reliable)void Multicast_ReplicateRotation(FRotator NewRotation, ADungeonPlayerController* Exception);
 	UFUNCTION(Client, Reliable)void Client_ReplicateRotation(FRotator NewRotation);
 
+	UFUNCTION(Reliable, Server)void Server_Interaction(AActor* InInteractable);
+	UFUNCTION(Reliable, Server)void Server_SelectReply(AActor* InInteractable, int32 NextPoint);
 protected:
 	//skill input
 	void OnSetDestinationPressed();
@@ -75,6 +83,9 @@ protected:
 	void OnSkillTree();
 	void OnInventory();
 public:
+	UFUNCTION(Client, Reliable)void Client_DialogInit(ANPC* InNPC);
+	UFUNCTION(Client, Reliable)void Client_DialogSpeak(const FText& InText);
+	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
 
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
 	FORCEINLINE AItemManager* GetItemManager() const { return ItemManager; }

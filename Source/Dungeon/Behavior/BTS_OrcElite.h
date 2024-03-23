@@ -8,7 +8,6 @@
  * 
  */
 
-
 UCLASS()
 class DUNGEON_API UBTS_OrcElite : public UBTService
 {

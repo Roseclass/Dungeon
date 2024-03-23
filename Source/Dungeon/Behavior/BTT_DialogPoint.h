@@ -21,10 +21,13 @@ protected:
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Point;
+		FBlackboardKeySelector PlayerDatas;
 
 	UPROPERTY(EditAnywhere)
-		int32 NextPoint;
+		FBlackboardKeySelector InteractingPlayer;
+
+	UPROPERTY(EditAnywhere)
+		FBlackboardKeySelector Point;
 public:
 
 	//function

@@ -5,7 +5,7 @@
 #include "QuestComponent.generated.h"
 
 class AQuest;
-//class UUW_Quest;
+class UUW_Quest;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UQuestComponent : public UActorComponent
@@ -22,10 +22,10 @@ public:
 	//property
 private:
 	AQuest* Quest;
-	//UPROPERTY()UUW_Quest* QuestWidget;
+	UPROPERTY()UUW_Quest* QuestWidget;
 protected:
-	//UPROPERTY(EditDefaultsOnly)
-	//	TSubclassOf<UUW_Quest> QuestWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<UUW_Quest> QuestWidgetClass;
 public:
 
 	//function

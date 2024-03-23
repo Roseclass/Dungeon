@@ -3,10 +3,11 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
-#include "GameFramework/PlayerController.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/NPC.h"
 #include "Characters/PlayerCharacter.h"
+#include "Behavior/PlayerDialogDatas.h"
 
 #include "Widgets/UW_Dialog.h"
 
@@ -21,9 +22,16 @@ void UDialogComponent::BeginPlay()
 
 	ANPC* owner = Cast<ANPC>(GetOwner());
 	CheckNull(owner);
+	CheckFalse(owner->HasAuthority());
 	Controller = Cast<AAIController>(owner->GetController());
 	UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();
-	if (!bbComp)Controller->UseBlackboard(Blackboard, bbComp);
+	PlayerDialogDatas = NewObject<UPlayerDialogDatas>(owner, UPlayerDialogDatas::StaticClass());
+	if (!bbComp)
+	{
+		Controller->UseBlackboard(Blackboard, bbComp);
+		bbComp->SetValueAsObject(PlayerDialogDatasObjectBBName, PlayerDialogDatas);
+		Controller->RunBehaviorTree(DialogTree);
+	}
 }
 
 void UDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -31,29 +39,28 @@ void UDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UDialogComponent::OnInteraction(APlayerCharacter* InPlayer)
+void UDialogComponent::OnInteraction(ADungeonPlayerController* InPlayerController)
 {
-	APlayerController* controller = Cast<APlayerController>(InPlayer->GetController());
-	if (DialogWidgetClass)
+	if (InPlayerController)
 	{
-		DialogWidget = CreateWidget<UUW_Dialog, APlayerController>(controller, DialogWidgetClass);
-		DialogWidget->OnExit.AddUFunction(this, "OnExit");
-		DialogWidget->Init(Portrait,Name);
-		DialogWidget->AddToViewport();
-		controller->SetInputMode(FInputModeUIOnly());
-		controller->SetShowMouseCursor(1);
+		InPlayerController->Client_DialogInit(Cast<ANPC>(GetOwner()));
 		UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();
 		if (!bbComp)Controller->UseBlackboard(Blackboard, bbComp);
-		bbComp->SetValueAsObject(WidgetObjectBBName, DialogWidget);
-		bbComp->SetValueAsObject(PlayerObjectBBName, InPlayer);
+		bbComp->SetValueAsObject(PlayerControllerObjectBBName, InPlayerController);
 		bbComp->SetValueAsBool(RewardBoolBBName, 1);
-		Controller->RunBehaviorTree(DialogTree);
-		DialogWidget->SetBTComponent(Cast<UBehaviorTreeComponent>(Controller->GetBrainComponent()));
 	}
-	else
+}
+
+void UDialogComponent::OnReply(ADungeonPlayerController* InPlayerController, int32 NextPoint)
+{
+	if (InPlayerController)
 	{
-		CLog::Print("DialogWidgetClass Is Null");
-		return;
+		int32& point = PlayerDialogDatas->PointMap.FindOrAdd(InPlayerController);
+		point = NextPoint;
+
+		UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();
+		if (!bbComp)Controller->UseBlackboard(Blackboard, bbComp);
+		bbComp->SetValueAsObject(PlayerControllerObjectBBName, InPlayerController);
 	}
 }
 
@@ -65,7 +72,7 @@ void UDialogComponent::OnExit()
 	DialogWidget->RemoveFromParent();
 	Controller->GetBrainComponent()->StopLogic(FString());
 	UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();
-	bbComp->SetValueAsObject(PlayerObjectBBName, nullptr);
+	bbComp->SetValueAsObject(PlayerControllerObjectBBName, nullptr);
 	ANPC* npc = Cast<ANPC>(GetOwner());
 	if (npc)npc->EndInteract();
 }

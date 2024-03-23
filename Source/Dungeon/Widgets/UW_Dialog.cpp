@@ -5,7 +5,16 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
+#include "DungeonPlayerController.h"
+#include "Characters/NPC.h"
+
 #include "Widgets/UW_DialogEntry.h"
+
+void UUW_Dialog::NativeConstruct()
+{
+	Super::NativeConstruct();
+	PlayerController = Cast<ADungeonPlayerController>(GetOwningPlayer());
+}
 
 FReply UUW_Dialog::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
@@ -13,8 +22,8 @@ FReply UUW_Dialog::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FP
 
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && DialogState == EDialogState::Speak)
 	{
-		if (OnSpeakFinished.IsBound())
-			OnSpeakFinished.Broadcast(BTComponent);
+		if (OnSpeakFinished.IsBound() && InteractingNPC)
+			OnSpeakFinished.Broadcast(InteractingNPC);
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -23,20 +32,14 @@ FReply UUW_Dialog::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FP
 void UUW_Dialog::OnReplyClicked(UDialogReplyObject* ClickedObject)
 {
 	int32 numb = RepliesListView->GetIndexForItem(ClickedObject);
-	if (OnReplyFinished.IsBound())
-		OnReplyFinished.Broadcast(numb, BTComponent);
+	if (OnReplyFinished.IsBound() && InteractingNPC)
+		OnReplyFinished.Broadcast(InteractingNPC, numb);
 }
 
 void UUW_Dialog::OnQuestClicked(UDialogReplyObject* ClickedObject)
 {
 	if (OnQuestReplyFinished.IsBound())
 		OnQuestReplyFinished.Broadcast(BTComponent, ClickedObject);
-}
-
-void UUW_Dialog::OnPointClicked(UDialogReplyObject* ClickedObject)
-{
-	if (OnPointReplyFinished.IsBound())
-		OnPointReplyFinished.Broadcast(BTComponent);
 }
 
 void UUW_Dialog::HideReplySection()
@@ -69,9 +72,14 @@ void UUW_Dialog::Init(UObject* Portrait, FText Name)
 	NPCName->SetText(Name);
 }
 
-void UUW_Dialog::SetBTComponent(UBehaviorTreeComponent* InComponent)
+void UUW_Dialog::SetBTComponent(UBehaviorTreeComponent* NewBTComponent)
 {
-	BTComponent = InComponent;
+	BTComponent = NewBTComponent;
+}
+
+void UUW_Dialog::SetInteractingNPC(ANPC* NewInteractingNPC)
+{
+	InteractingNPC = NewInteractingNPC;
 }
 
 void UUW_Dialog::SetDialogState(EDialogState InState)
@@ -99,7 +107,7 @@ void UUW_Dialog::Reply(TArray<FText> Replies)
 		UDialogReplyObject* obj = NewObject<UDialogReplyObject>(this);
 		obj->SetText(i);
 		RepliesListView->AddItem(obj);
-		//obj->OnClicked.AddUFunction(this, "OnReplyClicked");
+		obj->OnClicked.AddUFunction(this, "OnReplyClicked");
 	}
 	SetDialogState(EDialogState::Reply);
 }
@@ -115,16 +123,6 @@ void UUW_Dialog::Quest(const TArray<FQuestTreeData>& Quests)
 		RepliesListView->AddItem(obj);
 		//obj->OnClicked.AddDynamic(this, &UUW_Dialog::OnQuestClicked);
 	}
-	SetDialogState(EDialogState::Reply);
-}
-
-void UUW_Dialog::Point(FText InText, bool Clear)
-{
-	if (Clear)RepliesListView->ClearListItems();
-	UDialogReplyObject* obj = NewObject<UDialogReplyObject>(this);
-	obj->SetText(InText);
-	RepliesListView->AddItem(obj);
-	obj->OnClicked.AddUFunction(this, "OnPointClicked");
 	SetDialogState(EDialogState::Reply);
 }
 

@@ -4,7 +4,8 @@
 #include "Components/ActorComponent.h"
 #include "DialogComponent.generated.h"
 
-class APlayerCharacter;
+class ADungeonPlayerController;
+class UPlayerDialogDatas;
 class UUW_Dialog;
 class UBehaviorTree;
 class UBlackboardData;
@@ -26,6 +27,7 @@ public:
 private:
 	UUW_Dialog* DialogWidget;
 	AAIController* Controller;
+	UPROPERTY()UPlayerDialogDatas* PlayerDialogDatas; // avoid garbage collecting
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UBehaviorTree* DialogTree;
@@ -34,16 +36,13 @@ protected:
 		UBlackboardData* Blackboard;
 
 	UPROPERTY(EditDefaultsOnly)
-		FName WidgetObjectBBName = FName("DialogWidget");
+		FName PlayerDialogDatasObjectBBName = FName("Datas");
 
 	UPROPERTY(EditDefaultsOnly)
-		FName PlayerObjectBBName = FName("Player");
+		FName PlayerControllerObjectBBName = FName("InteractingPlayer");
 
 	UPROPERTY(EditDefaultsOnly)
 		FName RewardBoolBBName = FName("Reward");
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widget")
-		TSubclassOf<UUW_Dialog> DialogWidgetClass;
 
 	UPROPERTY(EditAnywhere, Category = "Widget", meta = (DisplayThumbnail = "true", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface", DisallowedClasses = "MediaTexture"))
 		TObjectPtr<UObject> Portrait;
@@ -58,11 +57,14 @@ private:
 	UFUNCTION()void OnExit();
 protected:
 public:
-	void OnInteraction(APlayerCharacter* InPlayer);
+	void OnInteraction(ADungeonPlayerController* InPlayerController);
+	void OnReply(ADungeonPlayerController* InPlayerController, int32 NextPoint);
 
 	void SetValueAsBool(FName InName, bool Value);
 	void SetValueAsInt(FName InName, int32 Value);
 	bool GetValueAsBool(FName InName);
 	int32 GetValueAsInt(FName InName);
 
+	FORCEINLINE UObject* GetPortrait() const { return Portrait;}
+	FORCEINLINE FText GetName() const { return Name; }
 };
