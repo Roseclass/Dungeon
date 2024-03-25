@@ -364,3 +364,15 @@ void ADungeonPlayerController::Client_DialogReply_Implementation(const TArray<FT
 	DialogWidget->Reply(InReplies);
 
 }
+
+void ADungeonPlayerController::Client_DialogExit_Implementation()
+{
+	if (!DialogWidget)
+	{
+		CLog::Print("ADungeonPlayerController::Client_DialogSpeak_Implementation DialogWidget is nullptr");
+		return;
+	}
+
+	DialogWidget->Exit();
+
+}

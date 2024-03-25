@@ -15,34 +15,21 @@ UCLASS()
 class DUNGEON_API UBTT_DialogQuest : public UBTTaskNode
 {
 	GENERATED_BODY()
+public:
+	UBTT_DialogQuest();
+protected:
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	//property
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector PlayerDatas;
-
-	UPROPERTY(EditAnywhere)
 		FBlackboardKeySelector InteractingPlayer;
 
-	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Point;
-
-	UPROPERTY(EditAnywhere)
-		int32 NextPoint;
-
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "bPoint", EditConditionHides))
-		int32 PrevPoint;
-
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "bPoint", EditConditionHides))
-		FText PrevPointText = FText::FromString("....");
 public:
 
 	//function
 private:
-	UFUNCTION() void OnQuestReplyFinished(UBehaviorTreeComponent* OwnerComp, UDialogReplyObject* InObject);
-	UFUNCTION() void OnPointReplyFinished(UBehaviorTreeComponent* OwnerComp);
 protected:
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 public:
 };

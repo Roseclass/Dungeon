@@ -86,6 +86,7 @@ public:
 	UFUNCTION(Client, Reliable)void Client_DialogInit(ANPC* InNPC);
 	UFUNCTION(Client, Reliable)void Client_DialogSpeak(const FText& InText);
 	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
+	UFUNCTION(Client, Reliable)void Client_DialogExit();
 
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
 	FORCEINLINE AItemManager* GetItemManager() const { return ItemManager; }

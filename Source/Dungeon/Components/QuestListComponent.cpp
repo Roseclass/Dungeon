@@ -6,7 +6,9 @@
 #include "NiagaraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/NPC.h"
+#include "Objects/QuestBoard.h"
 
 UQuestListComponent::UQuestListComponent()
 {
@@ -18,12 +20,13 @@ void UQuestListComponent::BeginPlay()
 	Super::BeginPlay();
 
 	//데이터 읽어오기
+	if(DataTable)
 	{
 		TArray<FQuestTreeData*> datas;
 		DataTable->GetAllRows<FQuestTreeData>("", datas);
 		for (auto i : datas)Quests.Add(*i); 
 	}
-
+	return;
 	USkeletalMeshComponent* mesh = CHelpers::GetComponent<USkeletalMeshComponent>(GetOwner());
 	if (!mesh)return;
 
@@ -63,4 +66,9 @@ bool UQuestListComponent::FindAvailableQuest(TArray<FQuestTreeData>& InArray, in
 		InArray.Add(i);
 	}
 	return InArray.Num() > 0;
+}
+
+void UQuestListComponent::ShowList(ADungeonPlayerController* InPlayer)
+{
+	InPlayer->SetViewTargetWithBlend(QuestBoard);
 }

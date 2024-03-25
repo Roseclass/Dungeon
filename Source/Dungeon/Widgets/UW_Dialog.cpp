@@ -128,6 +128,8 @@ void UUW_Dialog::Quest(const TArray<FQuestTreeData>& Quests)
 
 void UUW_Dialog::Exit()
 {
-	if (OnExit.IsBound())
-		OnExit.Broadcast();
+	SetVisibility(ESlateVisibility::Collapsed);
+	NPCPortrait->SetBrushResourceObject(nullptr);
+	NPCName->SetText(FText());
+	SpeakText->SetText(FText());
 }

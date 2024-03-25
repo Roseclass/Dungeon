@@ -33,7 +33,7 @@ private:
 	bool IsInteracting;
 	TArray<UShapeComponent*> InteractionCollisionComponents;
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 		UDialogComponent* Dialog;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ComponentTags")

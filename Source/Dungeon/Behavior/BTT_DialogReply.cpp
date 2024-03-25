@@ -34,3 +34,12 @@ EBTNodeResult::Type UBTT_DialogReply::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	return EBTNodeResult::Succeeded;
 }
+
+FString UBTT_DialogReply::GetStaticDescription() const
+{
+	Super::GetStaticDescription();
+	FString result = "Replies...";
+	for (int32 i = 0; i < Replies.Num(); ++i)
+		result += FString::Printf(TEXT("\nReply:%s, NextPoint:%d"), *Replies[i].Reply.ToString(), Replies[i].NextPoint);
+	return result;
+}

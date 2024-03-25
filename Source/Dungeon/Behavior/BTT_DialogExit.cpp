@@ -8,39 +8,49 @@
 #include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
 
-#include "Widgets/UW_Dialog.h"
+#include "DungeonPlayerController.h"
+#include "Behavior/PlayerDialogDatas.h"
 
 UBTT_DialogExit::UBTT_DialogExit()
 {
-	NodeName = "Speak";
+	NodeName = "Exit";
 
-	DialogWidget.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogExit, DialogWidget), UUW_Dialog::StaticClass());
-	Reward.AddBoolFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogExit, Reward));
+	PlayerDatas.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogExit, PlayerDatas), UPlayerDialogDatas::StaticClass());
+	InteractingPlayer.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTT_DialogExit, InteractingPlayer), ADungeonPlayerController::StaticClass());
 }
 
 EBTNodeResult::Type UBTT_DialogExit::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	UUW_Dialog* widget = nullptr;
-	widget = Cast<UUW_Dialog>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(DialogWidget.SelectedKeyName));
+	// get interacting player controller
+	ADungeonPlayerController* player = nullptr;
+	player = Cast<ADungeonPlayerController>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(InteractingPlayer.SelectedKeyName));
+	if (!player)return EBTNodeResult::Failed;
 
-	if (widget)
+	// shut down dialog widget
+	player->Client_DialogExit();
+
+	// save dialog point
+	UPlayerDialogDatas* datas = Cast<UPlayerDialogDatas>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(PlayerDatas.SelectedKeyName));
+	if (!datas)
 	{
-		widget->Exit();
-		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(widget->GetOwningPlayer());
-		//controller->OnHUD();
-		//controller->EnableInput(controller);
-
-		APlayerCharacter* player = Cast<APlayerCharacter>(controller->GetPawn());
-		player->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		CLog::Print("UBTT_DialogExit datas is nullptr", -1, 10, FColor::Red);
+		return EBTNodeResult::Failed;
 	}
+	int32& point = datas->PointMap.FindOrAdd(player);
+	point = NextPoint;
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(PlayerDatas.SelectedKeyName, datas);
 
-	Reset(OwnerComp);
+	// release interacting player
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(InteractingPlayer.SelectedKeyName, nullptr);
+
 	return EBTNodeResult::Succeeded;
 }
 
-void UBTT_DialogExit::Reset(UBehaviorTreeComponent& OwnerComp)
+FString UBTT_DialogExit::GetStaticDescription() const
 {
-	OwnerComp.GetBlackboardComponent()->SetValueAsBool(Reward.SelectedKeyName, bReward);
+	Super::GetStaticDescription();
+	FString result = FString::Printf(TEXT("NextPoint : %d"), NextPoint);
+	return result;
 }

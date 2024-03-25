@@ -71,7 +71,6 @@ public:
 private:
 	UFUNCTION() void OnReplyClicked(UDialogReplyObject* ClickedObject);
 	UFUNCTION() void OnQuestClicked(UDialogReplyObject* ClickedObject);
-	UFUNCTION() void OnPointClicked(UDialogReplyObject* ClickedObject);
 	void HideReplySection();
 	void RevealReplySection();
 	void HideSpeakSection();

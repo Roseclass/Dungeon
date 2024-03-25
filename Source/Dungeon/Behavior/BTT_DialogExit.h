@@ -16,23 +16,23 @@ public:
 	UBTT_DialogExit();
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual FString GetStaticDescription() const override;
 
 	//property
 private:
 protected:
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector DialogWidget;
+		FBlackboardKeySelector PlayerDatas;
 
 	UPROPERTY(EditAnywhere)
-		FBlackboardKeySelector Reward;
+		FBlackboardKeySelector InteractingPlayer;
 
-	UPROPERTY(EditAnywhere, Category = "ResetValue")
-		bool bReward;
+	UPROPERTY(EditAnywhere)
+		int32 NextPoint;
 public:
 
 	//function
 private:
-	void Reset(UBehaviorTreeComponent& OwnerComp);
 protected:
 public:
 

@@ -25,7 +25,6 @@ public:
 
 	//property
 private:
-	UUW_Dialog* DialogWidget;
 	AAIController* Controller;
 	UPROPERTY()UPlayerDialogDatas* PlayerDialogDatas; // avoid garbage collecting
 protected:
@@ -54,7 +53,6 @@ public:
 
 	//function
 private:
-	UFUNCTION()void OnExit();
 protected:
 public:
 	void OnInteraction(ADungeonPlayerController* InPlayerController);

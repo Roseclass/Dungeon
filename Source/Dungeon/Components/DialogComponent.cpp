@@ -64,19 +64,6 @@ void UDialogComponent::OnReply(ADungeonPlayerController* InPlayerController, int
 	}
 }
 
-void UDialogComponent::OnExit()
-{
-	CheckNull(DialogWidget);
-	APlayerController* controller = Cast<APlayerController>(DialogWidget->GetOwningPlayer());
-	CheckNull(controller);
-	DialogWidget->RemoveFromParent();
-	Controller->GetBrainComponent()->StopLogic(FString());
-	UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();
-	bbComp->SetValueAsObject(PlayerControllerObjectBBName, nullptr);
-	ANPC* npc = Cast<ANPC>(GetOwner());
-	if (npc)npc->EndInteract();
-}
-
 void UDialogComponent::SetValueAsBool(FName InName, bool Value)
 {
 	UBlackboardComponent* bbComp = Controller->GetBlackboardComponent();

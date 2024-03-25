@@ -44,3 +44,11 @@ EBTNodeResult::Type UBTT_DialogSpeak::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	
 	return EBTNodeResult::Succeeded;
 }
+
+FString UBTT_DialogSpeak::GetStaticDescription() const
+{
+	Super::GetStaticDescription();
+	FString result = FString::Printf(TEXT("NextPoint : %d"), NextPoint);
+	result += FString::Printf(TEXT("\nText : %s"), *Text.ToString());
+	return result;
+}

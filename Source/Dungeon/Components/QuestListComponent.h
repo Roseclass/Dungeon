@@ -9,6 +9,8 @@ class AQuest;
 class UFXSystemAsset;
 class UParticleSystemComponent;
 class UNiagaraComponent;
+class AQuestBoard;
+class ADungeonPlayerController;
 
 USTRUCT(BlueprintType)
 struct FQuestTreeData : public FTableRowBase
@@ -57,6 +59,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FTransform AdditiveTransform;
+
+	UPROPERTY(EditAnywhere, Category = "Datas")
+		AQuestBoard* QuestBoard;
 public:
 
 	//function
@@ -64,4 +69,6 @@ private:
 protected:
 public:
 	bool FindAvailableQuest(TArray<FQuestTreeData>& InArray, int32 InLevel);
+
+	void ShowList(ADungeonPlayerController* InPlayer);
 };
