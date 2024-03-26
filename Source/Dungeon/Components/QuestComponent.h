@@ -36,6 +36,6 @@ public:
 	UFUNCTION(BlueprintCallable)void RemoveQuest(AQuest* InQuest);
 
 	void ToggleWidget();
-	void OnWidget();
-	void OffWidget();
+	UFUNCTION(BlueprintCallable)void OnWidget();
+	UFUNCTION(BlueprintCallable)void OffWidget();
 };

@@ -23,6 +23,7 @@
 #include "Components/StateComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
+#include "Components/QuestComponent.h"
 #include "Objects/Projectile.h"
 
 #include "Widgets/UW_Main.h"
@@ -67,6 +68,7 @@ APlayerCharacter::APlayerCharacter()
 	//actor
 	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
+	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
 }
 
 void APlayerCharacter::BeginPlay()

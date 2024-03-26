@@ -16,6 +16,7 @@ class USpringArmComponent;
 class UStaticMeshComponent;
 class UAppearanceComponent;
 class USkillTreeComponent;
+class UQuestComponent;
 
 struct FSkillData;
 
@@ -57,6 +58,9 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillTreeComponent* SkillTree;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UQuestComponent* Quest;
 protected:
 public:
 

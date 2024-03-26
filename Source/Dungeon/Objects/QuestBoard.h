@@ -8,6 +8,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class USceneComponent;
 class AQuest;
+class ADungeonPlayerController;
 
 UCLASS()
 class DUNGEON_API AQuestBoard : public AActor
@@ -38,4 +39,6 @@ private:
 protected:
 public:
 	void GenerateQuests(TArray<TSubclassOf<AQuest>> InQuests);
+	UFUNCTION(BlueprintImplementableEvent)void BlendSequence(ADungeonPlayerController* InPlayer);
+	UFUNCTION(BlueprintImplementableEvent)void EndSequence();
 };

@@ -7,6 +7,7 @@
 
 #include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "DungeonPlayerController.h"
 #include "Behavior/PlayerDialogDatas.h"
@@ -30,6 +31,10 @@ EBTNodeResult::Type UBTT_DialogExit::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 	// shut down dialog widget
 	player->Client_DialogExit();
+
+	// Enable Movement
+	ACharacter* pawn = Cast<ACharacter>(player->GetPawn());
+	if (pawn)pawn->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
 	// save dialog point
 	UPlayerDialogDatas* datas = Cast<UPlayerDialogDatas>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(PlayerDatas.SelectedKeyName));

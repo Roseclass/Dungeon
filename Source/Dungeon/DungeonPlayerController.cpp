@@ -41,6 +41,9 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+	APlayerCharacter* const viewTarget = Cast<APlayerCharacter>(GetViewTarget());
+	CheckNull(viewTarget);
+
 	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
 
@@ -230,6 +233,9 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 {
 	// Player is no longer pressing the input
 	bInputPressed = false;
+
+	APlayerCharacter* const viewTarget = Cast<APlayerCharacter>(GetViewTarget());
+	CheckNull(viewTarget);
 
 	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);

@@ -4,6 +4,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
 #include "DungeonPlayerController.h"
+#include "Characters/PlayerCharacter.h"
 #include "Objects/Quest.h"
 
 #include "Widgets/UW_Quest.h"
@@ -21,15 +22,16 @@ void UQuestComponent::BeginPlay()
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(character->GetController());
 	CheckNull(controller);
 
-	//QuestWidget = Cast<UUW_Quest>(controller->GetQuestWidget());
-	//if (!QuestWidget)CLog::Print("UQuestComponent::BeginPlay(), Widget Cast Fail");
-	//
-	//if (QuestWidgetClass)
-	//{
-	//	QuestWidget = CreateWidget<UUW_Quest, APlayerController>(controller, QuestWidgetClass);
-	//	QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
-	//	QuestWidget->AddToViewport();
-	//}
+	if (character->IsLocallyControlled())
+	{
+		if (QuestWidgetClass)
+		{
+			QuestWidget = CreateWidget<UUW_Quest, APlayerController>(controller, QuestWidgetClass);
+			QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
+			QuestWidget->AddToViewport();
+		}else CLog::Print("QuestWidgetClass is null");
+	}
+
 
 }
 
@@ -41,6 +43,7 @@ void UQuestComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 void UQuestComponent::SetQuest(AQuest* InQuest)
 {
 	Quest = InQuest;
+	QuestWidget->SetQuest(InQuest);
 }
 
 void UQuestComponent::RemoveQuest(AQuest* InQuest)
