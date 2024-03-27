@@ -17,17 +17,6 @@ ALevelStreamingActor::ALevelStreamingActor()
 void ALevelStreamingActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//if (!bStageSelect && CurrentStage == NextStage)CLog::Print("ALevelStreamingActor::BeginPlay, CurrentStage == NextStage");
-	//Master = Cast<ALevelStreamingMaster>(UGameplayStatics::GetActorOfClass(GetWorld(), ALevelStreamingMaster::StaticClass()));
-	//if (!Master)
-	//{
-	//	CLog::Print("ALevelStreamingActor::BeginPlay, Can't Find Master");
-	//	return;
-	//}
-	//InteractCollision->OnComponentBeginOverlap.AddDynamic(this, &ALevelStreamingActor::OnComponentBeginOverlap);
-	//OnStreamingLevel_Start.AddDynamic(Master, &ALevelStreamingMaster::OverlapEvent);
-	//FindSceneComponents();
 }
 
 void ALevelStreamingActor::Tick(float DeltaTime)
@@ -38,8 +27,15 @@ void ALevelStreamingActor::Tick(float DeltaTime)
 void ALevelStreamingActor::Interact(ADungeonPlayerController* InPlayer) 
 {
 	// if host?
-	
-	// send notice popup every clients
+	if (HasAuthority() && InPlayer->IsLocalController())
+	{
+		// send notice popup every clients
+		[InPlayer,this]()
+		{
+			UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
+			if (!quest)return;
+		};		
+	}
 }
 
 void ALevelStreamingActor::PreInteractEvent(ADungeonPlayerController* InPlayer) 
