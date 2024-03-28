@@ -11,6 +11,7 @@ class AEnemy;
 class ANPC;
 class AItemManager;
 class AWeapon;
+class UConfirmPopupComponent;
 class IIInteractable;
 class UUW_Main;
 class UUW_Dialog;
@@ -41,6 +42,9 @@ private:
 	AWeapon* Item;
 	IIInteractable* Iteractable;
 protected:
+	UPROPERTY(VisibleDefaultsOnly)
+		UConfirmPopupComponent* ConfirmPopup;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		float ShortPressThreshold;
 

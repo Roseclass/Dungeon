@@ -38,4 +38,6 @@ public:
 	void ToggleWidget();
 	UFUNCTION(BlueprintCallable)void OnWidget();
 	UFUNCTION(BlueprintCallable)void OffWidget();
+
+	FORCEINLINE AQuest* GetQuest() const { return Quest; }
 };

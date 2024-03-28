@@ -39,6 +39,6 @@ private:
 protected:
 public:
 	void GenerateQuests(TArray<TSubclassOf<AQuest>> InQuests);
-	UFUNCTION(BlueprintImplementableEvent)void BlendSequence(ADungeonPlayerController* InPlayer);
-	UFUNCTION(BlueprintImplementableEvent)void EndSequence();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)void BlendSequence(ADungeonPlayerController* InPlayer);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)void EndSequence();
 };

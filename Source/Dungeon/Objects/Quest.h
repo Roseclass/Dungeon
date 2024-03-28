@@ -109,4 +109,5 @@ protected:
 public:
 	FORCEINLINE UQuest_Objective* GetMainQuestOjbective() const { return MainQuestOjbective; }
 	FORCEINLINE UQuest_Objective* GetAdditiveQuestOjbective() const { return AdditiveQuestOjbective; }
+	FORCEINLINE FName GetStreamingLevelName() const { return StreamingLevelName; }
 };

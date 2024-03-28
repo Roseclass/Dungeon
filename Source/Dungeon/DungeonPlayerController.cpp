@@ -12,6 +12,7 @@
 #include "Characters/Enemy.h"
 #include "Characters/NPC.h"
 #include "Components/DialogComponent.h"
+#include "Components/ConfirmPopupComponent.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
@@ -23,6 +24,8 @@ ADungeonPlayerController::ADungeonPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+
+	CHelpers::CreateActorComponent<UConfirmPopupComponent>(this, &ConfirmPopup, "ConfirmPopup");
 }
 
 void ADungeonPlayerController::BeginPlay()

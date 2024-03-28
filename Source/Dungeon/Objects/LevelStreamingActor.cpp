@@ -7,6 +7,9 @@
 #include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
 #include "Components/QuestComponent.h"
+#include "Components/ConfirmPopupComponent.h"
+
+#include "Objects/Quest.h"
 
 ALevelStreamingActor::ALevelStreamingActor()
 {
@@ -26,16 +29,26 @@ void ALevelStreamingActor::Tick(float DeltaTime)
 
 void ALevelStreamingActor::Interact(ADungeonPlayerController* InPlayer) 
 {
+	CheckFalse(bActive);
+
 	// if host?
 	if (HasAuthority() && InPlayer->IsLocalController())
 	{
-		// send notice popup every clients
-		[InPlayer,this]()
+		// send popup every clients
+		UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(InPlayer);
+
+		TFunction<bool()> func = [InPlayer,this]()->bool
 		{
 			UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
-			if (!quest)return;
+			if (!quest)return 0;
+			LoadLevel(quest->GetQuest()->GetStreamingLevelName());
+			return 1;
 		};		
+
+		if (confirm)confirm->SendPopupAllPlayers("ebs?", func);
+		else CLog::Print("nullptr");
 	}
+
 }
 
 void ALevelStreamingActor::PreInteractEvent(ADungeonPlayerController* InPlayer) 
@@ -68,6 +81,18 @@ void ALevelStreamingActor::LoadLevel(FStageData InData)
 
 	LoadLevelStarted();
 }
+
+void ALevelStreamingActor::LoadLevel(FName InLevelName)
+{
+	FLatentActionInfo temp;
+	temp.CallbackTarget = this;
+	temp.ExecutionFunction = FName("LoadLevelFinished");
+	temp.Linkage = 0;
+	UGameplayStatics::LoadStreamLevel(GetWorld(), InLevelName, 1, 0, temp);
+
+	LoadLevelStarted();
+}
+
 
 void ALevelStreamingActor::Activate_Implementation()
 {

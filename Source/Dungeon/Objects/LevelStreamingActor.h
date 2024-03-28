@@ -63,6 +63,7 @@ public:
 	//function
 private:
 	void LoadLevel(FStageData InData);
+	void LoadLevel(FName InLevelName);
 protected:
 	UFUNCTION(BlueprintImplementableEvent)void LoadLevelStarted();
 	UFUNCTION(BlueprintImplementableEvent)void LoadLevelFinished();
