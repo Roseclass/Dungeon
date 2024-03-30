@@ -96,6 +96,12 @@ void USkillComponent::SpawnProjectile()
 	CurrentSkill->Server_SpawnProjectile();
 }
 
+void USkillComponent::SpawnWarningSign(int32 InIndex)
+{
+	CheckNull(CurrentSkill);
+	CurrentSkill->SpawnWarningSign(InIndex);
+}
+
 void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
 {
 	CheckFalse(QuickSlotSkillActors.IsValidIndex(Index));

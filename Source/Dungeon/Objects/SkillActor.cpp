@@ -6,6 +6,7 @@
 #include "Characters/DungeonCharacterBase.h"
 #include "Components/SkillComponent.h"
 #include "Objects/Projectile.h"
+#include "Objects/WarningSign.h"
 
 ASkillActor::ASkillActor()
 {
@@ -179,6 +180,22 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
 	projectile->Activate();
+}
+
+void ASkillActor::SpawnWarningSign(int32 InIndex)
+{
+	CheckFalse(Data.WarningSignData.IsValidIndex(InIndex));
+
+	FVector offset = OwnerCharacter->GetActorForwardVector() * Data.WarningSignData[InIndex].ForwardOffset;
+	offset += OwnerCharacter->GetActorForwardVector() * Data.WarningSignData[InIndex].RightOffset;
+
+	FTransform transform;
+	transform.SetTranslation(OwnerCharacter->GetActorLocation() + offset);
+	transform.SetScale3D(Data.WarningSignData[InIndex].Scale);
+
+	AWarningSign* sign = GetWorld()->SpawnActor<AWarningSign>(Data.WarningSignData[InIndex].WarningSignClass, transform);
+	if (sign)
+		sign->Activate(Data.WarningSignData[InIndex].Duration, Data.WarningSignData[InIndex].ExtraDuration);
 }
 
 float ASkillActor::GetRemainingCoolDown() const

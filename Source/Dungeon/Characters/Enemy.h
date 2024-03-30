@@ -77,4 +77,7 @@ public:
 
 	//Skill
 	virtual void UseSkill(int32 Idx)override;
+
+	//for notify
+	UFUNCTION(BlueprintCallable)virtual void SpawnWarningSign(int32 InIndex);
 };

@@ -9,6 +9,7 @@
  */
 
 class AProjectile;
+class AWarningSign;
 class ADungeonCharacterBase;
 class ADungeonPlayerController;
 class UImage;
@@ -19,6 +20,30 @@ UENUM(BlueprintType)
 enum class ESkillTreeSkillState : uint8
 {
 	Locked, Unlocked, Acquired
+};
+
+USTRUCT(BlueprintType)
+struct FWaringSignData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AWarningSign> WarningSignClass;
+
+	UPROPERTY(EditAnywhere)
+		float ForwardOffset = 0;
+
+	UPROPERTY(EditAnywhere)
+		float RightOffset = 0;
+
+	UPROPERTY(EditAnywhere)
+		FVector Scale = FVector(1, 1, 1);
+
+	UPROPERTY(EditAnywhere)
+		float Duration;
+
+	UPROPERTY(EditAnywhere)
+		float ExtraDuration;
 };
 
 USTRUCT(BlueprintType)
@@ -67,6 +92,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Range")
 		float Range = 10.0f;
+
+	UPROPERTY(EditAnywhere, Category = "WarningSign")
+		TArray<FWaringSignData> WarningSignData;
+
 };
 
 UCLASS()
@@ -119,6 +148,7 @@ public:
 	virtual void Load();
 	UFUNCTION(Client, Reliable)virtual void Client_Use();
 	UFUNCTION(Reliable, Server)virtual void Server_SpawnProjectile();
+	virtual void SpawnWarningSign(int32 InIndex);
 
 	//getter
 	FORCEINLINE const FSkillData* GetSkillData() const { return &Data; }

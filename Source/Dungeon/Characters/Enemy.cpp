@@ -104,3 +104,8 @@ void AEnemy::UseSkill(int32 Idx)
 	State->SetSkillMode();
 	Multicast_UseSkill(Idx);
 }
+
+void AEnemy::SpawnWarningSign(int32 InIndex)
+{
+	Skill->SpawnWarningSign(InIndex);
+}
