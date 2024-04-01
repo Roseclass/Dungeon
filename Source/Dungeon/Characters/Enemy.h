@@ -18,6 +18,7 @@ class UMontageComponent;
 class UStatusComponent;
 class UStateComponent;
 class UInventoryComponent;
+class UDamageTextComponent;
 class UItemObject;
 class ASkillActor;
 class UUW_HealthBar;
@@ -55,6 +56,9 @@ protected:
 		UWidgetComponent* HealthBar;
 
 	//actor
+	UPROPERTY(EditDefaultsOnly)
+		UDamageTextComponent* DamageText;
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		UBehaviorTree* BehaviorTree;
 

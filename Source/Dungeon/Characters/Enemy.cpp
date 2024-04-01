@@ -9,6 +9,7 @@
 #include "Components/StateComponent.h"
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
+#include "Components/DamageTextComponent.h"
 
 #include "Widgets/UW_HealthBar.h"
 
@@ -24,6 +25,7 @@ AEnemy::AEnemy()
 	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
+	CHelpers::CreateActorComponent<UDamageTextComponent>(this, &DamageText, "DamageText");
 }
 
 void AEnemy::BeginPlay()
@@ -45,6 +47,8 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	Status->AdjustCurrentHealth(-DamageAmount);
 
 	// hit react by montage component
+
+	DamageText->SpawnDamageText(GetActorLocation(), DamageAmount, 0);
 
 	return result;
 }
