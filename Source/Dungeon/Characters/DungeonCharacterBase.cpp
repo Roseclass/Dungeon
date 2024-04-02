@@ -13,6 +13,8 @@
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 
+#include "Objects/CustomDamageType.h"
+
 ADungeonCharacterBase::ADungeonCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -40,7 +42,36 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	CLog::Print(DamageAmount);
+	CLog::Print(DamageAmount, -1, 10, FColor::Red);
+
+	if (!DamageEvent.DamageTypeClass->IsChildOf(UCustomDamageType::StaticClass()))
+	{
+		FString name = "";
+		if (DamageCauser)name = DamageCauser->GetName();
+		CLog::Print(name + "'s DamageTypeClass is no custom", -1, 10, FColor::Red);
+		return result;
+	}
+
+	UCustomDamageType* damageType = Cast<UCustomDamageType>(NewObject<UDamageType>(this, DamageEvent.DamageTypeClass));
+	if (!damageType)
+	{
+		FString name = "";
+		if (DamageCauser)name = DamageCauser->GetName();
+		CLog::Print(name + "'s damageType is nullptr", -1, 10, FColor::Red);
+		return result;
+	}
+
+
+	// None, Normal, KnockBack, KnockDown, Max
+
+	switch (damageType->ReactionType)
+	{
+	case EReactionType::None:HitReaction_None(); break;
+	case EReactionType::Normal:HitReaction_Normal(); break;
+	case EReactionType::KnockBack:HitReaction_KnockBack(damageType->DamageImpulse,DamageCauser); break;
+	case EReactionType::KnockDown:HitReaction_KnockDown(damageType->DamageImpulse,DamageCauser); break;
+	default:break;
+	}
 
 	return result;
 }
@@ -48,6 +79,34 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 FGenericTeamId ADungeonCharacterBase::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+void ADungeonCharacterBase::HitReaction_None()
+{
+
+}
+
+void ADungeonCharacterBase::HitReaction_Normal()
+{
+
+}
+
+void ADungeonCharacterBase::HitReaction_KnockBack(float InForce, AActor* InCauser)
+{
+
+}
+
+void ADungeonCharacterBase::HitReaction_KnockDown(float InForce, AActor* InCauser)
+{
+	FVector force = GetActorLocation() - InCauser->GetActorLocation();
+	force.Z = 0;
+	force.Normalize();
+
+	SetActorRotation(UKismetMathLibrary::MakeRotFromX(-force));
+
+	GetCharacterMovement()->StopMovementImmediately();
+
+	Montage->PlayKnockDownMontage(force * InForce);
 }
 
 void ADungeonCharacterBase::Init()

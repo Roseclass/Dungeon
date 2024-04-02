@@ -15,6 +15,7 @@ class ASkillActor;
 class AWeapon;
 
 enum class EStateType : uint8;
+enum class EReactionType : uint8;
 
 UCLASS()
 class DUNGEON_API ADungeonCharacterBase : public ACharacter, public IGenericTeamAgentInterface
@@ -55,9 +56,13 @@ public:
 
 	//function
 private:
+	virtual void HitReaction_None();
+	virtual void HitReaction_Normal();
+	virtual void HitReaction_KnockBack(float InForce, AActor* InCauser);
+	virtual void HitReaction_KnockDown(float InForce,AActor* InCauser);
 protected:
 	virtual void Init();
-
+	
 	//State
 	UFUNCTION()virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:

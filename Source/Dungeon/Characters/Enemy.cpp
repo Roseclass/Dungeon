@@ -47,7 +47,6 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	Status->AdjustCurrentHealth(-DamageAmount);
 
 	// hit react by montage component
-
 	DamageText->SpawnDamageText(GetActorLocation(), DamageAmount, 0);
 
 	return result;

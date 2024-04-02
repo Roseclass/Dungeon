@@ -175,9 +175,6 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 
 	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
 	projectile->SetDamage(10);//TODO::
-	//projectile->SetTarget(InActor);
-	projectile->SetCollide(1);
-
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
 	projectile->Activate();
 }

@@ -20,50 +20,22 @@ void AProjectile_Mage21::BeginPlay()
 	Super::BeginPlay();
 
 	CollisionMesh->OnComponentBeginOverlap.Clear();
-	CollisionMesh->OnComponentHit.Clear();
+	CollisionMesh->OnComponentEndOverlap.Clear();
+
 	CollisionMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile_Mage21::OnComponentBeginOverlap);
 	CollisionMesh->OnComponentEndOverlap.AddDynamic(this, &AProjectile_Mage21::OnComponentEndOverlap);
-	CollisionMesh->OnComponentHit.AddDynamic(this, &AProjectile_Mage21::OnComponentHit);
 }
 
 void AProjectile_Mage21::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-void AProjectile_Mage21::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OverlappedActors.Contains(OtherActor))
-		return;
-
-	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
-	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
-	if (!other && !otherCh)
-		return;
-
-	//ignore alliance
-	CheckTrue(other->GetGenericTeamId() == TeamID);
-		
-	if (bAct)SendDamage(Damage, OtherActor, SweepResult);
-	OverlappedActors.AddUnique(OtherActor);
-}
-
-void AProjectile_Mage21::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	OverlappedActors.Remove(OtherActor);
-}
-
-void AProjectile_Mage21::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-
 }
 
 void AProjectile_Mage21::Activate()
 {
 	Super::Activate();
-	bAct = 1;
-	for (auto i : OverlappedActors)
+
+	for (auto i : GetOverlappedActors())
 		SendDamage(Damage, i, FHitResult());
 
 	FTimerHandle WaitHandle;
@@ -77,5 +49,5 @@ void AProjectile_Mage21::Activate()
 void AProjectile_Mage21::Deactivate()
 {
 	Super::Deactivate();
-	bAct = 0;
+	Destroy();
 }

@@ -32,6 +32,7 @@
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"
 
+
 APlayerCharacter::APlayerCharacter()
 {
 	// Activate ticking in order to update the cursor every frame.
@@ -85,8 +86,6 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 float APlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	CLog::Print(DamageAmount);
 
 	return result;
 }
