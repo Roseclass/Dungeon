@@ -67,7 +67,7 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	switch (damageType->ReactionType)
 	{
 	case EReactionType::None:HitReaction_None(); break;
-	case EReactionType::Normal:HitReaction_Normal(); break;
+	case EReactionType::Normal:HitReaction_Normal(DamageCauser); break;
 	case EReactionType::KnockBack:HitReaction_KnockBack(damageType->DamageImpulse,DamageCauser); break;
 	case EReactionType::KnockDown:HitReaction_KnockDown(damageType->DamageImpulse,DamageCauser); break;
 	default:break;
@@ -86,9 +86,9 @@ void ADungeonCharacterBase::HitReaction_None()
 
 }
 
-void ADungeonCharacterBase::HitReaction_Normal()
+void ADungeonCharacterBase::HitReaction_Normal(AActor* InCauser)
 {
-
+	Montage->PlayHitMontage(InCauser);
 }
 
 void ADungeonCharacterBase::HitReaction_KnockBack(float InForce, AActor* InCauser)

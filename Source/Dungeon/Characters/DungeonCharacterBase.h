@@ -57,7 +57,7 @@ public:
 	//function
 private:
 	virtual void HitReaction_None();
-	virtual void HitReaction_Normal();
+	virtual void HitReaction_Normal(AActor* InCauser);
 	virtual void HitReaction_KnockBack(float InForce, AActor* InCauser);
 	virtual void HitReaction_KnockDown(float InForce,AActor* InCauser);
 protected:

@@ -5,7 +5,7 @@
 #include "MontageComponent.generated.h"
 
 /**
- * playing anim montages ex)dead, hitted...
+ * playing anim montages ex)dead, hit...
  */
 
 class UAnimMontage;
@@ -26,6 +26,18 @@ public:
 private:
 	FVector Force;
 protected:
+	UPROPERTY(EditAnywhere, Category = "HitDatas", meta = (DisplayName = "Fronts"))
+		TArray<UAnimMontage*> HitFronts;
+
+	UPROPERTY(EditAnywhere, Category = "HitDatas", meta = (DisplayName = "Backs"))
+		TArray<UAnimMontage*> HitBacks;
+
+	UPROPERTY(EditAnywhere, Category = "HitDatas", meta = (DisplayName = "Rights"))
+		TArray<UAnimMontage*> HitRights;
+
+	UPROPERTY(EditAnywhere, Category = "HitDatas", meta = (DisplayName = "Lefts"))
+		TArray<UAnimMontage*> HitLefts;
+
 	UPROPERTY(EditAnywhere, Category = "Datas")
 		UAnimMontage* KnockBackMontage;
 
@@ -36,8 +48,10 @@ public:
 
 	//function
 private:
+	int32 FindDirection(float FDot, float RDot);
 protected:
 public:
+	void PlayHitMontage(AActor* InCauser);
 	void PlayKnockDownMontage(FVector NewForce);
 
 	FORCEINLINE FVector GetForce()const {return Force;}
