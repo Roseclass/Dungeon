@@ -17,6 +17,7 @@
 #include "DungeonPlayerController.h"
 #include "Components/AppearanceComponent.h"
 #include "Components/AppearanceMeshComponent.h"
+#include "Components/ClearViewComponent.h"
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
@@ -24,6 +25,7 @@
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/QuestComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "Objects/Projectile.h"
 
 #include "Widgets/UW_Main.h"
@@ -53,6 +55,8 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	//scene
+	CHelpers::CreateComponent(this, &TravelPostProcess, "TravelPostProcess", RootComponent);
+
 	CHelpers::CreateComponent(this, &CameraBoom, "CameraBoom", RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 2500.0f;
@@ -68,6 +72,7 @@ APlayerCharacter::APlayerCharacter()
 
 	//actor
 	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
+	CHelpers::CreateActorComponent<UClearViewComponent>(this, &ClearView, "ClearView");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
 }
@@ -383,3 +388,7 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	//Inventory->LoadData(ReadData);
 	//SkillTree->LoadData(ReadData);
 }
+
+
+//UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);
+//UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);

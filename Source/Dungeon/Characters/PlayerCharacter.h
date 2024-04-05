@@ -12,9 +12,11 @@
 
 class UCameraComponent;
 class USceneCaptureComponent2D;
+class UTravelEffectComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
 class UAppearanceComponent;
+class UClearViewComponent;
 class USkillTreeComponent;
 class UQuestComponent;
 
@@ -40,6 +42,9 @@ public:
 	//property
 private:
 	//scene
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = true))
+		UTravelEffectComponent* TravelPostProcess;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* TopDownCameraComponent;
 
@@ -55,6 +60,9 @@ private:
 	//actor
 	UPROPERTY(VisibleDefaultsOnly)
 		UAppearanceComponent* Appearance;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UClearViewComponent* ClearView;
 
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillTreeComponent* SkillTree;
