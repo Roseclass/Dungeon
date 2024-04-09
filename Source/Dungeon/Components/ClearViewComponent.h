@@ -26,7 +26,7 @@ public:
 
 	//property
 private:
-	USpringArmComponent* SpringArm;
+	UPROPERTY()USpringArmComponent* SpringArm;
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Dissolve")

@@ -15,6 +15,15 @@ void UClearViewComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//only for localplayer
+
+	ACharacter* owner = Cast<ACharacter>(GetOwner());
+	if (!owner)
+	{
+		CLog::Print("UClearViewComponent::BeginPlay owner is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	if (!Cast<ADungeonPlayerController>(owner->GetController()))return;
 	SpringArm = CHelpers::GetComponent<USpringArmComponent>(GetOwner());
 }
 
@@ -26,12 +35,10 @@ void UClearViewComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	{
 		// location
 		FVector loc = SpringArm->GetComponentLocation();
-		loc -= SpringArm->GetForwardVector() *(SpringArm->TargetArmLength * 0.5);
+		loc -= SpringArm->GetForwardVector() * (SpringArm->TargetArmLength * 0.5);
 		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Collection, FName("Location"), FLinearColor(loc));
 		// bounds
-		float x;
-		x = SpringArm->TargetArmLength * 0.5;
-		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Collection, FName("Bounds"), FLinearColor(x * 0.01, HorizontalSize * 0.01, VerticalSize * 0.01));
+		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Collection, FName("Bounds"), FLinearColor(SpringArm->TargetArmLength * 0.01, HorizontalSize * 0.01, VerticalSize * 0.01));
 		// forward
 		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), Collection, FName("X"), FLinearColor(SpringArm->GetForwardVector()));
 		// right

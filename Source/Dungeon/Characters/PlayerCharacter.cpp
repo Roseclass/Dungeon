@@ -25,7 +25,7 @@
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/QuestComponent.h"
-#include "Components/PostProcessComponent.h"
+#include "Components/TravelEffectComponent.h"
 #include "Objects/Projectile.h"
 
 #include "Widgets/UW_Main.h"
@@ -55,8 +55,6 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	//scene
-	CHelpers::CreateComponent(this, &TravelPostProcess, "TravelPostProcess", RootComponent);
-
 	CHelpers::CreateComponent(this, &CameraBoom, "CameraBoom", RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 2500.0f;
@@ -75,6 +73,7 @@ APlayerCharacter::APlayerCharacter()
 	CHelpers::CreateActorComponent<UClearViewComponent>(this, &ClearView, "ClearView");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
+	CHelpers::CreateActorComponent<UTravelEffectComponent>(this, &TravelPostProcess, "TravelPostProcess");
 }
 
 void APlayerCharacter::BeginPlay()

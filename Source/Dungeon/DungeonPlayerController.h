@@ -34,6 +34,7 @@ public:
 
 	//property
 private:
+	UPROPERTY(Replicated)int32 Index;
 	bool bInputPressed;
 	float FollowTime;
 
@@ -92,6 +93,10 @@ public:
 	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
 	UFUNCTION(Client, Reliable)void Client_DialogExit();
 
+	FORCEINLINE void SetIndex(int32 InIndex) { Index = InIndex; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FORCEINLINE int32 GetIndex() const { return Index; }
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
 	FORCEINLINE AItemManager* GetItemManager() const { return ItemManager; }
 };

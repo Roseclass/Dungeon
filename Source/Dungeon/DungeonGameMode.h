@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "DungeonGameMode.generated.h"
+
+class ADungeonPlayerController;
 
 UCLASS(minimalapi)
 class ADungeonGameMode : public AGameMode
@@ -13,6 +13,20 @@ class ADungeonGameMode : public AGameMode
 
 public:
 	ADungeonGameMode();
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	//property
+private:
+	TArray<ADungeonPlayerController*> Players;
+protected:
+public:
+
+	//function
+private:
+protected:
+public:
+
+
 };
 
 

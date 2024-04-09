@@ -42,9 +42,6 @@ public:
 	//property
 private:
 	//scene
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = true))
-		UTravelEffectComponent* TravelPostProcess;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* TopDownCameraComponent;
 
@@ -69,6 +66,10 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UQuestComponent* Quest;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta = (AllowPrivateAccess = true))
+		UTravelEffectComponent* TravelPostProcess;
+
 protected:
 public:
 

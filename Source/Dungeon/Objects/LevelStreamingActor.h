@@ -23,16 +23,16 @@ struct FStageData : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		EStageList StageList;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		FName StageName;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		FString StageDescription;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		TArray<FVector> StartLocations;
 };
 
@@ -56,9 +56,19 @@ public:
 	//property
 private:
 	bool bActive;
+	EStageList CurrentStage = EStageList::Max;
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
 		UBoxComponent* InteractCollision;
+
+	UPROPERTY(EditDefaultsOnly)
+		UDataTable* DataTable;
+
+	UPROPERTY(BlueprintReadOnly)
+		TArray<FStageData> Datas;
+
+	UPROPERTY(BlueprintReadWrite)
+		TMap<APlayerCharacter*, bool> SequenceMap;
 public:
 	//function
 private:
@@ -73,7 +83,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent) void Deactivate();
 	void Deactivate_Implementation();
 
-
+	UFUNCTION(BlueprintCallable)FStageData GetCurrentData()const;
 };
 
 //

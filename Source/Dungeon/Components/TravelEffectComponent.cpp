@@ -1,35 +1,40 @@
 #include "Components/TravelEffectComponent.h"
 #include "Global.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "Camera/CameraComponent.h"
+
+#include "Characters/PlayerCharacter.h"
 
 UTravelEffectComponent::UTravelEffectComponent()
 {
-
-}
-
-void UTravelEffectComponent::OnRegister()
-{
-
-}
-
-void UTravelEffectComponent::OnUnregister()
-{
-
-}
-
-void UTravelEffectComponent::Serialize(FArchive& Ar)
-{
-
+	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(1);
 }
 
 void UTravelEffectComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FWeightedBlendable wb;
-	wb.Weight = 0;
-	wb.Object = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), Material);
-	Settings.WeightedBlendables.Array.Add(wb);
+	Camera = CHelpers::GetComponent<UCameraComponent>(GetOwner());
+	if (!Camera)
+	{
+		CLog::Print("UTravelEffectComponent::BeginPlay Camera is null ptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	DynamicMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), Material);
+	if (DynamicMaterial)
+	{
+		FWeightedBlendable wb;
+		wb.Weight = 0;
+		wb.Object = DynamicMaterial;
+		Camera->PostProcessSettings.WeightedBlendables.Array.Add(wb);
+	}
+	else
+	{
+		CLog::Print("UTravelEffectComponent::BeginPlay DynamicMaterial is null ptr", -1, 10, FColor::Red);
+		return;
+	}
 
 	//FOnTimelineEvent f;
 	//f.BindUFunction(this, "ExecuteStageFailedSequence");
@@ -48,14 +53,23 @@ void UTravelEffectComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UTravelEffectComponent::SequenceTickFunction(float Value)
 {
-	UMaterialInstanceDynamic* mat = Cast<UMaterialInstanceDynamic>(Settings.WeightedBlendables.Array[0].Object);
-	CheckNull(mat);
-	mat->SetScalarParameterValue(FName("Radius Offset"), Value);
+	DynamicMaterial->SetScalarParameterValue(FName("Radius Offset"), Value);
+}
+
+void UTravelEffectComponent::Server_StartSequenceFinished_Implementation()
+{
+	if (OnStartSequenceFinishedCheck.IsBound())
+		OnStartSequenceFinishedCheck.Broadcast(Cast<APlayerCharacter>(GetOwner()));
+}
+
+void UTravelEffectComponent::Server_EndSequenceFinished_Implementation()
+{
+	if (OnEndSequenceFinishedCheck.IsBound())
+		OnEndSequenceFinishedCheck.Broadcast(Cast<APlayerCharacter>(GetOwner()));
 }
 
 void UTravelEffectComponent::Play()
 {
-	CheckFalse(Settings.WeightedBlendables.Array.Num());
 	CheckNull(GetOwner());
 
 	// set mpc
@@ -65,9 +79,21 @@ void UTravelEffectComponent::Play()
 	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Collection, FName("Z"),loc.Z);
 
 	// set WeightedBlendable
-	Settings.WeightedBlendables.Array[0].Weight = 1;
+	if (Camera)
+	{
+		for (auto& i : Camera->PostProcessSettings.WeightedBlendables.Array)
+		{
+			if (i.Object != DynamicMaterial)continue;
+			i.Weight = 1;
+		}
+	}
+	else
+	{
+		CLog::Print("UTravelEffectComponent::Play Camera is null ptr", -1, 10, FColor::Red);
+		return;
+	}
 
-	SequenceTimeline.PlayFromStart();
+	SequenceTimeline.Play();
 
 	FTimerHandle WaitHandle;
 	float WaitTime = SequenceTimeline.GetTimelineLength();
@@ -78,13 +104,13 @@ void UTravelEffectComponent::Play()
 			OnStartSequenceFinished.Broadcast();
 			OnStartSequenceFinished.Clear();
 		}
+		Server_StartSequenceFinished();
 	}), WaitTime, false);
 
 }
 
 void UTravelEffectComponent::Reverse()
 {
-	CheckFalse(Settings.WeightedBlendables.Array.Num());
 	CheckNull(GetOwner());
 
 	if (SequenceTimeline.IsPlaying())
@@ -106,12 +132,24 @@ void UTravelEffectComponent::Reverse()
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
 	{
 		// set WeightedBlendable
-		Settings.WeightedBlendables.Array[0].Weight = 0;
-
+		if (Camera)
+		{
+			for (auto& i : Camera->PostProcessSettings.WeightedBlendables.Array)
+			{
+				if (i.Object != DynamicMaterial)continue;
+				i.Weight = 0;
+			}
+		}
+		else
+		{
+			CLog::Print("UTravelEffectComponent::Reverse Camera is null ptr", -1, 10, FColor::Red);
+			return;
+		}
 		if (OnEndSequenceFinished.IsBound())
 		{
 			OnEndSequenceFinished.Broadcast();
 			OnEndSequenceFinished.Clear();
 		}
+		Server_EndSequenceFinished();
 	}), WaitTime, false);
 }

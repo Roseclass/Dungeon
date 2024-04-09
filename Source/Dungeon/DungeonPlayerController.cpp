@@ -129,6 +129,7 @@ void ADungeonPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	// Replicated 변수를 여기에 추가
 	DOREPLIFETIME_CONDITION(ADungeonPlayerController, ItemManager, COND_None);
+	DOREPLIFETIME_CONDITION(ADungeonPlayerController, Index, COND_None);
 }
 
 void ADungeonPlayerController::SetupInputComponent()
