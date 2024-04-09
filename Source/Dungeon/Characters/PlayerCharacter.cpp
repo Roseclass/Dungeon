@@ -6,6 +6,7 @@
 #include "Components/DecalComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -30,6 +31,7 @@
 
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
+#include "Widgets/UW_HealthBar.h"
 #include "Objects/SkillActor.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"
@@ -218,6 +220,19 @@ void APlayerCharacter::Init()
 		if (!saveGameData) { CLog::Print("saveGameData is nullptr"); return; }
 		OnAfterLoad(saveGameData);
 	}
+
+
+	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->Init(Name, Status->GetLevel());
+		if (controller && controller->IsLocalController())
+			HealthBarWidget->SetPlayerType();
+		else
+			HealthBarWidget->SetOtherPlayerType();
+	}
+	else CLog::Print("APlayerCharacter::Init HealthBarWidget cast failed", -1, 10, FColor::Red);
+
 }
 
 void APlayerCharacter::InitClientWidget()

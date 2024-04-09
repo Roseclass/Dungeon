@@ -69,3 +69,23 @@ void UUW_HealthBar::SetPercent(float NewPercent)
 	CheckFalse(NewPercent < prevPercent);
 	PlayAnimationForward(HitEffect);
 }
+
+void UUW_HealthBar::SetPlayerType()
+{
+	HealthBar->FillColorAndOpacity = FLinearColor::Green;
+}
+
+void UUW_HealthBar::SetOtherPlayerType()
+{
+	HealthBar->FillColorAndOpacity = FLinearColor::Blue;
+}
+
+void UUW_HealthBar::SetMonsterType()
+{
+	HealthBar->FillColorAndOpacity = FLinearColor::Red;
+}
+
+void UUW_HealthBar::SetEliteMonsterType()
+{
+	HealthBar->FillColorAndOpacity = FLinearColor::Red;
+}

@@ -5,6 +5,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "DungeonCharacterBase.generated.h"
 
+class UWidgetComponent;
 class USkillComponent;
 class UMontageComponent;
 class UStatusComponent;
@@ -13,6 +14,7 @@ class UInventoryComponent;
 class UItemObject;
 class ASkillActor;
 class AWeapon;
+class UUW_HealthBar;
 
 enum class EStateType : uint8;
 enum class EReactionType : uint8;
@@ -34,6 +36,17 @@ public:
 	//property
 private:
 protected:
+	UPROPERTY(EditAnywhere, Category = "HealthBarInfo")
+		FText Name = FText::FromString("Monster");
+	UUW_HealthBar* HealthBarWidget;
+
+	//scene
+	UPROPERTY(VisibleAnywhere)
+		USceneComponent* HealthBarRoot;
+
+	UPROPERTY(VisibleAnywhere)
+		UWidgetComponent* HealthBar;
+
 	//actor
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillComponent* Skill;
@@ -60,6 +73,8 @@ private:
 	virtual void HitReaction_Normal(AActor* InCauser);
 	virtual void HitReaction_KnockBack(float InForce, AActor* InCauser);
 	virtual void HitReaction_KnockDown(float InForce,AActor* InCauser);
+
+	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 protected:
 	virtual void Init();
 	

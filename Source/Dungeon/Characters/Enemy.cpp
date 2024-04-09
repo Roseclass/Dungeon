@@ -20,9 +20,6 @@ AEnemy::AEnemy()
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
-	//scene
-	CHelpers::CreateComponent(this, &HealthBarRoot, "HealthBarRoot", RootComponent);
-	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
 	CHelpers::CreateActorComponent<UDamageTextComponent>(this, &DamageText, "DamageText");
@@ -31,7 +28,6 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	Init();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -43,9 +39,6 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	// refresh status
-	Status->AdjustCurrentHealth(-DamageAmount);
-
 	// hit react by montage component
 	DamageText->SpawnDamageText(GetActorLocation(), DamageAmount, 0);
 
@@ -55,16 +48,6 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 FGenericTeamId AEnemy::GetGenericTeamId() const
 {
 	return TeamID;
-}
-
-void AEnemy::ChangeHealthBarPercent(float NewPercent)
-{
-	if (!HealthBarWidget)
-	{
-		CLog::Print("ChangeHealthBarPercent, HealthBarWidget is nullptr", -1, 10, FColor::Red);
-		return;
-	}
-	HealthBarWidget->SetPercent(NewPercent);
 }
 
 void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
@@ -87,13 +70,18 @@ void AEnemy::Init()
 {
 	Super::Init();
 
-	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
-	HealthBarWidget->Init(Name, Level);
-
-	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
-
 	if (HasAuthority())
 		Skill->SpawnSkillActors();
+
+
+	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->Init(Name, Status->GetLevel());
+		HealthBarWidget->SetEliteMonsterType();
+	}
+	else CLog::Print("AEnemy::Init HealthBarWidget cast failed", -1, 10, FColor::Red);
+
 }
 
 void AEnemy::PlaySequence_Implementation(int32 InIndex)

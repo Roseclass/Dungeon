@@ -58,4 +58,9 @@ protected:
 public:
 	void Init(FText NewName, uint8 NewLevel);
 	void SetPercent(float NewPercent);
+
+	void SetPlayerType();
+	void SetOtherPlayerType();
+	void SetMonsterType();
+	void SetEliteMonsterType();
 };

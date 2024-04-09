@@ -3,6 +3,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DecalComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "SaveManager.h"
@@ -14,10 +15,15 @@
 #include "Components/InventoryComponent.h"
 
 #include "Objects/CustomDamageType.h"
+#include "Widgets/UW_HealthBar.h"
 
 ADungeonCharacterBase::ADungeonCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	//scene
+	CHelpers::CreateComponent(this, &HealthBarRoot, "HealthBarRoot", RootComponent);
+	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
@@ -73,6 +79,9 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	default:break;
 	}
 
+	// refresh status
+	Status->AdjustCurrentHealth(-DamageAmount);
+
 	return result;
 }
 
@@ -109,9 +118,20 @@ void ADungeonCharacterBase::HitReaction_KnockDown(float InForce, AActor* InCause
 	Montage->PlayKnockDownMontage(force * InForce);
 }
 
+void ADungeonCharacterBase::ChangeHealthBarPercent(float NewPercent)
+{
+	if (!HealthBarWidget)
+	{
+		CLog::Print("ChangeHealthBarPercent, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetPercent(NewPercent);
+}
+
 void ADungeonCharacterBase::Init()
 {
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
+	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
 }
 
 void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)

@@ -11,7 +11,6 @@
 
 class UBehaviorTree;
 class USceneComponent;
-class UWidgetComponent;
 class UStaticMeshComponent;
 class USkillComponent;
 class UMontageComponent;
@@ -21,7 +20,6 @@ class UInventoryComponent;
 class UDamageTextComponent;
 class UItemObject;
 class ASkillActor;
-class UUW_HealthBar;
 
 
 
@@ -40,20 +38,7 @@ public:
 
 	//property
 private:
-	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
-		FText Name = FText::FromString("Monster");
-
-	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", meta = (AllowPrivateAccess = true))
-		uint8 Level = 1;
 protected:
-	UUW_HealthBar* HealthBarWidget;
-
-	//scene
-	UPROPERTY(VisibleAnywhere)
-		USceneComponent* HealthBarRoot;
-
-	UPROPERTY(VisibleAnywhere)
-		UWidgetComponent* HealthBar;
 
 	//actor
 	UPROPERTY(EditDefaultsOnly)
@@ -66,7 +51,6 @@ public:
 
 	//function
 private:
-	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
 	void SequenceStart();
 	UFUNCTION(BlueprintCallable)void SequenceEnd();

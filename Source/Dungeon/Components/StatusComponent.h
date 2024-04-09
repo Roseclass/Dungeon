@@ -50,8 +50,9 @@ public:
 	void SetMove();
 	void SetStop();
 
-	FORCEINLINE bool CanUse() {return bCanUse;}
-	FORCEINLINE bool CanMove() {return bCanMove;}
-	FORCEINLINE float GetMaxHealth() {return MaxHealth;}
-	FORCEINLINE float GetCurrentHealth() {return CurrentHealth;}
+	FORCEINLINE bool CanUse() const {return bCanUse;}
+	FORCEINLINE bool CanMove() const {return bCanMove;}
+	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
+	FORCEINLINE float GetCurrentHealth() const {return CurrentHealth;}
+	FORCEINLINE uint8 GetLevel() const {return Level;}
 };
