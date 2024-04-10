@@ -9,7 +9,7 @@
 * 플레이어 컨트롤러를 오너로 삼고 아이템들의 상태를 동기화
 */
 
-class AWeapon;
+class AEqquipment;
 class USceneComponent;
 
 enum class EItemMode : uint8;
@@ -34,16 +34,16 @@ public:
 
 	//function
 private:
-	UFUNCTION(Reliable, Server)void Server_SetItemLocation(AWeapon* InItem, const FVector& NewLocation, bool bSweep, const FHitResult& OutSweepHitResult, ETeleportType Teleport);
-	UFUNCTION(Reliable, Server)void Server_SetItemRotation(AWeapon* InItem, const FRotator& NewRotation, ETeleportType Teleport);
-	UFUNCTION(Reliable, Server)void Server_AttachItemToComponent(AWeapon* InItem, USceneComponent* Parent, EAttachmentRule Location, EAttachmentRule Rotation, EAttachmentRule Scale, bool bWeldSimulatedBodies, const FName& SocketName);
-	UFUNCTION(Reliable, Server)void Server_ChangeVisibility(AWeapon* InItem, EItemMode NewMode);
+	UFUNCTION(Reliable, Server)void Server_SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep, const FHitResult& OutSweepHitResult, ETeleportType Teleport);
+	UFUNCTION(Reliable, Server)void Server_SetItemRotation(AEqquipment* InItem, const FRotator& NewRotation, ETeleportType Teleport);
+	UFUNCTION(Reliable, Server)void Server_AttachItemToComponent(AEqquipment* InItem, USceneComponent* Parent, EAttachmentRule Location, EAttachmentRule Rotation, EAttachmentRule Scale, bool bWeldSimulatedBodies, const FName& SocketName);
+	UFUNCTION(Reliable, Server)void Server_ChangeVisibility(AEqquipment* InItem, EItemMode NewMode);
 protected:
 public:
-	void SetItemLocation(AWeapon* InItem, const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);
-	void SetItemRotation(AWeapon* InItem, FRotator NewRotation, ETeleportType Teleport = ETeleportType::None);
-	void AttachItemToComponent(AWeapon* InItem, USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName SocketName = NAME_None);
-	void ChangeVisibility(AWeapon* InItem, EItemMode NewMode);
-	AWeapon* SpawnItem(UClass* Class, FTransform const& Transform, const FActorSpawnParameters& SpawnParameters = FActorSpawnParameters());
-	AWeapon* SpawnItemDeferred(UClass* Class, FTransform const& Transform, AActor* NewOwner = nullptr, APawn* NewInstigator = nullptr, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined);
+	void SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);
+	void SetItemRotation(AEqquipment* InItem, FRotator NewRotation, ETeleportType Teleport = ETeleportType::None);
+	void AttachItemToComponent(AEqquipment* InItem, USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName SocketName = NAME_None);
+	void ChangeVisibility(AEqquipment* InItem, EItemMode NewMode);
+	AEqquipment* SpawnItem(UClass* Class, FTransform const& Transform, const FActorSpawnParameters& SpawnParameters = FActorSpawnParameters());
+	AEqquipment* SpawnItemDeferred(UClass* Class, FTransform const& Transform, AActor* NewOwner = nullptr, APawn* NewInstigator = nullptr, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined);
 };

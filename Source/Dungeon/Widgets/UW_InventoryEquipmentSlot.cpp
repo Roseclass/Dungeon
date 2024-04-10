@@ -28,7 +28,7 @@ int32 UUW_InventoryEquipmentSlot::NativePaint(const FPaintArgs& Args, const FGeo
 		if (operation) itemobject = Cast<UItemObject>(payload);
 
 		bool green = 0;
-		green = OwnerComponent->CanTakeOffEquipment(SlotIndex);
+		green = OwnerComponent->CanTakeOffEquipment(int32(SlotType));
 
 		FVector2D topleft = USlateBlueprintLibrary::GetLocalTopLeft(Background->GetCachedGeometry());
 		FVector2D size = USlateBlueprintLibrary::GetLocalSize(Background->GetCachedGeometry());
@@ -73,9 +73,9 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 		UObject* payload = InOperation->Payload.Get();
 		item = Cast<UItemObject>(payload);
 		if (!item)return 1;
-		if (OwnerComponent->CanTakeOffEquipment(SlotIndex))
+		if (OwnerComponent->CanTakeOffEquipment(int32(SlotType)) && item->GetType() == SlotType)
 		{
-			ChangePresetData(SlotIndex, item->GetWeapon());
+			ChangeEquippedData(int32(SlotType), item->GetEqquipment());
 			Pannel->AddChild(InOperation->DefaultDragVisual.Get());
 
 			UUW_InventoryItem* widget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual.Get());
@@ -92,7 +92,7 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 			slot->SetAutoSize(1);
 		}
 		else
-			OwnerComponent->Server_TryAddItem(item->GetWeapon());
+			OwnerComponent->Server_TryAddItem(item->GetEqquipment());
 	}
 
 	return 1;
@@ -112,7 +112,7 @@ FReply UUW_InventoryEquipmentSlot::NativeOnMouseButtonDown(const FGeometry& InGe
 
 void UUW_InventoryEquipmentSlot::Refresh()
 {
-	//UItemObject* item = OwnerComponent->GetPresetItems(SlotIndex);
+	//UItemObject* item = OwnerComponent->GetEquippedItems(int32(SlotType));
 	//if (item && item->IsRotated())item->Rotate();
 	//UMaterialInterface* mat = item == nullptr ? nullptr : item->GetIcon();
 	//if (!mat)Icon->SetVisibility(ESlateVisibility::Collapsed);
@@ -125,27 +125,28 @@ void UUW_InventoryEquipmentSlot::Refresh()
 
 void UUW_InventoryEquipmentSlot::OnItemRemoved(UItemObject* InObject)
 {
-	OwnerComponent->RemovePreset_Drag(SlotIndex);
+	OwnerComponent->RemoveEquipped_Drag(int32(SlotType));
 }
 
-void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, int32 InSlotIndex)
+void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, EItemType NewType)
 {
 	OwnerComponent = InComponent;
-	OwnerComponent->OnInventoryPresetChanged.AddDynamic(this, &UUW_InventoryEquipmentSlot::Refresh);
-	SlotIndex = InSlotIndex;
+	//OwnerComponent->OnInventoryEquippedChanged.AddDynamic(this, &UUW_InventoryEquipmentSlot::Refresh);
+
+	SlotType = NewType;
 }
 
-void UUW_InventoryEquipmentSlot::EquipPreset(int32 InIdx)
+void UUW_InventoryEquipmentSlot::EquipEquipped(int32 InIdx)
 {
-	OwnerComponent->EquipPreset(InIdx);
+	OwnerComponent->EquipEquipped(InIdx);
 }
 
-void UUW_InventoryEquipmentSlot::ChangePresetIndex(int32 InIdx)
+void UUW_InventoryEquipmentSlot::ChangeEquippedIndex(int32 InIdx)
 {
-	OwnerComponent->ChangePresetIndex(InIdx);
+	OwnerComponent->ChangeEquippedIndex(InIdx);
 }
 
-void UUW_InventoryEquipmentSlot::ChangePresetData(int32 InIdx, AWeapon* InData)
+void UUW_InventoryEquipmentSlot::ChangeEquippedData(int32 InIdx, AEqquipment* InData)
 {
-	OwnerComponent->ChangePresetData(InIdx, InData);
+	OwnerComponent->ChangeEquippedData(InIdx, InData);
 }

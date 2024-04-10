@@ -1,12 +1,6 @@
 #include "Objects/Weapon.h"
 #include "Global.h"
 #include "Components/ShapeComponent.h"
-#include "Components/MeshComponent.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Particles/ParticleSystem.h"
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
-#include "NiagaraSystem.h"
 
 #include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemManager.h"
@@ -21,33 +15,11 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	ItemObject = NewObject<UItemObject>(this, FName("Item"));
-	ItemObject->Init(DimensionX, DimensionY, Icon, IconRotated, this);
-
-	FindComponents();
-
-	SpawnLootEffects();
-
-	/*if (!Manager)
-	{
-		AActor* manager = UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass());
-		Manager = Cast<AItemManager>(manager);
-	}*/
 }
 
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
-	if (NiagaraPickEffect)
-	{
-		NiagaraPickEffect->SetWorldRotation(LootEffectWorldRotation);
-	}
-	if (ParticlePickEffect)
-	{
-		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
-	}
 }
 
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -55,24 +27,19 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
-	DOREPLIFETIME_CONDITION(AWeapon, Mode, COND_None);
+	//DOREPLIFETIME_CONDITION(AWeapon, Mode, COND_None);
 }
 
 void AWeapon::OnRep_Mode()
 {
-	switch (Mode)
-	{
-	case EItemMode::Loot:SetPickableMode();break;
-	case EItemMode::Inventory:SetInventoryMode();break;
-	case EItemMode::Equip:SetEquipMode();break;
-	case EItemMode::Max:break;
-	default:break;
-	}
+	Super::OnRep_Mode();
 }
 
 void AWeapon::FindComponents()
 {
-	//콜리전 찾기
+	Super::FindComponents();
+
+	// find collision
 	TArray<UShapeComponent*> shapeComponents;
 	GetComponents<UShapeComponent>(shapeComponents);
 	for (UShapeComponent* component : shapeComponents)
@@ -84,11 +51,6 @@ void AWeapon::FindComponents()
 				CollisionComponents.Add(component);
 				break;
 			}
-			else if (i == FName("InteractCollision"))
-			{
-				InteractCollisionComponents.Add(component);
-				break;
-			}
 		}
 	}
 	for (UShapeComponent* component : CollisionComponents)
@@ -98,146 +60,59 @@ void AWeapon::FindComponents()
 		component->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnComponentBeginOverlap);
 		component->OnComponentHit.AddDynamic(this, &AWeapon::OnComponentHit);
 	}
-
-	//메시 찾기
-	GetComponents<UMeshComponent>(MeshComponents);
 }
 
 void AWeapon::SpawnLootEffects()
 {
-	UNiagaraSystem* n = Cast<UNiagaraSystem>(LootEffect);
-	UParticleSystem* p = Cast<UParticleSystem>(LootEffect);
-
-	UFXSystemComponent* fx = nullptr;
-	if (n)
-	{
-		NiagaraPickEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(n, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget, 1);
-		NiagaraPickEffect->SetIsReplicated(1);
-		NiagaraPickEffect->SetAutoDestroy(0);
-		fx = NiagaraPickEffect;
-	}
-	else if (p)
-	{
-		ParticlePickEffect = UGameplayStatics::SpawnEmitterAttached(p, MeshComponents[0], NAME_None, FVector(), FRotator(), EAttachLocation::SnapToTarget);
-		ParticlePickEffect->SetIsReplicated(1);
-		ParticlePickEffect->bAutoDestroy = 0;
-		fx = ParticlePickEffect;
-	}
-
-	if (fx)
-	{
-		for (auto i : LootEffectParams)
-		{
-			if (i.ParamType == PSPT_Scalar)fx->SetFloatParameter(i.Name, i.Scalar);
-			else if (i.ParamType == PSPT_Vector)fx->SetVectorParameter(i.Name, i.Vector);
-			else if (i.ParamType == PSPT_Color)fx->SetColorParameter(i.Name, i.Color);
-			else if (i.ParamType == PSPT_Actor)fx->SetActorParameter(i.Name, i.Actor);
-		}
-	}
-	if (!bPickable)DeactivateEffect();
+	Super::SpawnLootEffects();
 }
 
 void AWeapon::SetEffectLocation()
 {
-
+	Super::SetEffectLocation();
 }
 
 void AWeapon::SortMesh()
 {
-
+	Super::SortMesh();
 }
 
 void AWeapon::ActivateEffect()
 {
-	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
-	if (NiagaraPickEffect)
-	{
-		NiagaraPickEffect->SetVisibility(1);
-	}
-	if (ParticlePickEffect)
-	{
-		ParticlePickEffect->SetVisibility(1);
-	}
+	Super::ActivateEffect();
 }
 
 void AWeapon::DeactivateEffect()
 {
-	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
-	if (NiagaraPickEffect)NiagaraPickEffect->SetVisibility(0);
-	if (ParticlePickEffect)ParticlePickEffect->SetVisibility(0);
+	Super::DeactivateEffect();
 }
 
 void AWeapon::SetPickableMode()
 {
-	//bPickable = 1;
-
-	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
-	SetEffectLocation();
-
-	// On Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(1);
-
 	// Off Collision
 	for (UShapeComponent* component : CollisionComponents)
 		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// On Interaction Collision
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	// Change Owner
-	SetOwnerCharacter(nullptr);
-	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
-	DetachFromActor(f);
-
-	// On Item Effects
-	ActivateEffect();
+	Super::SetPickableMode();
 
 }
 
 void AWeapon::SetInventoryMode()
 {
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
-	bPickable = 0;
-
-	// Off Item Effects
-	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
-
-	// Off Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(0);
-
 	// Off Collision
 	for (UShapeComponent* component : CollisionComponents)
 		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	Super::SetInventoryMode();
 }
 
 void AWeapon::SetEquipMode()
 {
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
-	bPickable = 0;
-
-	// Off Item Effects
-	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
-
-	// On Appearance
-	for (auto component : MeshComponents)
-		component->SetVisibility(1);
-
 	// Off Collision
 	for (UShapeComponent* component : CollisionComponents)
 		component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	Super::SetEquipMode();
 }
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -272,17 +147,7 @@ void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& S
 
 void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
 {
-	OwnerCharacter = Cast<ACharacter>(InCharacter);
-	//if (OwnerCharacter)
-	//{
-	//	State = CHelpers::GetComponent<UCStateComponent>(OwnerCharacter);
-	//	Status = CHelpers::GetComponent<UCStatusComponent>(OwnerCharacter);
-	//}
-	//else
-	//{
-	//	State = nullptr;
-	//	Status = nullptr;
-	//}
+	Super::SetOwnerCharacter(InCharacter);
 }
 
 void AWeapon::OnCollision()
@@ -304,47 +169,25 @@ void AWeapon::ResetHittedActors()
 
 void AWeapon::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
 {
-	if (!Manager)
-	{
-		CLog::Print(__FUNCTION__);
-		return;
-	}
-	Manager->SetItemLocation(this, NewLocation, bSweep, OutSweepHitResult, Teleport);
+	Super::SetItemLocation(NewLocation, bSweep, OutSweepHitResult, Teleport);
 }
 
 void AWeapon::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
 {
-	if (!Manager)
-	{
-		CLog::Print(__FUNCTION__);
-		return;
-	}
-	Manager->SetItemRotation(this, NewRotation, Teleport);
+	Super::SetItemRotation(NewRotation, Teleport);
 }
 
 void AWeapon::AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName)
 {
-	if (!Manager)
-	{
-		CLog::Print(__FUNCTION__);
-		return;
-	}
-	Manager->AttachItemToComponent(this, Parent, AttachmentRules, InSocketName);
+	Super::AttachItemToComponent(Parent,AttachmentRules,InSocketName);
 }
 
 void AWeapon::ChangeVisibility(EItemMode InMode)
 {
-	if (InMode == EItemMode::Max)return;
-	if (!Manager)
-	{
-		CLog::Print(__FUNCTION__);
-		return;
-	}
-	Manager->ChangeVisibility(this, InMode);
+	Super::ChangeVisibility(InMode);
 }
 
 void AWeapon::SetMode(EItemMode InMode)
 {
-	Mode = InMode;
-	if (HasAuthority())OnRep_Mode();
+	Super::SetMode(InMode);
 }

@@ -58,7 +58,7 @@ public:
 
 	//Inventory
 	UPROPERTY(VisibleAnywhere)
-		TArray<TSubclassOf<AWeapon>> PresetClasses;
+		TArray<TSubclassOf<AWeapon>> EquippedClasses;
 
 	UPROPERTY(VisibleAnywhere)
 		TArray<TSubclassOf<AWeapon>> InventoryClasses;

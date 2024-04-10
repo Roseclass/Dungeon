@@ -36,7 +36,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	// Replicated 변수를 여기에 추가
 	DOREPLIFETIME_CONDITION(UInventoryComponent, Items, COND_None);
-	DOREPLIFETIME_CONDITION(UInventoryComponent, PresetItems, COND_None);
+	DOREPLIFETIME_CONDITION(UInventoryComponent, EquippedItems, COND_None);
 }
 
 void UInventoryComponent::InitDefault()
@@ -52,22 +52,30 @@ void UInventoryComponent::InitDefault()
 	}
 
 	Items.Init(nullptr, Columns * Rows);
-	PresetItems.Init(nullptr, 1);
+	EquippedItems.Init(nullptr, int32(EItemType::Max));
 
 	if (DefaultWeapon)
 	{
-		CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon);
-		CurrentWeapon->SetManager(manager);
-		CurrentWeapon->OffCollision();
-		FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
-		CurrentWeapon->AttachToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
-		CurrentWeapon->SetOwner(owner);
-		CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
+		int32 idx = int32(EItemType::Weapon);
+		if (EquippedItems.IsValidIndex(idx))
+		{
+			AWeapon* weapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon);
+			if (weapon)
+			{
+				weapon->SetManager(manager);
+				weapon->OffCollision();
+				FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+				weapon->AttachToComponent(owner->GetMesh(), f, weapon->GetSocketName());
+				weapon->SetOwner(owner);
+				weapon->SetTeamID(owner->GetGenericTeamId());
+				EquippedItems[idx] = weapon;
+			}
+		}
 	}
 
 	if (InvTestClass)
 	{
-		AWeapon* test = GetWorld()->SpawnActor<AWeapon>(InvTestClass);
+		AEqquipment* test = GetWorld()->SpawnActor<AEqquipment>(InvTestClass);
 		test->SetManager(manager);
 		Server_TryAddItem(test);
 	}
@@ -95,21 +103,21 @@ void UInventoryComponent::OnRep_Items()
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::OnRep_PresetItems()
+void UInventoryComponent::OnRep_EquippedItems()
 {
-
+	// TODO::Change appearance
 }
 
 void UInventoryComponent::Reset()
 {
-	//TSet<AWeapon*> itemSet;
+	//TSet<AEqquipment*> itemSet;
 
-	////PresetData
+	////EquippedData
 	//for (int32 i = 0; i < 3; i++)
 	//{
-	//	if (!PresetItems[i])continue;
-	//	itemSet.Add(PresetItems[i]);
-	//	ChangePresetData(i, nullptr);
+	//	if (!EquippedItems[i])continue;
+	//	itemSet.Add(EquippedItems[i]);
+	//	ChangeEquippedData(i, nullptr);
 	//}
 
 	//InventoryData
@@ -117,7 +125,7 @@ void UInventoryComponent::Reset()
 	{
 		if (!Items[i])continue;
 		//if (!itemSet.Contains(Items[i]))
-		//	itemSet.Add(PresetItems[i]);
+		//	itemSet.Add(EquippedItems[i]);
 		Items[i] = nullptr;
 	}
 
@@ -131,7 +139,7 @@ void UInventoryComponent::IndexToTile(int32 InIndex, int32& X, int32& Y)
 	Y = InIndex / Columns;
 }
 
-bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AWeapon** OutObject)
+bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AEqquipment** OutObject)
 {
 	*OutObject = nullptr;
 	if (!Items.IsValidIndex(InIndex))return 0;
@@ -141,20 +149,41 @@ bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AWeapon** OutObject)
 
 void UInventoryComponent::OnCollision()
 {
-	if (CurrentWeapon)CurrentWeapon->OnCollision();
+	int32 idx = int32(EItemType::Weapon);
+	if (!EquippedItems.IsValidIndex(idx))
+	{
+		CLog::Print("UInventoryComponent::OnCollision IsNotValidIndex", -1, 10, FColor::Red);
+		return;
+	}
+	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+	if (weapon)weapon->OnCollision();
 }
 
 void UInventoryComponent::OffCollision()
 {
-	if (CurrentWeapon)CurrentWeapon->OffCollision();
+	int32 idx = int32(EItemType::Weapon);
+	if (!EquippedItems.IsValidIndex(idx))
+	{
+		CLog::Print("UInventoryComponent::OffCollision IsNotValidIndex", -1, 10, FColor::Red);
+		return;
+	}
+	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+	if (weapon)weapon->OffCollision();
 }
 
 void UInventoryComponent::ResetHittedActors()
 {
-	if (CurrentWeapon)CurrentWeapon->ResetHittedActors();
+	int32 idx = int32(EItemType::Weapon);
+	if (!EquippedItems.IsValidIndex(idx))
+	{
+		CLog::Print("UInventoryComponent::ResetHittedActors IsNotValidIndex", -1, 10, FColor::Red);
+		return;
+	}
+	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+	if (weapon)weapon->ResetHittedActors();
 }
 
-bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex)
+bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
@@ -167,7 +196,7 @@ bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex)
 			if (i < 0 || i >= Columns)return 0;
 			if (j < 0 || j >= Rows)return 0;
 			int32 idx = TileToIndex(i, j);
-			AWeapon* obj = nullptr;
+			AEqquipment* obj = nullptr;
 			if (!GetItemAtIndex(idx, &obj))return 0;
 			if (obj)return 0;
 		}
@@ -175,7 +204,7 @@ bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex)
 	return 1;
 }
 
-bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject)
+bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject)
 {
 	if (!InObject)return 1;
 
@@ -217,7 +246,7 @@ bool UInventoryComponent::IsRoomAvailable(AWeapon* InObject)
 	return 0;
 }
 
-bool UInventoryComponent::IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex)
+bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
@@ -230,7 +259,7 @@ bool UInventoryComponent::IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex)
 			if (i < 0 || i >= Columns)return 0;
 			if (j < 0 || j >= Rows)return 0;
 			int32 idx = TileToIndex(i, j);
-			AWeapon* obj = nullptr;
+			AEqquipment* obj = nullptr;
 			if (!GetItemAtIndex(idx, &obj))return 0;
 			if (obj && obj != InObject)return 0;
 		}
@@ -238,7 +267,7 @@ bool UInventoryComponent::IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex)
 	return 1;
 }
 
-void UInventoryComponent::Server_TryAddItem_Implementation(AWeapon* InObject)
+void UInventoryComponent::Server_TryAddItem_Implementation(AEqquipment* InObject)
 {
 	if (!InObject)return;
 	if (!IsRoomAvailable(InObject))return;
@@ -250,7 +279,7 @@ void UInventoryComponent::Server_TryAddItem_Implementation(AWeapon* InObject)
 	}
 }
 
-void UInventoryComponent::Server_AddItemAt_Implementation(AWeapon* InObject, int32 TopLeftIndex)
+void UInventoryComponent::Server_AddItemAt_Implementation(AEqquipment* InObject, int32 TopLeftIndex)
 {
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
@@ -274,7 +303,7 @@ void UInventoryComponent::Server_AddItemAt_Implementation(AWeapon* InObject, int
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::Server_RemoveItem_Implementation(AWeapon* InObject)
+void UInventoryComponent::Server_RemoveItem_Implementation(AEqquipment* InObject)
 {
 	CheckNull(InObject);
 	for (int32 i = 0; i < Items.Num(); i++)
@@ -284,11 +313,11 @@ void UInventoryComponent::Server_RemoveItem_Implementation(AWeapon* InObject)
 		OnInventoryChanged.Broadcast();
 }
 
-void UInventoryComponent::GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map)
+void UInventoryComponent::GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& Map)
 {
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
-		AWeapon* cur = Items[i];
+		AEqquipment* cur = Items[i];
 		if (!Items[i])continue;
 		if (Map.Contains(cur))continue;
 		int32 x, y;
@@ -299,23 +328,23 @@ void UInventoryComponent::GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map)
 
 bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)
 {
-	if (!PresetItems.IsValidIndex(InIdx))return 0;
-	AWeapon* item = PresetItems[InIdx];
+	if (!EquippedItems.IsValidIndex(InIdx))return 0;
+	AEqquipment* item = EquippedItems[InIdx];
 	if (!item)return 1;
 	return IsRoomAvailable(item);
 }
 
 bool UInventoryComponent::CanTakeOffCurrentEquipment()
 {
-	return CanTakeOffEquipment(PresetIndex);
+	return CanTakeOffEquipment(EquippedIndex);
 }
 
-AWeapon* UInventoryComponent::GetPresetItems(int32 InIdx)
+AEqquipment* UInventoryComponent::GetEquippedItems(int32 InIdx)
 {
-	return PresetItems.IsValidIndex(InIdx) ? PresetItems[InIdx] : nullptr;
+	return EquippedItems.IsValidIndex(InIdx) ? EquippedItems[InIdx] : nullptr;
 }
 
-void UInventoryComponent::Equip(AWeapon* InData)
+void UInventoryComponent::Equip(AEqquipment* InData)
 {
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
@@ -324,53 +353,61 @@ void UInventoryComponent::Equip(AWeapon* InData)
 
 	if (!InData)
 	{
-		if (CurrentWeapon)CurrentWeapon->ChangeVisibility(EItemMode::Inventory);
-
-		CurrentWeapon = nullptr;
+		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
 		return;
 	}
 
+	int32 idx = int32(InData->GetType());
 
-	CurrentWeapon = InData;
-	CurrentWeapon->OffCollision();
-	FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
-	CurrentWeapon->SetOwner(owner);
-	CurrentWeapon->SetTeamID(owner->GetGenericTeamId());
-	CurrentWeapon->AttachItemToComponent(owner->GetMesh(), f, CurrentWeapon->GetSocketName());
-	CurrentWeapon->ChangeVisibility(EItemMode::Equip);
+	EquippedItems[idx] = InData;
+	EquippedItems[idx]->SetOwner(owner);
+	EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
+
+	if (InData->GetType() == EItemType::Weapon)
+	{
+		AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+		if (weapon)
+		{
+			weapon->OffCollision();
+			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+			weapon->SetTeamID(owner->GetGenericTeamId());
+			weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
+		}
+	}
+
 
 	if (OnInventoryEquipWeapon.IsBound())
 		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData);
 }
 
-void UInventoryComponent::EquipPreset(int32 InIdx)
+void UInventoryComponent::EquipEquipped(int32 InIdx)
 {
-	CheckFalse(PresetItems.IsValidIndex(InIdx));
+	CheckFalse(EquippedItems.IsValidIndex(InIdx));
 
 	//UCActionComponent* action = CHelpers::GetComponent<UCActionComponent>(GetOwner());
 	//bool bUnarmed = action->IsUnarmedMode();
-	//if ((PresetIndex == InIdx && !bUnarmed) || !PresetItems[InIdx])Select->PlaySelectDown();
+	//if ((EquippedIndex == InIdx && !bUnarmed) || !EquippedItems[InIdx])Select->PlaySelectDown();
 	//else if (InIdx == 0)Select->PlaySelectLeft();
 	//else if (InIdx == 1)Select->PlaySelectUp();
 	//else if (InIdx == 2)Select->PlaySelectRight();
 
-	PresetIndex = InIdx;
-	Equip(PresetItems[InIdx]);
+	EquippedIndex = InIdx;
+	Equip(EquippedItems[InIdx]);
 }
 
-bool UInventoryComponent::ChangePresetData(int32 InIdx, AWeapon* InData)
+bool UInventoryComponent::ChangeEquippedData(int32 InIdx, AEqquipment* InData)
 {
 	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return 0;
 
-	if (!PresetItems.IsValidIndex(InIdx))return 0;
+	if (!EquippedItems.IsValidIndex(InIdx))return 0;
 	if (!CanTakeOffEquipment(InIdx))return 0;
-	if (PresetItems[InIdx] && !IsRoomAvailable(PresetItems[InIdx]))return 0;
-	if (IsRoomAvailable(PresetItems[InIdx]))Server_TryAddItem(PresetItems[InIdx]);
-	PresetItems[InIdx] = InData;
-	if (InIdx == PresetIndex)Equip(PresetItems[InIdx]);
-	if (OnInventoryPresetChanged.IsBound())
-		OnInventoryPresetChanged.Broadcast();
+	if (EquippedItems[InIdx] && !IsRoomAvailable(EquippedItems[InIdx]))return 0;
+	if (IsRoomAvailable(EquippedItems[InIdx]))Server_TryAddItem(EquippedItems[InIdx]);
+	EquippedItems[InIdx] = InData;
+	if (InIdx == EquippedIndex)Equip(EquippedItems[InIdx]);
+	//if (OnInventoryEquippedChanged.IsBound())
+	//	OnInventoryEquippedChanged.Broadcast(EAppearancePart::ChestAttachment,);
 
 	//if (Select)
 	//	Select->ChangeData(InIdx, InData);
@@ -378,7 +415,7 @@ bool UInventoryComponent::ChangePresetData(int32 InIdx, AWeapon* InData)
 	return 1;
 }
 
-void UInventoryComponent::ChangePresetIndex(int32 InIdx)
+void UInventoryComponent::ChangeEquippedIndex(int32 InIdx)
 {
 	// 기본적으로 플레이어가 키보드로 누르면 ui교체,장비교체
 	// 위젯의 프리셋 변경버튼 눌러도 ui교체,장비교체
@@ -387,29 +424,24 @@ void UInventoryComponent::ChangePresetIndex(int32 InIdx)
 	// 이미지를 프리셋에 맞게 변경
 	// 현재 인덱스 변경
 
-	CheckFalse(PresetItems.IsValidIndex(InIdx));
-	PresetIndex = InIdx;
-	Equip(PresetItems[InIdx]);
+	CheckFalse(EquippedItems.IsValidIndex(InIdx));
+	EquippedIndex = InIdx;
+	Equip(EquippedItems[InIdx]);
 
-	//if (OnInventoryPresetChanged.IsBound())
-	//	OnInventoryPresetChanged.Broadcast();
+	//if (OnInventoryEquippedChanged.IsBound())
+	//	OnInventoryEquippedChanged.Broadcast();
 }
 
-bool UInventoryComponent::RemovePreset(int32 InIdx)
-{
-	return ChangePresetData(InIdx, nullptr);
-}
-
-bool UInventoryComponent::RemovePreset_Drag(int32 InIdx)
+bool UInventoryComponent::RemoveEquipped_Drag(int32 InIdx)
 {
 	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return 0;
 	 
-	if (!PresetItems.IsValidIndex(InIdx))return 0;
-	PresetItems[InIdx] = nullptr;
-	if (InIdx == PresetIndex)Equip(PresetItems[InIdx]);
-	if (OnInventoryPresetChanged.IsBound())
-		OnInventoryPresetChanged.Broadcast();
+	if (!EquippedItems.IsValidIndex(InIdx))return 0;
+	EquippedItems[InIdx] = nullptr;
+	if (InIdx == EquippedIndex)Equip(EquippedItems[InIdx]);
+	//if (OnInventoryEquippedChanged.IsBound())
+	//	OnInventoryEquippedChanged.Broadcast();
 
 	//if (Select)
 	//	Select->ChangeData(InIdx, nullptr);

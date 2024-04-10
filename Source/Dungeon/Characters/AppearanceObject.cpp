@@ -2,38 +2,6 @@
 #include "Global.h"
 
 #if WITH_EDITOR
-
-#define HeadCoverings_BaseHair_MAX 11
-#define HeadCoverings_NoFacialHair_MAX 4
-#define HeadCoverings_NoHair_MAX 13
-#define Hair_MAX 29
-#define HeadAttachment_Hair_MAX 1
-#define HeadAttachment_Helmet_MAX 13
-#define ChestAttachment_MAX 1
-#define BackAttachment_MAX 16
-#define ShoulderAttachment_Right_MAX 22
-#define ShoulderAttachment_Left_MAX 22
-#define ElbowAttachment_Right_MAX 7
-#define ElbowAttachment_Left_MAX 7
-#define HipsAttachment_MAX 13
-#define KneeAttachment_Right_MAX 12
-#define KneeAttachment_Left_MAX 12
-#define Extra_MAX 4
-#define Head_AllElements_MAX 23
-#define Head_NoElements_MAX 13
-#define Eyebrows_MAX 11
-#define FacialHair_MAX 18
-#define Torso_MAX 29
-#define ArmUpperRight_MAX 21
-#define ArmUpperLeft_MAX 21
-#define ArmLowerRight_MAX 19
-#define ArmLowerLeft_MAX 19
-#define HandRight_MAX 18
-#define HandLeft_MAX 18
-#define Hips_MAX 29
-#define LegRight_MAX 20
-#define LegLeft_MAX 20
-
 void UAppearanceObject::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);

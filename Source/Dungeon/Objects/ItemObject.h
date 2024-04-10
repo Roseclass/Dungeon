@@ -12,16 +12,20 @@
 class UMaterialInstance;
 class UInventoryComponent;
 
+enum class EItemType : uint8;
+
 UCLASS()
 class DUNGEON_API UItemObject : public UObject
 {
 	GENERATED_BODY()
 	//property
 private:
+	EItemType Type;
+
 	UPROPERTY()UInventoryComponent* InventoryComp;
 	UPROPERTY()UMaterialInstance* Icon;
 	UPROPERTY()UMaterialInstance* IconRotated;
-	AWeapon* Weapon;
+	AEqquipment* Eqquipment;
 	int32 DimensionX;
 	int32 DimensionY;
 	bool bRotated;
@@ -33,14 +37,15 @@ public:
 private:
 protected:
 public:
-	void Init(int32 InX, int32 InY, UMaterialInstance* InIcon, UMaterialInstance* InIconRotated, AWeapon* InItem);
+	void Init(int32 InX, int32 InY, UMaterialInstance* InIcon, UMaterialInstance* InIconRotated, AEqquipment* InEqquipment, EItemType InType);
 	void Rotate();
 	void GetDimensions(int32& X, int32& Y);
 	void ChangeVisibility(EItemMode InMode = EItemMode::Max);
 
-	FORCEINLINE UMaterialInstance* GetIcon() {return bRotated ? IconRotated : Icon;}
-	FORCEINLINE AWeapon* GetWeapon() {return Weapon;}
-	FORCEINLINE bool IsRotated(){return bRotated;}
-	FORCEINLINE UInventoryComponent* GetInventoryComp() { return InventoryComp; }
+	FORCEINLINE EItemType GetType() const {return Type;}
+	FORCEINLINE UMaterialInstance* GetIcon() const {return bRotated ? IconRotated : Icon;}
+	FORCEINLINE AEqquipment* GetEqquipment() const {return Eqquipment;}
+	FORCEINLINE bool IsRotated() const{return bRotated;}
+	FORCEINLINE UInventoryComponent* GetInventoryComp() const { return InventoryComp; }
 	FORCEINLINE void SetInventoryComp(UInventoryComponent* InComp) { InventoryComp = InComp; }
 };

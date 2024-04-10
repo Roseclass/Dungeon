@@ -140,7 +140,7 @@ void APlayerCharacter::Init()
 	}
 	
 	//Inventory
-	Inventory->OnInventoryItemChanged.AddDynamic(this, &APlayerCharacter::ChangeAppearance);
+	Inventory->OnInventoryEquippedChanged.AddDynamic(this, &APlayerCharacter::ChangeAppearance);
 
 	//init minimap
 	MinimapIcon->CreateDynamicMaterialInstance(0);
@@ -356,28 +356,28 @@ FString APlayerCharacter::GetUniqueSaveName()
 void APlayerCharacter::OnBeforeSave(USaveGameData* SaveData)
 {
 	//Inventory
-	//PresetData
+	//EquippedData
 	{
-		SaveData->PlayerData.PresetClasses.Empty();
-		SaveData->PlayerData.PresetClasses.Init(nullptr, 3);
+		SaveData->PlayerData.EquippedClasses.Empty();
+		SaveData->PlayerData.EquippedClasses.Init(nullptr, 3);
 		for (int32 i = 0; i < 3; i++)
 		{
-			AWeapon* weapon = Inventory->GetPresetItems(i);
-			if (!weapon)continue;
-			SaveData->PlayerData.PresetClasses[i] = weapon->GetClass();
+			AEqquipment* eqquipment = Inventory->GetEquippedItems(i);
+			if (!eqquipment)continue;
+			SaveData->PlayerData.EquippedClasses[i] = eqquipment->GetClass();
 		}
 	}
 
 	//InventoryData
 	{
-		TMap<AWeapon*, TTuple<int32, int32>> m;
+		TMap<AEqquipment*, TTuple<int32, int32>> m;
 		Inventory->GetAllItems(m);
 		for (auto i : m)
 		{
 			if (!i.Key)continue;
-			AWeapon* weapon = i.Key;
-			if (!weapon)continue;
-			SaveData->PlayerData.InventoryClasses.Add(weapon->GetClass());
+			AEqquipment* eqquipment = i.Key;
+			if (!eqquipment)continue;
+			SaveData->PlayerData.InventoryClasses.Add(eqquipment->GetClass());
 		}
 	}
 

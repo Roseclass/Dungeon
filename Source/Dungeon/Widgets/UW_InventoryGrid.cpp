@@ -67,7 +67,7 @@ int32 UUW_InventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		bool green = 0;
 
 		int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
-		green = OwnerComponent->IsRoomGreen(itemObject->GetWeapon(), idx);
+		green = OwnerComponent->IsRoomGreen(itemObject->GetEqquipment(), idx);
 
 		FVector2D start = FVector2D(topleft.X + (gap.X * BoxLeft), topleft.Y + (gap.Y * BoxTop));
 		FVector2D boxsize = FVector2D(gap.X * (BoxRight - BoxLeft), gap.Y * (BoxBottom - BoxTop));
@@ -110,15 +110,15 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 	if (OwnerComponent)
 	{
 		int32 idx = OwnerComponent->TileToIndex(BoxLeft, BoxTop);
-		bool vacant = OwnerComponent->IsRoomGreen(item->GetWeapon(), idx);
+		bool vacant = OwnerComponent->IsRoomGreen(item->GetEqquipment(), idx);
 		if (vacant)
 		{
-			OwnerComponent->Server_AddItemAt(item->GetWeapon(), idx);
+			OwnerComponent->Server_AddItemAt(item->GetEqquipment(), idx);
 		}
 		else
 		{
-			if (!OwnerComponent->IsRoomAvailable(item->GetWeapon()))DropItem(item);
-			else OwnerComponent->Server_TryAddItem(item->GetWeapon());
+			if (!OwnerComponent->IsRoomAvailable(item->GetEqquipment()))DropItem(item);
+			else OwnerComponent->Server_TryAddItem(item->GetEqquipment());
 		}
 	}
 
@@ -168,7 +168,7 @@ void UUW_InventoryGrid::ChangeGridSize(int32 InRowSize, int32 InColumnSize)
 
 void UUW_InventoryGrid::Refresh()
 {
-	TMap<AWeapon*, TTuple<int32, int32>> map;
+	TMap<AEqquipment*, TTuple<int32, int32>> map;
 	GridCanvasPanel->ClearChildren();
 	CheckNull(OwnerComponent);
 	OwnerComponent->GetAllItems(map);
@@ -200,8 +200,8 @@ void UUW_InventoryGrid::Refresh()
 void UUW_InventoryGrid::OnItemRemoved(UItemObject* InObject)
 {
 	CheckNull(OwnerComponent);
-	AWeapon* weapon = nullptr;
-	if (InObject)weapon = InObject->GetWeapon();
+	AEqquipment* weapon = nullptr;
+	if (InObject)weapon = InObject->GetEqquipment();
 	OwnerComponent->Server_RemoveItem(weapon);
 	Refresh();
 	// 서버의 데이터 변화에 따라 갱신되게 설정해놨음
@@ -226,9 +226,9 @@ void UUW_InventoryGrid::DropItem(UItemObject* InObject)
 	TArray<AActor*> arr; FHitResult hit;
 	if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
 	{
-		InObject->GetWeapon()->SetItemLocation(hit.Location);
-		InObject->GetWeapon()->SetMode(EItemMode::Loot);
-		InObject->GetWeapon()->SetItemRotation(FRotator());
+		InObject->GetEqquipment()->SetItemLocation(hit.Location);
+		InObject->GetEqquipment()->SetMode(EItemMode::Loot);
+		InObject->GetEqquipment()->SetItemRotation(FRotator());
 	}
 }
 

@@ -12,9 +12,11 @@ class UBorder;
 class UCanvasPanel;
 class USlateBrushAsset;
 class UInventoryComponent;
-class AWeapon;
+class AEqquipment;
 class UItemObject;
 class UUW_InventoryItem;
+
+enum class EItemType : uint8;
 
 UCLASS()
 class DUNGEON_API UUW_InventoryEquipmentSlot : public UUserWidget
@@ -32,10 +34,10 @@ public:
 
 	//property
 private:
-	UInventoryComponent* OwnerComponent;
-	int32 SlotIndex;
+	UPROPERTY()UInventoryComponent* OwnerComponent;
 	bool DragDropEnter;
 
+	EItemType SlotType;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
@@ -57,8 +59,13 @@ private:
 	UFUNCTION()void OnItemRemoved(UItemObject* InObject);
 protected:
 public:
-	void Init(UInventoryComponent* InComponent, int32 InSlotIndex);
-	void EquipPreset(int32 InIdx);
-	void ChangePresetIndex(int32 InIdx);
-	void ChangePresetData(int32 InIdx, AWeapon* InData);
+	void Init(UInventoryComponent* InComponent, EItemType NewType);
+	void EquipEquipped(int32 InIdx);
+	void ChangeEquippedIndex(int32 InIdx);
+	void ChangeEquippedData(int32 InIdx, AEqquipment* InData);
 };
+/*
+* 위젯이 현재 어디 슬롯인지에 대한 정보가 필요함
+* 어떤 슬롯이 어떤 인벤토리 컴포넌트 데이터를 쥐고있을지 결정해줘야함
+* 결정됐다면 아이템 변경시에따른 외관 데이터가 갱신되게 바인딩하자
+*/

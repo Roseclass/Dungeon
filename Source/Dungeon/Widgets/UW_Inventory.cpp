@@ -39,9 +39,9 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 		TArray<AActor*> arr; FHitResult hit;
 		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
 		{
-			item->GetWeapon()->SetItemLocation(hit.Location);
-			item->GetWeapon()->SetItemRotation(FRotator());
-			item->GetWeapon()->ChangeVisibility(EItemMode::Loot);
+			item->GetEqquipment()->SetItemLocation(hit.Location);
+			item->GetEqquipment()->SetItemRotation(FRotator());
+			item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
 		}		
 		return result;
 	}
@@ -57,7 +57,7 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	{
 		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
 		if (itemWidget)itemWidget->DragDropEnd();
-		OwnerComponent->Server_TryAddItem(item->GetWeapon());
+		OwnerComponent->Server_TryAddItem(item->GetEqquipment());
 	}	
 
 	return result;
@@ -67,5 +67,10 @@ void UUW_Inventory::Init(UInventoryComponent* InComponent)
 {
 	OwnerComponent = InComponent;
 	Grid->Init(OwnerComponent);
-	WeaponSlot->Init(OwnerComponent, 0);
+	WeaponSlot->Init(OwnerComponent, EItemType::Weapon);
+	HelmSlot->Init(OwnerComponent, EItemType::Helms);
+	UpperBodySlot->Init(OwnerComponent, EItemType::UpperBody);
+	LowerBodySlot->Init(OwnerComponent, EItemType::LowerBody);
+	GlovesSlot->Init(OwnerComponent, EItemType::Gloves);
+	BootsSlot->Init(OwnerComponent, EItemType::Boots);		
 }

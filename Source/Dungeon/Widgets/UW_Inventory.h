@@ -45,6 +45,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_InventoryEquipmentSlot* WeaponSlot;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* HelmSlot;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* UpperBodySlot;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* LowerBodySlot;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* GlovesSlot;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryEquipmentSlot* BootsSlot;
+
 public:
 
 	//function
@@ -53,3 +68,8 @@ protected:
 public:
 	void Init(UInventoryComponent* InComponent);
 };
+
+/*
+* 슬롯이 어떤 타입을 가질지 설정해줘야함
+* 타입을 제외한 모든 작동이 같을 예정인데 굳이 애셋여러개 만들필요없어야함
+*/

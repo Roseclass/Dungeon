@@ -9,13 +9,13 @@
  * equip items, store items
  */
 
+class AEqquipment;
 class AWeapon;
 class UUW_Inventory;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquipWeapon, AWeapon*, InAttachment);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryPresetChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryItemChanged, EAppearancePart, InMeshPart, int32, InIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquipWeapon, AEqquipment*, InAttachment);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryEquippedChanged, EAppearancePart, InMeshPart, int32, InIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UInventoryComponent : public UActorComponent
@@ -32,20 +32,17 @@ public:
 
 	//property
 private:
-	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AWeapon*> Items;
-	UPROPERTY(ReplicatedUsing = "OnRep_PresetItems")TArray<AWeapon*> PresetItems;
-	int32 PresetIndex;
+	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AEqquipment*> Items;
+	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<AEqquipment*> EquippedItems;
+	int32 EquippedIndex;
 
 	UPROPERTY()UUW_Inventory* Widget;
-
-	AWeapon* CurrentWeapon;
-
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AWeapon> DefaultWeapon;
 
 	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<AWeapon> InvTestClass;
+		TSubclassOf<AEqquipment> InvTestClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (ClampMin = 1.00))
 		int32 Columns = 1;
@@ -58,35 +55,34 @@ protected:
 public:
 	FInventoryChanged OnInventoryChanged;
 	FInventoryEquipWeapon OnInventoryEquipWeapon;
-	FInventoryPresetChanged OnInventoryPresetChanged;
-	FInventoryItemChanged OnInventoryItemChanged;
+	FInventoryEquippedChanged OnInventoryEquippedChanged;
 
 	//function
 private:
 	void InitDefault();
 	void InitWidget();
 	UFUNCTION() void OnRep_Items();
-	UFUNCTION() void OnRep_PresetItems();
+	UFUNCTION() void OnRep_EquippedItems();
 
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
-	bool GetItemAtIndex(int32 InIndex, AWeapon** OutObject);
+	bool GetItemAtIndex(int32 InIndex, AEqquipment** OutObject);
 protected:
 public:
 	void OnCollision();
 	void OffCollision();
 	void ResetHittedActors();
 
-	bool IsRoomAvailable(AWeapon* InObject, int32 TopLeftIndex);
-	bool IsRoomAvailable(AWeapon* InObject);
-	bool IsRoomGreen(AWeapon* InObject, int32 TopLeftIndex);
+	bool IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIndex);
+	bool IsRoomAvailable(AEqquipment* InObject);
+	bool IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex);
 
-	UFUNCTION(Reliable, Server)void Server_TryAddItem(AWeapon* InObject);
-	UFUNCTION(Reliable, Server)void Server_AddItemAt(AWeapon* InObject, int32 TopLeftIndex);
+	UFUNCTION(Reliable, Server)void Server_TryAddItem(AEqquipment* InObject);
+	UFUNCTION(Reliable, Server)void Server_AddItemAt(AEqquipment* InObject, int32 TopLeftIndex);
 
-	UFUNCTION(Reliable, Server)void Server_RemoveItem(AWeapon* InObject);
+	UFUNCTION(Reliable, Server)void Server_RemoveItem(AEqquipment* InObject);
 
-	void GetAllItems(TMap<AWeapon*, TTuple<int32, int32>>& Map);
+	void GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& Map);
 
 	FORCEINLINE int32 TileToIndex(int32 X, int32 Y) {return X + (Y * Columns);}
 	FORCEINLINE int32 GetRows() { return Rows; }
@@ -95,14 +91,13 @@ public:
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);
 	bool CanTakeOffCurrentEquipment();
-	AWeapon* GetPresetItems(int32 InIdx);
-	FORCEINLINE AWeapon* GetCurrentPresetItem() { return PresetItems[PresetIndex]; };
-	void Equip(AWeapon* InData);
-	void EquipPreset(int32 InIdx);
-	bool ChangePresetData(int32 InIdx, AWeapon* InData);
-	void ChangePresetIndex(int32 InIdx);
-	bool RemovePreset(int32 InIdx);
-	bool RemovePreset_Drag(int32 InIdx);
+	AEqquipment* GetEquippedItems(int32 InIdx);
+	FORCEINLINE AEqquipment* GetCurrentEquippedItem() { return EquippedItems[EquippedIndex]; };
+	void Equip(AEqquipment* InData);
+	void EquipEquipped(int32 InIdx);
+	bool ChangeEquippedData(int32 InIdx, AEqquipment* InData);
+	void ChangeEquippedIndex(int32 InIdx);
+	bool RemoveEquipped_Drag(int32 InIdx);
 
 	//Widget
 	bool IsWidgetVisible();
