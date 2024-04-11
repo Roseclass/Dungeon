@@ -13,6 +13,7 @@ UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(1);
+	OnInventoryEquippedDataChanged.Init(FInventoryEquippedDataChanged(), int32(EItemType::Max));
 }
 
 void UInventoryComponent::BeginPlay()
@@ -21,8 +22,8 @@ void UInventoryComponent::BeginPlay()
 
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
-	if (pc && pc->IsLocalController())InitWidget();
 	if (owner->HasAuthority())InitDefault();
+	if (pc && pc->IsLocalController())InitWidget();
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -98,7 +99,7 @@ void UInventoryComponent::InitWidget()
 
 void UInventoryComponent::OnRep_Items()
 {
-	//서버 아이템 목록이 갱신됨
+	// refresh inv grid list
 	if (OnInventoryChanged.IsBound())
 		OnInventoryChanged.Broadcast();
 }
@@ -106,6 +107,17 @@ void UInventoryComponent::OnRep_Items()
 void UInventoryComponent::OnRep_EquippedItems()
 {
 	// TODO::Change appearance
+
+	int32 t = EquippedItems.Num() > OnInventoryEquippedDataChanged.Num() ? OnInventoryEquippedDataChanged.Num() : EquippedItems.Num();
+
+	for (int32 i = 0; i < t; ++i)
+	{
+		UItemObject* data = nullptr;
+		if (EquippedItems[i])
+			data = EquippedItems[i]->GetItemObject();
+		if (OnInventoryEquippedDataChanged[i].IsBound())
+			OnInventoryEquippedDataChanged[i].Broadcast(data);
+	}
 }
 
 void UInventoryComponent::Reset()
@@ -299,8 +311,7 @@ void UInventoryComponent::Server_AddItemAt_Implementation(AEqquipment* InObject,
 	InObject->ChangeVisibility(EItemMode::Inventory);
 	InObject->GetItemObject()->SetInventoryComp(this);
 
-	if (OnInventoryChanged.IsBound())
-		OnInventoryChanged.Broadcast();
+	OnRep_Items();
 }
 
 void UInventoryComponent::Server_RemoveItem_Implementation(AEqquipment* InObject)
@@ -309,8 +320,9 @@ void UInventoryComponent::Server_RemoveItem_Implementation(AEqquipment* InObject
 	for (int32 i = 0; i < Items.Num(); i++)
 		if (Items[i] == InObject)Items[i] = nullptr;
 
-	if (OnInventoryChanged.IsBound())
-		OnInventoryChanged.Broadcast();
+	//TODO::Reset to default
+
+	OnRep_Items();
 }
 
 void UInventoryComponent::GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& Map)
@@ -334,17 +346,12 @@ bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)
 	return IsRoomAvailable(item);
 }
 
-bool UInventoryComponent::CanTakeOffCurrentEquipment()
-{
-	return CanTakeOffEquipment(EquippedIndex);
-}
-
 AEqquipment* UInventoryComponent::GetEquippedItems(int32 InIdx)
 {
 	return EquippedItems.IsValidIndex(InIdx) ? EquippedItems[InIdx] : nullptr;
 }
 
-void UInventoryComponent::Equip(AEqquipment* InData)
+void UInventoryComponent::Server_Equip_Implementation(AEqquipment* InData)
 {
 	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return;
@@ -374,79 +381,46 @@ void UInventoryComponent::Equip(AEqquipment* InData)
 			weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
 		}
 	}
-
-
-	if (OnInventoryEquipWeapon.IsBound())
-		OnInventoryEquipWeapon.Broadcast(InData == nullptr ? nullptr : InData);
 }
 
-void UInventoryComponent::EquipEquipped(int32 InIdx)
-{
-	CheckFalse(EquippedItems.IsValidIndex(InIdx));
-
-	//UCActionComponent* action = CHelpers::GetComponent<UCActionComponent>(GetOwner());
-	//bool bUnarmed = action->IsUnarmedMode();
-	//if ((EquippedIndex == InIdx && !bUnarmed) || !EquippedItems[InIdx])Select->PlaySelectDown();
-	//else if (InIdx == 0)Select->PlaySelectLeft();
-	//else if (InIdx == 1)Select->PlaySelectUp();
-	//else if (InIdx == 2)Select->PlaySelectRight();
-
-	EquippedIndex = InIdx;
-	Equip(EquippedItems[InIdx]);
-}
-
-bool UInventoryComponent::ChangeEquippedData(int32 InIdx, AEqquipment* InData)
+void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, AEqquipment* InData)
 {
 	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return 0;
 
-	if (!EquippedItems.IsValidIndex(InIdx))return 0;
-	if (!CanTakeOffEquipment(InIdx))return 0;
-	if (EquippedItems[InIdx] && !IsRoomAvailable(EquippedItems[InIdx]))return 0;
-	if (IsRoomAvailable(EquippedItems[InIdx]))Server_TryAddItem(EquippedItems[InIdx]);
-	EquippedItems[InIdx] = InData;
-	if (InIdx == EquippedIndex)Equip(EquippedItems[InIdx]);
-	//if (OnInventoryEquippedChanged.IsBound())
-	//	OnInventoryEquippedChanged.Broadcast(EAppearancePart::ChestAttachment,);
+	int32 idx = int32(InData->GetType());
 
-	//if (Select)
-	//	Select->ChangeData(InIdx, InData);
+	if (!EquippedItems.IsValidIndex(idx))return;
+	if (!CanTakeOffEquipment(idx))return;
+	if (EquippedItems[idx] && !IsRoomAvailable(EquippedItems[idx]))return;
+	if (IsRoomAvailable(EquippedItems[idx]))Server_TryAddItem(EquippedItems[idx]);
+	EquippedItems[idx] = InData;
 
-	return 1;
+	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[idx]->GetType() != EItemType::Weapon)
+	{
+		const TArray<FItemAppearanceData>& datas = EquippedItems[idx]->GetAppearanceDatas();
+		for (auto i : datas)	OnInventoryEquippedChanged.Broadcast(i.PartType, i.Index);
+	}
+
+	OnRep_EquippedItems();
 }
 
-void UInventoryComponent::ChangeEquippedIndex(int32 InIdx)
-{
-	// 기본적으로 플레이어가 키보드로 누르면 ui교체,장비교체
-	// 위젯의 프리셋 변경버튼 눌러도 ui교체,장비교체
-	// 둘을 묶는 함수가 필요할듯?
-	//
-	// 이미지를 프리셋에 맞게 변경
-	// 현재 인덱스 변경
-
-	CheckFalse(EquippedItems.IsValidIndex(InIdx));
-	EquippedIndex = InIdx;
-	Equip(EquippedItems[InIdx]);
-
-	//if (OnInventoryEquippedChanged.IsBound())
-	//	OnInventoryEquippedChanged.Broadcast();
-}
-
-bool UInventoryComponent::RemoveEquipped_Drag(int32 InIdx)
+void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 {
 	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
 	//if (!state || !state->IsIdleMode())return 0;
 	 
-	if (!EquippedItems.IsValidIndex(InIdx))return 0;
+	if (!EquippedItems.IsValidIndex(InIdx))return;
+
+	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[InIdx]->GetType() != EItemType::Weapon)
+	{
+		const TArray<FItemAppearanceData>& datas = EquippedItems[InIdx]->GetAppearanceDatas();
+		for (auto i : datas)	OnInventoryEquippedChanged.Broadcast(i.PartType, i.Index);
+	}
+
 	EquippedItems[InIdx] = nullptr;
-	if (InIdx == EquippedIndex)Equip(EquippedItems[InIdx]);
-	//if (OnInventoryEquippedChanged.IsBound())
-	//	OnInventoryEquippedChanged.Broadcast();
 
-	//if (Select)
-	//	Select->ChangeData(InIdx, nullptr);
-
-	return 1;
+	OnRep_EquippedItems();
 }
 
 bool UInventoryComponent::IsWidgetVisible()

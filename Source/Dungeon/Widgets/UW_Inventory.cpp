@@ -67,10 +67,10 @@ void UUW_Inventory::Init(UInventoryComponent* InComponent)
 {
 	OwnerComponent = InComponent;
 	Grid->Init(OwnerComponent);
-	WeaponSlot->Init(OwnerComponent, EItemType::Weapon);
-	HelmSlot->Init(OwnerComponent, EItemType::Helms);
-	UpperBodySlot->Init(OwnerComponent, EItemType::UpperBody);
-	LowerBodySlot->Init(OwnerComponent, EItemType::LowerBody);
-	GlovesSlot->Init(OwnerComponent, EItemType::Gloves);
-	BootsSlot->Init(OwnerComponent, EItemType::Boots);		
+	WeaponSlot->Init(OwnerComponent, EItemType::Weapon, FVector2D(2, 4));
+	HelmSlot->Init(OwnerComponent, EItemType::Helms, FVector2D(2, 2));
+	UpperBodySlot->Init(OwnerComponent, EItemType::UpperBody, FVector2D(2, 2));
+	LowerBodySlot->Init(OwnerComponent, EItemType::LowerBody, FVector2D(2, 2));
+	GlovesSlot->Init(OwnerComponent, EItemType::Gloves, FVector2D(2, 2));
+	BootsSlot->Init(OwnerComponent, EItemType::Boots, FVector2D(2, 2));
 }

@@ -28,14 +28,15 @@ protected:
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)override;
 	virtual bool NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)override;
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)override;
-	//virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)override;
+
 public:
 
 	//property
 private:
 	UPROPERTY()UInventoryComponent* OwnerComponent;
 	bool DragDropEnter;
+
+	FVector2D Size = FVector2D(1, 1);
 
 	EItemType SlotType;
 protected:
@@ -55,13 +56,11 @@ public:
 
 	//function
 private:
-	UFUNCTION()void Refresh();
 	UFUNCTION()void OnItemRemoved(UItemObject* InObject);
+	UFUNCTION()void Refresh(UItemObject* InObject = nullptr);
 protected:
 public:
-	void Init(UInventoryComponent* InComponent, EItemType NewType);
-	void EquipEquipped(int32 InIdx);
-	void ChangeEquippedIndex(int32 InIdx);
+	void Init(UInventoryComponent* InComponent, EItemType NewType, FVector2D NewSize);
 	void ChangeEquippedData(int32 InIdx, AEqquipment* InData);
 };
 /*

@@ -14,7 +14,7 @@ class AWeapon;
 class UUW_Inventory;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquipWeapon, AEqquipment*, InAttachment);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedDataChanged, UItemObject*, InObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryEquippedChanged, EAppearancePart, InMeshPart, int32, InIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -34,7 +34,6 @@ public:
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AEqquipment*> Items;
 	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<AEqquipment*> EquippedItems;
-	int32 EquippedIndex;
 
 	UPROPERTY()UUW_Inventory* Widget;
 protected:
@@ -54,7 +53,7 @@ protected:
 		TSubclassOf<UUW_Inventory> WidgetClass;
 public:
 	FInventoryChanged OnInventoryChanged;
-	FInventoryEquipWeapon OnInventoryEquipWeapon;
+	TArray<FInventoryEquippedDataChanged> OnInventoryEquippedDataChanged;
 	FInventoryEquippedChanged OnInventoryEquippedChanged;
 
 	//function
@@ -90,14 +89,10 @@ public:
 
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);
-	bool CanTakeOffCurrentEquipment();
 	AEqquipment* GetEquippedItems(int32 InIdx);
-	FORCEINLINE AEqquipment* GetCurrentEquippedItem() { return EquippedItems[EquippedIndex]; };
-	void Equip(AEqquipment* InData);
-	void EquipEquipped(int32 InIdx);
-	bool ChangeEquippedData(int32 InIdx, AEqquipment* InData);
-	void ChangeEquippedIndex(int32 InIdx);
-	bool RemoveEquipped_Drag(int32 InIdx);
+	UFUNCTION(Reliable, Server)void Server_Equip(AEqquipment* InData);
+	UFUNCTION(Reliable, Server)void Server_ChangeEquippedData(int32 InIdx, AEqquipment* InData);
+	UFUNCTION(Reliable, Server)void Server_RemoveEquipped_Drag(int32 InIdx);
 
 	//Widget
 	bool IsWidgetVisible();

@@ -16,6 +16,33 @@ AEqquipment::AEqquipment()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = 1;
+
+	HelmsAppearanceDatas.Init(FItemAppearanceData(),2);
+	HelmsAppearanceDatas[0].PartType = EAppearancePart::HeadCoverings_NoHair;
+	HelmsAppearanceDatas[1].PartType = EAppearancePart::HeadAttachment_Helmet;
+
+	UpperBodyAppearanceDatas.Init(FItemAppearanceData(),7);
+	UpperBodyAppearanceDatas[0].PartType = EAppearancePart::Torso;
+	UpperBodyAppearanceDatas[1].PartType = EAppearancePart::ShoulderAttachment_Right;
+	UpperBodyAppearanceDatas[2].PartType = EAppearancePart::ArmUpperRight;
+	UpperBodyAppearanceDatas[3].PartType = EAppearancePart::ArmLowerRight;
+	UpperBodyAppearanceDatas[4].PartType = EAppearancePart::ShoulderAttachment_Left;
+	UpperBodyAppearanceDatas[5].PartType = EAppearancePart::ArmUpperLeft;
+	UpperBodyAppearanceDatas[6].PartType = EAppearancePart::ArmLowerLeft;
+
+	LowerBodyAppearanceDatas.Init(FItemAppearanceData(), 2);
+	LowerBodyAppearanceDatas[0].PartType = EAppearancePart::Hips;
+	LowerBodyAppearanceDatas[1].PartType = EAppearancePart::HipsAttachment;
+
+	BootsAppearanceDatas.Init(FItemAppearanceData(), 4);
+	BootsAppearanceDatas[0].PartType = EAppearancePart::KneeAttachment_Right;
+	BootsAppearanceDatas[1].PartType = EAppearancePart::LegRight;
+	BootsAppearanceDatas[2].PartType = EAppearancePart::KneeAttachment_Left;
+	BootsAppearanceDatas[3].PartType = EAppearancePart::LegLeft;
+
+	GlovesAppearanceDatas.Init(FItemAppearanceData(), 2);
+	GlovesAppearanceDatas[0].PartType = EAppearancePart::HandRight;
+	GlovesAppearanceDatas[1].PartType = EAppearancePart::HandLeft;
 }
 
 void AEqquipment::BeginPlay()
@@ -40,7 +67,38 @@ void AEqquipment::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	UpperBodyIndex = FMath::Clamp(UpperBodyIndex, 0, ChestAttachment_MAX);
+	if (ItemType == EItemType::Helms)
+	{
+		HelmsAppearanceDatas[0].Index = FMath::Clamp(HelmsAppearanceDatas[0].Index, 0, HeadCoverings_NoHair_MAX);
+		HelmsAppearanceDatas[1].Index = FMath::Clamp(HelmsAppearanceDatas[1].Index, 0, HeadAttachment_Helmet_MAX);
+	}
+	else if (ItemType == EItemType::UpperBody)
+	{
+		UpperBodyAppearanceDatas[0].Index = FMath::Clamp(UpperBodyAppearanceDatas[0].Index, 0, Torso_MAX);
+		UpperBodyAppearanceDatas[1].Index = FMath::Clamp(UpperBodyAppearanceDatas[1].Index, 0, ShoulderAttachment_Right_MAX);
+		UpperBodyAppearanceDatas[2].Index = FMath::Clamp(UpperBodyAppearanceDatas[2].Index, 0, ArmUpperRight_MAX);
+		UpperBodyAppearanceDatas[3].Index = FMath::Clamp(UpperBodyAppearanceDatas[3].Index, 0, ArmLowerRight_MAX);
+		UpperBodyAppearanceDatas[4].Index = FMath::Clamp(UpperBodyAppearanceDatas[4].Index, 0, ShoulderAttachment_Left_MAX);
+		UpperBodyAppearanceDatas[5].Index = FMath::Clamp(UpperBodyAppearanceDatas[5].Index, 0, ArmUpperLeft_MAX);
+		UpperBodyAppearanceDatas[6].Index = FMath::Clamp(UpperBodyAppearanceDatas[6].Index, 0, ArmLowerLeft_MAX);
+	}
+	else if (ItemType == EItemType::LowerBody)
+	{
+		LowerBodyAppearanceDatas[0].Index = FMath::Clamp(LowerBodyAppearanceDatas[0].Index, 0, Hips_MAX);
+		LowerBodyAppearanceDatas[1].Index = FMath::Clamp(LowerBodyAppearanceDatas[1].Index, 0, HipsAttachment_MAX);
+	}
+	else if (ItemType == EItemType::Boots)
+	{
+		BootsAppearanceDatas[0].Index = FMath::Clamp(BootsAppearanceDatas[0].Index, 0, KneeAttachment_Right_MAX);
+		BootsAppearanceDatas[1].Index = FMath::Clamp(BootsAppearanceDatas[1].Index, 0, LegRight_MAX);
+		BootsAppearanceDatas[2].Index = FMath::Clamp(BootsAppearanceDatas[2].Index, 0, KneeAttachment_Left_MAX);
+		BootsAppearanceDatas[3].Index = FMath::Clamp(BootsAppearanceDatas[3].Index, 0, LegLeft_MAX);
+	}
+	else if (ItemType == EItemType::Gloves)
+	{
+		GlovesAppearanceDatas[0].Index = FMath::Clamp(GlovesAppearanceDatas[0].Index, 0, HandRight_MAX);
+		GlovesAppearanceDatas[1].Index = FMath::Clamp(GlovesAppearanceDatas[1].Index, 0, HandLeft_MAX);
+	}
 }
 #endif
 
@@ -288,4 +346,22 @@ void AEqquipment::SetMode(EItemMode InMode)
 {
 	Mode = InMode;
 	if (HasAuthority())OnRep_Mode();
+}
+
+const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
+{
+	TArray<FItemAppearanceData> result;
+
+	if (ItemType == EItemType::Helms)
+		return HelmsAppearanceDatas;
+	else if (ItemType == EItemType::UpperBody)
+		return UpperBodyAppearanceDatas;
+	else if (ItemType == EItemType::LowerBody)
+		return LowerBodyAppearanceDatas;
+	else if (ItemType == EItemType::Boots)
+		return BootsAppearanceDatas;
+	else if (ItemType == EItemType::Gloves)
+		return GlovesAppearanceDatas;
+
+	return result;
 }

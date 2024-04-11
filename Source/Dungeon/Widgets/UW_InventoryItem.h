@@ -51,5 +51,6 @@ public:
 	void Init(FVector2D InSize, UItemObject* InObject, UInventoryComponent* InComponent);
 	void Refresh();
 	void DragDropEnd();
-	FORCEINLINE bool CheckItem(UItemObject* InItemObject) { return ItemObject == InItemObject; }
+	FORCEINLINE bool CheckItem(UItemObject* InItemObject)const { return ItemObject == InItemObject; }
+	FORCEINLINE FVector2D GetWidgetSize()const { return WidgetSize; }
 };

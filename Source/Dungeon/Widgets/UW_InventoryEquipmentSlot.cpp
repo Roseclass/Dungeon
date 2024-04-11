@@ -27,8 +27,9 @@ int32 UUW_InventoryEquipmentSlot::NativePaint(const FPaintArgs& Args, const FGeo
 		UItemObject* itemobject = nullptr;
 		if (operation) itemobject = Cast<UItemObject>(payload);
 
+		// draw green or red box on widget
 		bool green = 0;
-		green = OwnerComponent->CanTakeOffEquipment(int32(SlotType));
+		green = OwnerComponent->CanTakeOffEquipment(int32(SlotType)) && itemobject->GetType() == SlotType;
 
 		FVector2D topleft = USlateBlueprintLibrary::GetLocalTopLeft(Background->GetCachedGeometry());
 		FVector2D size = USlateBlueprintLibrary::GetLocalSize(Background->GetCachedGeometry());
@@ -61,11 +62,12 @@ void UUW_InventoryEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragD
 bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
-	//드롭이 됐을때
-	//장비를 갈아입을수있는 상태면 그대로 진행
-	//아니라면 드롭물체 제자리로
 
 	DragDropEnter = 0;
+
+	// execute DragDropEnd events
+	UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
+	if (itemWidget)itemWidget->DragDropEnd();
 
 	UItemObject* item = nullptr;
 	if (InOperation)
@@ -73,25 +75,12 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 		UObject* payload = InOperation->Payload.Get();
 		item = Cast<UItemObject>(payload);
 		if (!item)return 1;
+
+		// can take off equipment? same type?
 		if (OwnerComponent->CanTakeOffEquipment(int32(SlotType)) && item->GetType() == SlotType)
-		{
-			ChangeEquippedData(int32(SlotType), item->GetEqquipment());
-			Pannel->AddChild(InOperation->DefaultDragVisual.Get());
-
-			UUW_InventoryItem* widget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual.Get());
-			if (widget)
-			{
-				widget->OnInventoryItemRemoved.AddUFunction(this, "OnItemRemoved");
-			}
-
-			int32 idx = Pannel->GetChildIndex(InOperation->DefaultDragVisual.Get());
-			UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Pannel->GetChildAt(idx));
-			slot->SetAlignment(FVector2D(0.5));
-			slot->SetAnchors(FAnchors(0.5));
-			slot->SetOffsets(FMargin(0));
-			slot->SetAutoSize(1);
-		}
-		else
+			// equip
+			ChangeEquippedData(int32(SlotType), item->GetEqquipment());		
+		else // return to inv
 			OwnerComponent->Server_TryAddItem(item->GetEqquipment());
 	}
 
@@ -105,48 +94,64 @@ bool UUW_InventoryEquipmentSlot::NativeOnDragOver(const FGeometry& InGeometry, c
 	return 1;
 }
 
-FReply UUW_InventoryEquipmentSlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-	return 	UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, FKey("LeftMouseButton")).NativeReply;
-}
-
-void UUW_InventoryEquipmentSlot::Refresh()
-{
-	//UItemObject* item = OwnerComponent->GetEquippedItems(int32(SlotType));
-	//if (item && item->IsRotated())item->Rotate();
-	//UMaterialInterface* mat = item == nullptr ? nullptr : item->GetIcon();
-	//if (!mat)Icon->SetVisibility(ESlateVisibility::Collapsed);
-	//else
-	//{
-	//	Icon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	//	Icon->SetBrushFromMaterial(mat);
-	//}
-}
-
 void UUW_InventoryEquipmentSlot::OnItemRemoved(UItemObject* InObject)
 {
-	OwnerComponent->RemoveEquipped_Drag(int32(SlotType));
+	// refresh
+	Refresh();
+
+	// reset component data
+	OwnerComponent->Server_RemoveEquipped_Drag(int32(SlotType));
 }
 
-void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, EItemType NewType)
+void UUW_InventoryEquipmentSlot::Refresh(UItemObject* InObject)
+{
+	// clear child
+	if (InObject == nullptr)
+	{
+		Pannel->ClearChildren();
+		return;
+	}
+
+	// create child widget
+	UUW_InventoryItem* widget = CreateWidget<UUW_InventoryItem, APlayerController>(GetOwningPlayer(), ItemWidgetClass);
+	if (widget)
+	{
+		int32 x, y;
+		InObject->GetDimensions(x, y);
+
+		widget->Init(FVector2D(0,0), InObject, OwnerComponent);
+		widget->OnInventoryItemRemoved.AddUFunction(this, "OnItemRemoved");
+		UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(Pannel->AddChild(widget));
+
+		FAnchors anch;
+		anch.Minimum = FVector2D(0, 0);
+		anch.Maximum = FVector2D(1, 1);
+
+		slot->SetAlignment(FVector2D(0.5));
+		slot->SetAnchors(anch);
+		slot->SetOffsets(FMargin(0));
+	}
+}
+
+void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, EItemType NewType, FVector2D NewSize)
 {
 	OwnerComponent = InComponent;
-	//OwnerComponent->OnInventoryEquippedChanged.AddDynamic(this, &UUW_InventoryEquipmentSlot::Refresh);
-
 	SlotType = NewType;
-}
+	Size = NewSize;
 
-void UUW_InventoryEquipmentSlot::EquipEquipped(int32 InIdx)
-{
-	OwnerComponent->EquipEquipped(InIdx);
-}
+	if (OwnerComponent)
+	{
+		if (!OwnerComponent->OnInventoryEquippedDataChanged.IsValidIndex(int32(SlotType)))
+		{
+			CLog::Print("UUW_InventoryEquipmentSlot::Init IsNOTValidIndex", -1, 10, FColor::Red);
+			return;
+		}
+		OwnerComponent->OnInventoryEquippedDataChanged[int32(SlotType)].AddDynamic(this, &UUW_InventoryEquipmentSlot::Refresh);
+	}
 
-void UUW_InventoryEquipmentSlot::ChangeEquippedIndex(int32 InIdx)
-{
-	OwnerComponent->ChangeEquippedIndex(InIdx);
 }
 
 void UUW_InventoryEquipmentSlot::ChangeEquippedData(int32 InIdx, AEqquipment* InData)
 {
-	OwnerComponent->ChangeEquippedData(InIdx, InData);
+	OwnerComponent->Server_ChangeEquippedData(InIdx, InData);
 }

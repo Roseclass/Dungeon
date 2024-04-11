@@ -37,6 +37,18 @@ enum class EItemType : uint8
 	Max
 };
 
+USTRUCT(BlueprintType)
+struct FItemAppearanceData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(VisibleDefaultsOnly)
+		EAppearancePart PartType;
+
+	UPROPERTY(EditAnywhere)
+		int32 Index;
+};
+
 UCLASS()
 class DUNGEON_API AEqquipment : public AActor
 {
@@ -90,14 +102,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Data", meta = (EditCondition = "EItemType == EAppearancePart::UpperBody", EditConditionHides, DisplayName = "Index"))
-		int32 UpperBodyIndex;
+	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Helms", EditConditionHides,DisplayName = "Datas"))
+		TArray<FItemAppearanceData> HelmsAppearanceDatas;
 
-	TArray<EAppearancePart> HelmsTypes;
-	EAppearancePart UpperBodyTypes = EAppearancePart::ChestAttachment;
-	TArray<EAppearancePart> LowerBodyTypes;
-	TArray<EAppearancePart> BootsTypes;
-	TArray<EAppearancePart> GlovesTypes;
+	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::UpperBody", EditConditionHides,DisplayName = "Datas"))
+		TArray<FItemAppearanceData> UpperBodyAppearanceDatas;
+
+	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::LowerBody", EditConditionHides,DisplayName = "Datas"))
+		TArray<FItemAppearanceData> LowerBodyAppearanceDatas;
+
+	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Boots", EditConditionHides,DisplayName = "Datas"))
+		TArray<FItemAppearanceData> BootsAppearanceDatas;
+
+	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Gloves", EditConditionHides,DisplayName = "Datas"))
+		TArray<FItemAppearanceData> GlovesAppearanceDatas;
 protected:
 public:
 
@@ -128,6 +146,6 @@ public:
 
 	FORCEINLINE UItemObject* GetItemObject() { return ItemObject; }
 	FORCEINLINE EItemType GetType() { return ItemType; }
-	//FORCEINLINE EItemType GetType() { return ItemType; }
+	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
 	
 };
