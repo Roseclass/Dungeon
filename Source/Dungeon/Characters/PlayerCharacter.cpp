@@ -354,6 +354,27 @@ void APlayerCharacter::ToggleInventory()
 	}
 }
 
+void APlayerCharacter::RevealSkillTree()
+{
+	SkillTree->OnWidget();
+}
+
+void APlayerCharacter::RevealInventory()
+{
+	Inventory->OnWidget();
+}
+
+void APlayerCharacter::HideSkillTree()
+{
+	SkillTree->OffWidget();
+}
+
+void APlayerCharacter::HideInventory()
+{
+	Inventory->OffWidget();
+}
+
+
 FString APlayerCharacter::GetUniqueSaveName()
 {
 	return "Player";

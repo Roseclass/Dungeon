@@ -41,8 +41,10 @@ private:
 	UFUNCTION(Reliable, Server)void Server_Cancel();
 protected:
 public:
-	UFUNCTION(Client, Reliable)void Client_CreatePopup(const FString& InString);
+	UFUNCTION(Client, Reliable)void Client_CreatePopup(const FString& InString, float NewTimeLimit = 10);
+	UFUNCTION(Client, Reliable)void Client_UpdateSign(int32 PlayerIndex, bool NewState);
 
-	void SendPopupAllPlayers(FString InString, TFunction<bool()> FinishedEvent);
+	void SendPopupAllPlayers(FString InString, TFunction<bool()> FinishedEvent, float NewTimeLimit = 10);
 	void UpdateState(ADungeonPlayerController* InPlayer, EPopupState NewState);
+	void UpdateSign(ADungeonPlayerController* InPlayer, EPopupState NewState);
 };

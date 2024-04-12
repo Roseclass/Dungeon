@@ -1,5 +1,6 @@
 #include "DungeonPlayerController.h"
 #include "Global.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerState.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -385,4 +386,46 @@ void ADungeonPlayerController::Client_DialogExit_Implementation()
 
 	DialogWidget->Exit();
 
+}
+
+void ADungeonPlayerController::SetUIOnlyMode()
+{
+	FInputModeUIOnly InputMode;
+	SetInputMode(InputMode);
+}
+
+void ADungeonPlayerController::SetGameAndUIMode()
+{
+	FInputModeGameAndUI InputMode;
+	InputMode.SetHideCursorDuringCapture(0);
+	SetInputMode(InputMode);
+}
+
+void ADungeonPlayerController::RevealMainWidget()
+{
+	// reveal main widget
+	MainWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void ADungeonPlayerController::HideWidget()
+{
+	// hide main widget
+	MainWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+	HideAddtiveWidget();
+}
+
+void ADungeonPlayerController::HideAddtiveWidget()
+{
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->HideSkillTree();
+	myPawn->HideInventory();
+}
+
+void ADungeonPlayerController::StopPawnImmediately()
+{
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->GetCharacterMovement()->StopMovementImmediately();
 }

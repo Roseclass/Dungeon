@@ -99,9 +99,13 @@ public:
 	//Inventory
 	virtual void TryAddItem(AWeapon* InObject);
 
-	//widget Toggle
+	//widget
 	void ToggleSkillTree();
 	void ToggleInventory();
+	void RevealSkillTree();
+	void RevealInventory();
+	void HideSkillTree();
+	void HideInventory();
 
 	//Save Load
 	virtual	FString GetUniqueSaveName() override;

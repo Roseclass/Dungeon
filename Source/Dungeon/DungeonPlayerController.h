@@ -93,8 +93,22 @@ public:
 	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
 	UFUNCTION(Client, Reliable)void Client_DialogExit();
 
+	// input
+	void SetUIOnlyMode();
+	void SetGameAndUIMode();
+
+	// widget control
+	void RevealMainWidget();
+	void HideWidget();
+	void HideAddtiveWidget();
+
+	// etc.
+	void StopPawnImmediately();
+
+	// setter
 	FORCEINLINE void SetIndex(int32 InIndex) { Index = InIndex; }
 
+	// getter
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FORCEINLINE int32 GetIndex() const { return Index; }
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
