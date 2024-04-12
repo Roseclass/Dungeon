@@ -141,6 +141,7 @@ void APlayerCharacter::Init()
 	
 	//Inventory
 	Inventory->OnInventoryEquippedChanged.AddDynamic(this, &APlayerCharacter::ChangeAppearance);
+	Inventory->OnChangeHairVisiblity.AddDynamic(this, &APlayerCharacter::SetShowHair);
 
 	//init minimap
 	MinimapIcon->CreateDynamicMaterialInstance(0);
@@ -254,6 +255,11 @@ void APlayerCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InInde
 void APlayerCharacter::ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor)
 {
 	Appearance->Server_ChangeColor(InMeshPart, Parameter, NewColor);
+}
+
+void APlayerCharacter::SetShowHair(bool NewState)
+{
+	Appearance->Server_SetShowHair(NewState);
 }
 
 void APlayerCharacter::UseSkill(int32 Idx)

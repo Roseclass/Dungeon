@@ -16,6 +16,7 @@ class UUW_Inventory;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedDataChanged, UItemObject*, InObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryEquippedChanged, EAppearancePart, InMeshPart, int32, InIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedChangeMeshVisiblity, bool, NewState);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UInventoryComponent : public UActorComponent
@@ -55,7 +56,7 @@ public:
 	FInventoryChanged OnInventoryChanged;
 	TArray<FInventoryEquippedDataChanged> OnInventoryEquippedDataChanged;
 	FInventoryEquippedChanged OnInventoryEquippedChanged;
-
+	FInventoryEquippedChangeMeshVisiblity OnChangeHairVisiblity;
 	//function
 private:
 	void InitDefault();

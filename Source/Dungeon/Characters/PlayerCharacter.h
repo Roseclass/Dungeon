@@ -84,6 +84,7 @@ public:
 	//Appearance
 	UFUNCTION()void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
 	UFUNCTION()void ChangeColorData(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+	UFUNCTION()void SetShowHair(bool NewState);
 
 	//Skill
 	virtual void UseSkill(int32 Idx)override;

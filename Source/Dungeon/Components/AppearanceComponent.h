@@ -62,6 +62,7 @@ private:
 	TArray<TArray<TSoftObjectPtr<USkeletalMesh>>> AppearanceAssets;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_Meshindices")TArray<int32> MeshIndices;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_AppearanceColors")TArray<FAppearancePartColor> AppearanceColors;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_ShowHair")bool bShowHair;
 	TArray<int32> MeshIndices_Client;
 	TArray<FAppearancePartColor> AppearanceColors_Client;
 protected:
@@ -73,6 +74,7 @@ public:
 private:
 	UFUNCTION()void OnRep_Meshindices();
 	UFUNCTION()void OnRep_AppearanceColors();
+	UFUNCTION()void OnRep_ShowHair();
 	void LoadSkeletalMeshAsync(const FSoftObjectPath& AssetRef, TFunction<void(USkeletalMesh*)> OnLoaded);
 	void ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
 	void ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
@@ -81,6 +83,7 @@ public:
 	void Init(const TMap<EAppearancePart, USkeletalMeshComponent*>& InMeshes);
 	UFUNCTION(Reliable, Server)void Server_ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex);
 	UFUNCTION(Reliable, Server)void Server_ChangeColor(EAppearancePart InMeshPart, FName Parameter, FLinearColor NewColor);
+	UFUNCTION(Reliable, Server)void Server_SetShowHair(bool NewState);
 
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);

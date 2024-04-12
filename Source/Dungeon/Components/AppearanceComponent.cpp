@@ -1,11 +1,11 @@
 #include "Components/AppearanceComponent.h"
 #include "Global.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 
 #include "SaveManager.h"
 #include "Characters/PlayerCharacter.h"
+#include "Components/AppearanceMeshComponent.h"
 
 UAppearanceComponent::UAppearanceComponent()
 {
@@ -36,6 +36,7 @@ void UAppearanceComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	// Replicated 변수를 여기에 추가
 	DOREPLIFETIME_CONDITION(UAppearanceComponent, MeshIndices, COND_None);
 	DOREPLIFETIME_CONDITION(UAppearanceComponent, AppearanceColors, COND_None);
+	DOREPLIFETIME_CONDITION(UAppearanceComponent, bShowHair, COND_None);
 }
 
 void UAppearanceComponent::OnRep_Meshindices()
@@ -74,6 +75,18 @@ void UAppearanceComponent::OnRep_AppearanceColors()
 				ChangeColor(EAppearancePart(i), x.Name, x.Color);
 			}
 		}
+	}
+}
+
+void UAppearanceComponent::OnRep_ShowHair()
+{
+	for (auto i : Meshes)
+	{
+		UAppearanceMeshComponent* mesh = Cast<UAppearanceMeshComponent>(i);
+		if (!mesh)continue;
+		if (EAppearancePart::Hair != mesh->GetAppearancePart())continue;
+		mesh->SetVisibility(bShowHair);
+		break;
 	}
 }
 
@@ -153,6 +166,15 @@ void UAppearanceComponent::Init(const TMap<EAppearancePart, USkeletalMeshCompone
 	{
 		for (int32 i = 0; i < int32(EAppearancePart::Max); ++i)
 			ChangeAppearance(EAppearancePart(i), MeshIndices[i]);
+
+		for (auto i : Meshes)
+		{
+			UAppearanceMeshComponent* mesh = Cast<UAppearanceMeshComponent>(i);
+			if (!mesh)continue;
+			if (EAppearancePart::Hair != mesh->GetAppearancePart())continue;
+			bShowHair = i->IsVisible();
+			break;
+		}
 	}), WaitTime, false);
 }
 
@@ -182,6 +204,21 @@ void UAppearanceComponent::Server_ChangeColor_Implementation(EAppearancePart InM
 		params.VectorParams.Add(x);
 	}
 	ChangeColor(InMeshPart, Parameter, NewColor);
+}
+
+void UAppearanceComponent::Server_SetShowHair_Implementation(bool NewState)
+{
+	for (auto i : Meshes)
+	{
+		UAppearanceMeshComponent* mesh = Cast<UAppearanceMeshComponent>(i);
+		if (!mesh)continue;
+		if (EAppearancePart::Hair != mesh->GetAppearancePart())continue;
+		CheckTrue(mesh->IsVisible() == NewState)
+		break;
+	}
+
+	bShowHair = NewState;
+	OnRep_ShowHair();
 }
 
 void UAppearanceComponent::SaveData(USaveGameData* SaveData)

@@ -320,8 +320,6 @@ void UInventoryComponent::Server_RemoveItem_Implementation(AEqquipment* InObject
 	for (int32 i = 0; i < Items.Num(); i++)
 		if (Items[i] == InObject)Items[i] = nullptr;
 
-	//TODO::Reset to default
-
 	OnRep_Items();
 }
 
@@ -353,9 +351,6 @@ AEqquipment* UInventoryComponent::GetEquippedItems(int32 InIdx)
 
 void UInventoryComponent::Server_Equip_Implementation(AEqquipment* InData)
 {
-	//UStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
-	//if (!state || !state->IsIdleMode())return;
-
 	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 
 	if (!InData)
@@ -385,9 +380,6 @@ void UInventoryComponent::Server_Equip_Implementation(AEqquipment* InData)
 
 void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, AEqquipment* InData)
 {
-	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
-	//if (!state || !state->IsIdleMode())return 0;
-
 	int32 idx = int32(InData->GetType());
 
 	if (!EquippedItems.IsValidIndex(idx))return;
@@ -402,21 +394,26 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 		for (auto i : datas)	OnInventoryEquippedChanged.Broadcast(i.PartType, i.Index);
 	}
 
+	if (OnChangeHairVisiblity.IsBound() && EquippedItems[idx]->GetType() == EItemType::Helms)
+		OnChangeHairVisiblity.Broadcast(0);
+
 	OnRep_EquippedItems();
 }
 
 void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 {
-	//UCStateComponent* state = CHelpers::GetComponent<UCStateComponent>(GetOwner());
-	//if (!state || !state->IsIdleMode())return 0;
-	 
 	if (!EquippedItems.IsValidIndex(InIdx))return;
 
+	// reset to default
 	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[InIdx]->GetType() != EItemType::Weapon)
 	{
 		const TArray<FItemAppearanceData>& datas = EquippedItems[InIdx]->GetAppearanceDatas();
-		for (auto i : datas)	OnInventoryEquippedChanged.Broadcast(i.PartType, i.Index);
+		for (auto i : datas)	
+			OnInventoryEquippedChanged.Broadcast(i.PartType, 0);
 	}
+	
+	if (OnChangeHairVisiblity.IsBound() && EquippedItems[InIdx]->GetType() == EItemType::Helms)
+		OnChangeHairVisiblity.Broadcast(1);
 
 	EquippedItems[InIdx] = nullptr;
 
