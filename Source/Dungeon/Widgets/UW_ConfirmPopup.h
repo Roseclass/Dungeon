@@ -13,6 +13,7 @@ class UButton;
 class UTextBlock;
 class UProgressBar;
 class UWidgetAnimation;
+class UMaterialInstance;
 
 DECLARE_DELEGATE(FConfirmPopupButtonClicked);
 
@@ -28,8 +29,13 @@ protected:
 	//property
 private:
 	bool bActive;
+	bool bConfirm;
+	bool bCancel;
 	float ActivateTime;
 	float TimeLimit;
+
+	TArray<AActor*>PortraitActors;
+	TMap<UImage*, TTuple<float, bool>> TickSigns;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Description;
@@ -46,6 +52,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 		UWidgetAnimation* Reveal;
 
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+		UWidgetAnimation* Cancel;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UImage* Portrait0;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UImage* Portrait1;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UImage* Portrait2;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UImage* Portrait3;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UImage* Sign0;
 
@@ -58,6 +79,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UImage* Sign3;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Sign")
+		UMaterialInstance* WaitSign;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sign")
+		UMaterialInstance* ConfirmSign;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sign")
+		UMaterialInstance* CancelSign;
+
 public:
 	FConfirmPopupButtonClicked OnConfirm;
 	FConfirmPopupButtonClicked OnCancel;
@@ -67,24 +97,15 @@ private:
 	UFUNCTION()void OnConfirmButtonClicked();
 	UFUNCTION()void OnCancelButtonClicked();
 
+	void TickFunction(float DeltaTime);
 	void SetWaitSign(UImage* InImage);
 	void SetConfirmSign(UImage* InImage);
 	void SetCancelSign(UImage* InImage);
 protected:
+	UFUNCTION(BlueprintImplementableEvent)void CreatePortrait(const TArray<AActor*>& Actors);
 public:
-	void Init(FString InDescription, float NewTimeLimit/*, int32 NewNumOfSign*/);//need num of players
+	void Init(FString InDescription, TArray<AActor*> NewPortraitActors, float NewTimeLimit = 10);
 	void Activate();
-	void UpdateSign(int32 PlayerIndex, bool NewState);
+	void UpdateSign(AActor* PortraitActor, bool NewState);
+	void ConfirmedSequence();
 };
-
-/*
-* someone canceled?
-* update sign, play cancel animation, disable buttons
-* 
-* someone confirmed?
-* update sign
-* 
-* everyone confirmed?
-* remove widget, go to next sequence(other class's)
-* 
-*/

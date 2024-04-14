@@ -50,34 +50,55 @@ void UConfirmPopupComponent::Server_Cancel_Implementation()
 	else CLog::Print("UConfirmPopupComponent::Server_Confirm_Implementation", -1, 10, FColor::Red);
 }
 
-void UConfirmPopupComponent::Client_CreatePopup_Implementation(const FString& InString, float NewTimeLimit)
+void UConfirmPopupComponent::Client_CreatePopup_Implementation(const FString& InString, const TArray<AActor*>& NewPortraitActors, float NewTimeLimit)
 {
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(GetOwner());
 	PopupWidget = CreateWidget<UUW_ConfirmPopup, ADungeonPlayerController>(controller, PopupClass);
 	PopupWidget->OnConfirm.BindUFunction(this, "Server_Confirm");
 	PopupWidget->OnCancel.BindUFunction(this, "Server_Cancel");
-	PopupWidget->Init(InString, NewTimeLimit);
+	PopupWidget->Init(InString, NewPortraitActors, NewTimeLimit);
 	PopupWidget->AddToViewport();
 }
 
-void UConfirmPopupComponent::Client_UpdateSign_Implementation(int32 PlayerIndex, bool NewState)
+void UConfirmPopupComponent::Client_UpdateSign_Implementation(AActor* PortraitActor, bool NewState)
 {
 	// update sign
 	if (PopupWidget)
-		PopupWidget->UpdateSign(PlayerIndex, NewState);
+		PopupWidget->UpdateSign(PortraitActor, NewState);
+	else CLog::Print("UConfirmPopupComponent::Client_UpdateSign_Implementation PopupWidget is nullptr", -1, 10, FColor::Red);
+}
+
+void UConfirmPopupComponent::Client_ConfirmedSequence_Implementation()
+{
+	// update sign
+	if (PopupWidget)
+		PopupWidget->ConfirmedSequence();
 	else CLog::Print("UConfirmPopupComponent::Client_UpdateSign_Implementation PopupWidget is nullptr", -1, 10, FColor::Red);
 }
 
 void UConfirmPopupComponent::SendPopupAllPlayers(FString InString, TFunction<bool()> FinishedEvent, float NewTimeLimit)
 {
 	// send popup every clients
-	int32 max = UGameplayStatics::GetNumPlayerControllers(GetWorld());
-	for (int32 i = 0; i < max; ++i)
+	int32 numOfPlayers = UGameplayStatics::GetNumPlayerControllers(GetWorld());
+	
+	TArray<AActor*> arr;
+
+	for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PlayerController = It->Get();
+		if (PlayerController)
+		{
+			APawn* ControlledPawn = PlayerController->GetPawn();
+			if (ControlledPawn)	arr.Add(ControlledPawn);
+		}
+	}
+
+	for (int32 i = 0; i < numOfPlayers; ++i)
 	{
 		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), i));
 		States.FindOrAdd(controller) = EPopupState::Wait;
 		UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(controller);
-		if (confirm)confirm->Client_CreatePopup(InString, NewTimeLimit);
+		if (confirm)confirm->Client_CreatePopup(InString, arr, NewTimeLimit);
 		else CLog::Print("nullptr");
 	}
 	ReserveFinishedEvent = FinishedEvent;
@@ -94,9 +115,20 @@ void UConfirmPopupComponent::UpdateState(ADungeonPlayerController* InPlayer, EPo
 
 	if (!size)
 	{
+		for (auto i : States)
+		{
+			UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(i.Key);
+			if (confirm)
+			{
+				confirm->Client_ConfirmedSequence();
+			}
+			else CLog::Print("UConfirmPopupComponent::UpdateSign can't find confirm", -1, 10, FColor::Red);
+		}
+
 		// execute function;
 		ReserveFinishedEvent();
 		ReserveFinishedEvent = nullptr;
+
 	}
 }
 
@@ -123,8 +155,8 @@ void UConfirmPopupComponent::UpdateSign(ADungeonPlayerController* InPlayer, EPop
 		UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(i.Key);
 		if (confirm)
 		{
-			if (NewState == EPopupState::Confirm)confirm->Client_UpdateSign(Index, 1);
-			else if(NewState == EPopupState::Cancel)confirm->Client_UpdateSign(Index, 0);
+			if (NewState == EPopupState::Confirm)confirm->Client_UpdateSign(InPlayer->GetPawn(), 1);
+			else if(NewState == EPopupState::Cancel)confirm->Client_UpdateSign(InPlayer->GetPawn(), 0);
 		}
 		else CLog::Print("UConfirmPopupComponent::UpdateSign can't find confirm", -1, 10, FColor::Red);
 	}
