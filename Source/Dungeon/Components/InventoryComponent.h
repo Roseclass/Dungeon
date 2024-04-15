@@ -54,6 +54,7 @@ protected:
 		TSubclassOf<UUW_Inventory> WidgetClass;
 public:
 	FInventoryChanged OnInventoryChanged;
+	FInventoryChanged OnInventoryEquippedItemsChanged;
 	TArray<FInventoryEquippedDataChanged> OnInventoryEquippedDataChanged;
 	FInventoryEquippedChanged OnInventoryEquippedChanged;
 	FInventoryEquippedChangeMeshVisiblity OnChangeHairVisiblity;
@@ -91,6 +92,7 @@ public:
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);
 	AEqquipment* GetEquippedItems(int32 InIdx);
+	FORCEINLINE const TArray<AEqquipment*>& GetAllEquippedItems() { return EquippedItems; }
 	UFUNCTION(Reliable, Server)void Server_Equip(AEqquipment* InData);
 	UFUNCTION(Reliable, Server)void Server_ChangeEquippedData(int32 InIdx, AEqquipment* InData);
 	UFUNCTION(Reliable, Server)void Server_RemoveEquipped_Drag(int32 InIdx);
@@ -106,8 +108,6 @@ public:
 	// 장착전에 조건 확인
 	// 장착시 외형 변경, 효과 적용
 	// 드롭시 등급에 맞는 이펙트
-	// 격자무늬 인벤토리 탭3개
-	// 프리셋 탭 2개
 	//
 	
 	//ui

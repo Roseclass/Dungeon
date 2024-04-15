@@ -49,6 +49,40 @@ public:
 		int32 Index;
 };
 
+USTRUCT(BlueprintType)
+struct FItemStatusData
+{
+	GENERATED_BODY()
+
+	// this data will be saved
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+		float BaseDamage;
+
+	UPROPERTY()
+		float FinalDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
+		float BaseMaxHealth;
+	
+	UPROPERTY()
+		float FinalMaxHealth;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Mana")
+		float BaseMaxMana;
+
+	UPROPERTY()
+		float FinalMaxMana;
+
+public:
+	UPROPERTY()
+		bool bRandomize;
+	
+	FORCEINLINE float GetFinalDamage()const { return FinalDamage; }
+	FORCEINLINE float GetFinalMaxHealth()const { return FinalMaxHealth; }
+	FORCEINLINE float GetFinalMaxMana()const { return FinalMaxMana; }
+};
+
 UCLASS()
 class DUNGEON_API AEqquipment : public AActor
 {
@@ -102,6 +136,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		FItemStatusData ItemStatus;
+
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Helms", EditConditionHides,DisplayName = "Datas"))
 		TArray<FItemAppearanceData> HelmsAppearanceDatas;
 
@@ -144,8 +181,9 @@ public:
 
 	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
 
-	FORCEINLINE UItemObject* GetItemObject() { return ItemObject; }
-	FORCEINLINE EItemType GetType() { return ItemType; }
+	FORCEINLINE UItemObject* GetItemObject() const { return ItemObject; }
+	FORCEINLINE EItemType GetType() const { return ItemType; }
+	FORCEINLINE FItemStatusData GetItemStatus() const { return ItemStatus; }
 	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
 	
 };

@@ -28,6 +28,9 @@ private:
 	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_Level")uint8 Level;
 	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_MaxHealth")float MaxHealth;
 	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_CurrentHealth")float CurrentHealth;
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_MaxMana")float MaxMana;
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_CurrentMana")float CurrentMana;
+	UPROPERTY(EditAnywhere, Replicated, ReplicatedUsing = "OnRep_Damage")float Damage;
 
 	bool bCanUse = 1;
 	bool bCanMove = 1;
@@ -40,6 +43,14 @@ private:
 	UFUNCTION()void OnRep_Level();
 	UFUNCTION()void OnRep_MaxHealth();
 	UFUNCTION()void OnRep_CurrentHealth();
+	UFUNCTION()void OnRep_MaxMana();
+	UFUNCTION()void OnRep_CurrentMana();
+	UFUNCTION()void OnRep_Damage();
+
+	UFUNCTION()void UpdateStatus();
+	void UpdateMaxHealth();
+	void UpdateMaxMana();
+	void UpdateDamage();
 protected:
 public:
 	void AdjustCurrentHealth(float InValue);

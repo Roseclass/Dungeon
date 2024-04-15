@@ -397,6 +397,9 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 	if (OnChangeHairVisiblity.IsBound() && EquippedItems[idx]->GetType() == EItemType::Helms)
 		OnChangeHairVisiblity.Broadcast(0);
 
+	if (OnInventoryEquippedItemsChanged.IsBound())
+		OnInventoryEquippedItemsChanged.Broadcast();
+
 	OnRep_EquippedItems();
 }
 
@@ -416,6 +419,10 @@ void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 		OnChangeHairVisiblity.Broadcast(1);
 
 	EquippedItems[InIdx] = nullptr;
+
+
+	if (OnInventoryEquippedItemsChanged.IsBound())
+		OnInventoryEquippedItemsChanged.Broadcast();
 
 	OnRep_EquippedItems();
 }
