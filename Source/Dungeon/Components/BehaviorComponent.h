@@ -10,7 +10,7 @@ class APlayerCharacter;
 UENUM(BlueprintType)
 enum class EBehaviorType : uint8
 {
-	Wait, Approach, Skill, Patrol, Hitted, Avoid, Strafing, Sequence, MAX
+	Wait, Approach, Skill, Patrol, Hit, Avoid, Strafing, Sequence, MAX
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FBehaviorTypeChanged, EBehaviorType, EBehaviorType);
@@ -85,7 +85,7 @@ public:
 	void SetWaitMode();
 	void SetApproachMode();
 	void SetPatrolMode();
-	void SetHittedMode();
+	void SetHitMode();
 	void SetAvoidMode();
 	void SetSkillMode();
 	void SetStrafingMode();
@@ -94,7 +94,7 @@ public:
 	bool IsWaitMode();
 	bool IsApproachMode();
 	bool IsPatrolMode();
-	bool IsHittedMode();
+	bool IsHitMode();
 	bool IsAvoidMode();
 	bool IsSkillMode();
 	bool IsStrafingMode();

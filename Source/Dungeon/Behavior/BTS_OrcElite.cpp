@@ -65,9 +65,9 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		return;
 	}
 
-	if (state->IsHittedMode())		
+	if (state->IsHitMode())		
 	{
-		behavior->SetHittedMode();	
+		behavior->SetHitMode();	
 		return;
 	}
 

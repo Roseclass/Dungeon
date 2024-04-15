@@ -53,9 +53,9 @@ void UBehaviorComponent::SetPatrolMode()
 	ChangeType(EBehaviorType::Patrol);
 }
 
-void UBehaviorComponent::SetHittedMode()
+void UBehaviorComponent::SetHitMode()
 {
-	ChangeType(EBehaviorType::Hitted);
+	ChangeType(EBehaviorType::Hit);
 }
 
 void UBehaviorComponent::SetAvoidMode()
@@ -93,9 +93,9 @@ bool UBehaviorComponent::IsPatrolMode()
 	return GetType() == EBehaviorType::Patrol;
 }
 
-bool UBehaviorComponent::IsHittedMode()
+bool UBehaviorComponent::IsHitMode()
 {
-	return GetType() == EBehaviorType::Hitted;
+	return GetType() == EBehaviorType::Hit;
 }
 
 bool UBehaviorComponent::IsAvoidMode()

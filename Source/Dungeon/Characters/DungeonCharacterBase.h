@@ -100,9 +100,9 @@ public:
 	UFUNCTION(BlueprintCallable)virtual void SpawnProjectile();
 	UFUNCTION(BlueprintCallable)virtual void OnCollision();
 	UFUNCTION(BlueprintCallable)virtual void OffCollision();
-	UFUNCTION(BlueprintCallable)virtual void ResetHittedActors();
+	UFUNCTION(BlueprintCallable)virtual void ResetHitActors();
 	UFUNCTION(BlueprintCallable)virtual void SetIdleMode();
 	UFUNCTION(BlueprintCallable)virtual void SetSkillMode();
-	UFUNCTION(BlueprintCallable)virtual void SetHittedMode();
+	UFUNCTION(BlueprintCallable)virtual void SetHitMode();
 	UFUNCTION(BlueprintCallable)virtual void SetDeadMode();
 };

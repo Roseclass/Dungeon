@@ -71,7 +71,7 @@ protected:
 public:
 	void OnCollision();
 	void OffCollision();
-	void ResetHittedActors();
+	void ResetHitActors();
 
 	bool IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIndex);
 	bool IsRoomAvailable(AEqquipment* InObject);

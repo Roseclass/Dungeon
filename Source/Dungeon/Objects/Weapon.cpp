@@ -117,7 +117,7 @@ void AWeapon::SetEquipMode()
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	CheckTrue(HittedActors.Contains(OtherActor));
+	CheckTrue(HitActors.Contains(OtherActor));
 	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
 	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
 	if (!other && !otherCh)
@@ -142,7 +142,7 @@ void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& S
 
 	FDamageEvent f;
 	OtherActor->TakeDamage(InDamage, f, inst, this);
-	HittedActors.Add(OtherActor);
+	HitActors.Add(OtherActor);
 }
 
 void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
@@ -162,9 +162,9 @@ void AWeapon::OffCollision()
 		i->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AWeapon::ResetHittedActors()
+void AWeapon::ResetHitActors()
 {
-	HittedActors.Empty();
+	HitActors.Empty();
 }
 
 void AWeapon::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)

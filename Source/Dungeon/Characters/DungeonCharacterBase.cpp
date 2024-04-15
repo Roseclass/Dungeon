@@ -191,9 +191,9 @@ void ADungeonCharacterBase::OffCollision()
 	Inventory->OffCollision();
 }
 
-void ADungeonCharacterBase::ResetHittedActors()
+void ADungeonCharacterBase::ResetHitActors()
 {
-	Inventory->ResetHittedActors();
+	Inventory->ResetHitActors();
 }
 
 void ADungeonCharacterBase::SetIdleMode()
@@ -206,9 +206,9 @@ void ADungeonCharacterBase::SetSkillMode()
 	State->SetSkillMode();
 }
 
-void ADungeonCharacterBase::SetHittedMode()
+void ADungeonCharacterBase::SetHitMode()
 {
-	State->SetHittedMode();
+	State->SetHitMode();
 }
 
 void ADungeonCharacterBase::SetDeadMode()

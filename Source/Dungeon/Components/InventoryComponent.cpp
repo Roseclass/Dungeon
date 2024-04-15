@@ -183,16 +183,16 @@ void UInventoryComponent::OffCollision()
 	if (weapon)weapon->OffCollision();
 }
 
-void UInventoryComponent::ResetHittedActors()
+void UInventoryComponent::ResetHitActors()
 {
 	int32 idx = int32(EItemType::Weapon);
 	if (!EquippedItems.IsValidIndex(idx))
 	{
-		CLog::Print("UInventoryComponent::ResetHittedActors IsNotValidIndex", -1, 10, FColor::Red);
+		CLog::Print("UInventoryComponent::ResetHitActors IsNotValidIndex", -1, 10, FColor::Red);
 		return;
 	}
 	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
-	if (weapon)weapon->ResetHittedActors();
+	if (weapon)weapon->ResetHitActors();
 }
 
 bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIndex)

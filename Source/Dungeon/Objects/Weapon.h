@@ -24,7 +24,7 @@ public:
 	//property
 private:
 	TArray<UShapeComponent*> CollisionComponents;
-	TArray<AActor*> HittedActors;
+	TArray<AActor*> HitActors;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FTransform AttachTransform;
@@ -63,7 +63,7 @@ public:
 	virtual void SetOwnerCharacter(ACharacter* InCharacter)override;
 	void OnCollision();
 	void OffCollision();
-	void ResetHittedActors();
+	void ResetHitActors();
 
 	virtual void SetItemLocation(const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None)override;
 	virtual void SetItemRotation(FRotator NewRotation, ETeleportType Teleport = ETeleportType::None)override;

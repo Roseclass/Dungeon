@@ -35,9 +35,9 @@ void UStateComponent::SetSkillMode()
 	ChangeType(EStateType::Skill);
 }
 
-void UStateComponent::SetHittedMode()
+void UStateComponent::SetHitMode()
 {
-	ChangeType(EStateType::Hitted);
+	ChangeType(EStateType::Hit);
 }
 
 void UStateComponent::SetDeadMode()
