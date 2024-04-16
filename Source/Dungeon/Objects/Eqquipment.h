@@ -54,6 +54,8 @@ struct FItemStatusData
 {
 	GENERATED_BODY()
 
+friend class AEqquipment;
+
 	// this data will be saved
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
@@ -68,19 +70,33 @@ private:
 	UPROPERTY()
 		float FinalMaxHealth;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
+		float BaseHealthRegen;
+
+	UPROPERTY()
+		float FinalHealthRegen;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Mana")
 		float BaseMaxMana;
 
 	UPROPERTY()
 		float FinalMaxMana;
 
-public:
+	UPROPERTY(EditDefaultsOnly, Category = "Mana")
+		float BaseManaRegen;
+
+	UPROPERTY()
+		float FinalManaRegen;
+
 	UPROPERTY()
 		bool bRandomize;
-	
-	FORCEINLINE float GetFinalDamage()const { return FinalDamage; }
+
+public:
+	FORCEINLINE float GetFinalDamage()const { return BaseDamage; }
 	FORCEINLINE float GetFinalMaxHealth()const { return FinalMaxHealth; }
+	FORCEINLINE float GetFinalHealthRegen()const { return FinalHealthRegen; }
 	FORCEINLINE float GetFinalMaxMana()const { return FinalMaxMana; }
+	FORCEINLINE float GetFinalManaRegen()const { return FinalManaRegen; }
 };
 
 UCLASS()

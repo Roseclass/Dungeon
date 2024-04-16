@@ -106,8 +106,7 @@ void UInventoryComponent::OnRep_Items()
 
 void UInventoryComponent::OnRep_EquippedItems()
 {
-	// TODO::Change appearance
-
+	// refresh inv slot
 	int32 t = EquippedItems.Num() > OnInventoryEquippedDataChanged.Num() ? OnInventoryEquippedDataChanged.Num() : EquippedItems.Num();
 
 	for (int32 i = 0; i < t; ++i)
@@ -419,7 +418,6 @@ void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 		OnChangeHairVisiblity.Broadcast(1);
 
 	EquippedItems[InIdx] = nullptr;
-
 
 	if (OnInventoryEquippedItemsChanged.IsBound())
 		OnInventoryEquippedItemsChanged.Broadcast();

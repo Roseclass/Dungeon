@@ -74,7 +74,9 @@ private:
 	virtual void HitReaction_KnockBack(float InForce, AActor* InCauser);
 	virtual void HitReaction_KnockDown(float InForce,AActor* InCauser);
 
+	UFUNCTION()void ChangeHealthBarMax(float NewMax);
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
+	UFUNCTION()void ChangeHealthBarRegen(float NewRegen);
 protected:
 	virtual void Init();
 	

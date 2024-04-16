@@ -19,6 +19,14 @@ void UUW_HealthBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	if (Max > 0)// and player is alive
+	{
+		float cur = HealthBar->Percent;
+		cur += InDeltaTime * Regen / Max;
+		if (cur > 1)cur = 1;
+		SetPercent(cur);
+	}
+
 	if (DelayPercent > HealthBar->Percent)
 	{
 		DelayPercent = UKismetMathLibrary::FInterpTo(DelayPercent, HealthBar->Percent, InDeltaTime, DelaySpeed);
@@ -52,6 +60,11 @@ void UUW_HealthBar::Init(FText NewName, uint8 NewLevel)
 	BindToAnimationStarted(HitEffect, start);
 }
 
+void UUW_HealthBar::SetMax(float NewMax)
+{
+	Max = NewMax;
+}
+
 void UUW_HealthBar::SetPercent(float NewPercent)
 {
 	// set new value to progress bar
@@ -68,6 +81,11 @@ void UUW_HealthBar::SetPercent(float NewPercent)
 	// or else just do nothing
 	CheckFalse(NewPercent < prevPercent);
 	PlayAnimationForward(HitEffect);
+}
+
+void UUW_HealthBar::SetRegen(float NewRegen)
+{
+	Regen = NewRegen;
 }
 
 void UUW_HealthBar::SetPlayerType()

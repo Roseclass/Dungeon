@@ -55,11 +55,16 @@ void AEqquipment::BeginPlay()
 
 	SpawnLootEffects();
 
-	/*if (!Manager)
-	{
-		AActor* manager = UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass());
-		Manager = Cast<AItemManager>(manager);
-	}*/
+	// Randomize status
+	if (HasAuthority() && !ItemStatus.bRandomize)
+	{	
+		ItemStatus.FinalDamage = ItemStatus.BaseDamage * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		ItemStatus.FinalMaxHealth = ItemStatus.BaseMaxHealth * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		ItemStatus.FinalHealthRegen = ItemStatus.BaseHealthRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		ItemStatus.FinalMaxMana = ItemStatus.BaseMaxMana * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		ItemStatus.FinalManaRegen = ItemStatus.BaseManaRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		ItemStatus.bRandomize = 1;
+	}
 }
 
 #if WITH_EDITOR

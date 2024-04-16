@@ -48,8 +48,6 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	CLog::Print(DamageAmount, -1, 10, FColor::Red);
-
 	if (!DamageEvent.DamageTypeClass->IsChildOf(UCustomDamageType::StaticClass()))
 	{
 		FString name = "";
@@ -118,6 +116,16 @@ void ADungeonCharacterBase::HitReaction_KnockDown(float InForce, AActor* InCause
 	Montage->PlayKnockDownMontage(force * InForce);
 }
 
+void ADungeonCharacterBase::ChangeHealthBarMax(float NewMax)
+{
+	if (!HealthBarWidget)
+	{
+		CLog::Print("ChangeHealthBarPercent, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetMax(NewMax);
+}
+
 void ADungeonCharacterBase::ChangeHealthBarPercent(float NewPercent)
 {
 	if (!HealthBarWidget)
@@ -128,10 +136,24 @@ void ADungeonCharacterBase::ChangeHealthBarPercent(float NewPercent)
 	HealthBarWidget->SetPercent(NewPercent);
 }
 
+void ADungeonCharacterBase::ChangeHealthBarRegen(float NewRegen)
+{
+	if (!HealthBarWidget)
+	{
+		CLog::Print("ChangeHealthBarPercent, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetRegen(NewRegen);
+}
+
 void ADungeonCharacterBase::Init()
 {
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
-	Status->OnCurrentHealthChanged.BindUFunction(this, "ChangeHealthBarPercent");
+
+	Status->OnMaxHealthChanged.AddUFunction(this, "ChangeHealthBarMax");
+	Status->OnCurrentHealthChanged.AddUFunction(this, "ChangeHealthBarPercent");
+	Status->OnHealthRegenChanged.AddUFunction(this, "ChangeHealthBarRegen");
+	Status->Update();
 }
 
 void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
