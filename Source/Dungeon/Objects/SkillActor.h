@@ -78,6 +78,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 		bool bUseSocketRotation = 0;
 
+	UPROPERTY(EditAnywhere, Category = "Damage")
+		float BaseDamage = 10;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+		float AdditiveDamage = 10;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+		float BaseDamageRate = 1;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+		float AdditiveDamageRate = 1;
+
 	UPROPERTY(EditAnywhere, Category = "Widget")
 		UObject* SkillImage;
 
@@ -91,7 +103,10 @@ public:
 		float CoolDown = 10.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Range")
-		float Range = 10.0f;
+		float Range = 500.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Condition")
+		float ManaCost = 10.0f;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TArray<FWaringSignData> WarningSignData;
@@ -141,7 +156,10 @@ private:
 	UFUNCTION()void OnRep_CoolDown_Server();
 protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
+	UFUNCTION(Client, Reliable)virtual void Client_UseAbort();
 	UFUNCTION(Reliable, Server)virtual void Server_Use(ADungeonPlayerController* Exception);
+
+	UFUNCTION(BlueprintImplementableEvent)float CalculateDamage(float InCharacterDamage);
 
 	FORCEINLINE ADungeonCharacterBase* GetOwnerCharacter() { return OwnerCharacter; }
 public:
@@ -156,6 +174,7 @@ public:
 	FORCEINLINE const TArray<ASkillActor*>& GetChildren() const { return ChildrenSkills; };
 	FORCEINLINE ESkillTreeSkillState GetSkillTreeState() const { return SkillTreeState; }
 	FORCEINLINE float GetCoolDown() const { return Data.CoolDown; }
+	FORCEINLINE float GetManaCost() const { return Data.ManaCost; }
 	FORCEINLINE bool IsCoolDown() const { return bCoolDown_Client; }
 	float GetRemainingCoolDown() const;
 
@@ -168,3 +187,25 @@ public:
 	void SetAcquired();
 
 };
+
+/*
+* need limit condition
+* mana?
+* just use and filtering in server
+* 
+* how to know usable?
+* change widget cover ex)lol,hots,dota
+* 
+* latency?
+* use with widget condition and filtering in server
+* most of all may be can use
+* if this function use many times in sever that filtered by canuse state dont worry
+* 
+* mana						more mana				setcannotuse
+* canuseskill(client) ==> canuseskill(sever) ==> useskill(server) ==> useskill(client)
+*			canuseskill(client) ==> canuseskill(sever) ||
+* 
+* range?
+* need filtering in controller
+* 
+*/

@@ -30,6 +30,8 @@ protected:
 	virtual void SetupInputComponent() override;
 	virtual void PostNetInit() override;
 	virtual void OnPossess(APawn* InPawn)override;
+	virtual void OnRep_Pawn()override;
+
 public:
 
 	//property

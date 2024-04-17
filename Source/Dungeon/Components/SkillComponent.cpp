@@ -147,6 +147,13 @@ bool USkillComponent::IsQuickSlotCoolDown(int32 Index)
 	return QuickSlotSkillActors[Index]->IsCoolDown();
 }
 
+float USkillComponent::GetQuickSlotManaCost(int32 Index)
+{
+	if (!QuickSlotSkillActors.IsValidIndex(Index))return 1e9;
+	if (!QuickSlotSkillActors[Index])return 1e9;
+	return QuickSlotSkillActors[Index]->GetManaCost();
+}
+
 bool USkillComponent::GetSkillRange(int32 InIndex, float& Range)
 {
 	if (!SkillActors.IsValidIndex(InIndex))return 0;

@@ -4,7 +4,10 @@
 
 #include "DungeonPlayerController.h"
 #include "Characters/DungeonCharacterBase.h"
+
 #include "Components/SkillComponent.h"
+#include "Components/StatusComponent.h"
+
 #include "Objects/Projectile.h"
 #include "Objects/WarningSign.h"
 
@@ -100,23 +103,61 @@ void ASkillActor::OnRep_CoolDown_Server()
 
 void ASkillActor::Multicast_Use_Implementation(ADungeonPlayerController* Exception)
 {
-	CheckTrue(Exception && Exception->IsLocalController());
-	if (Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
+	if (Data.Montage)
+		OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
+}
+
+void ASkillActor::Client_UseAbort_Implementation()
+{
+	CheckNull(OwnerCharacter);
+
+	// update status
+	bCoolDown_Client = 0;
+	OwnerCharacter->SetUse();
+	OwnerCharacter->SetMove();
 }
 
 void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 {
-	bCoolDown_Server = 1;
-	StartServerWorldTime = GetWorld()->GetTimeSeconds();
-	if (OwnerCharacter)
+	// check owner
+	if (!OwnerCharacter)
 	{
-		//ui 쿨다운 돌리기
-		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OwnerCharacter);
-		CheckNull(skill);
-		StartWorldTime = StartServerWorldTime;
-		skill->SetCoolDown(this);
+		Client_UseAbort();
+		CLog::Print("ASkillActor::Server_Use Owner is nullptr", -1, 10, FColor::Red);
+		return;
 	}
 
+	// check status
+	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
+	if (!status)
+	{
+		Client_UseAbort();
+		CLog::Print("ASkillActor::Server_Use status is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	// check cost
+	if (status->GetCurrentMana_Server() < Data.ManaCost)
+	{
+		Client_UseAbort();
+		CLog::Print("ASkillActor::Server_Use ManaCost is bigger", 1557, 10, FColor::MakeRandomColor());
+		return;
+	}
+
+	// update current cost
+	status->AdjustCurrentMana(-Data.ManaCost);
+
+	// set cooldown
+	bCoolDown_Server = 1;
+	StartServerWorldTime = GetWorld()->GetTimeSeconds();
+
+	// run ui cooldown
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OwnerCharacter);
+	CheckNull(skill);
+	StartWorldTime = StartServerWorldTime;
+	skill->SetCoolDown(this);	
+
+	// reserve cooldown end event
 	FTimerHandle WaitHandle;
 	float WaitTime = Data.CoolDown;
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
@@ -125,6 +166,7 @@ void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 		bCoolDown_Client = 0;
 	}), WaitTime, false);
 
+	// next sequence
 	Multicast_Use(Exception);
 }
 
@@ -147,11 +189,12 @@ void ASkillActor::Load()
 void ASkillActor::Client_Use_Implementation()
 {
 	CheckNull(OwnerCharacter);
+
+	// update status
 	bCoolDown_Client = 1;
 	OwnerCharacter->SetCannotUse();
-
 	if(!Data.bCanMove)OwnerCharacter->SetStop();
-	if(Data.Montage)OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
+
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(OwnerCharacter->GetController());
 	if (controller)Server_Use(controller);
 }
@@ -171,10 +214,19 @@ void ASkillActor::Server_SpawnProjectile_Implementation()
 	FActorSpawnParameters f;
 	f.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	float damage = 1;
+
+	// check status
+	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
+	if (status)
+	{
+		damage = status->GetDamage();
+	}
+
 	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, trans, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
 	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
-	projectile->SetDamage(10);//TODO::
+	projectile->SetDamage(CalculateDamage(damage));
 	UGameplayStatics::FinishSpawningActor(projectile, trans);
 	projectile->Activate();
 }

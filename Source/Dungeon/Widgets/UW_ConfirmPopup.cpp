@@ -43,11 +43,8 @@ void UUW_ConfirmPopup::RemoveFromParent()
 {
 	// get player controller
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(GetOwningPlayer());
-	if (!pc)
-	{
-		CLog::Print("UUW_ConfirmPopup::Activate is nullptr", -1, 10, FColor::Red);
-		return;
-	}
+	CheckNull(pc)
+
 	// restore input
 	pc->SetGameAndUIMode();
 
@@ -155,11 +152,7 @@ void UUW_ConfirmPopup::Activate()
 {
 	// get player controller
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(GetOwningPlayer());
-	if (!pc)
-	{
-		CLog::Print("UUW_ConfirmPopup::Activate is nullptr", -1, 10, FColor::Red);
-		return;
-	}
+	CheckNull(pc);
 
 	// ignore input
 	pc->SetUIOnlyMode();

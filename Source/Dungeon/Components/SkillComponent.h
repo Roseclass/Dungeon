@@ -58,6 +58,7 @@ public:
 	void SetCoolDown(ASkillActor* InSkillActor);
 	bool GetQuickSlotCoolDown(int32 Index, float& Result);
 	bool IsQuickSlotCoolDown(int32 Index);
+	float GetQuickSlotManaCost(int32 Index);
 	bool GetSkillRange(int32 InIndex, float& Range);
 	bool GetQuickSlotSkillRange(int32 InIndex, float& Range);
 

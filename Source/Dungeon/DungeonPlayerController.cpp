@@ -158,7 +158,19 @@ void ADungeonPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	Client_CreateMainWidget();	
+	Client_CreateMainWidget();
+}
+
+void ADungeonPlayerController::OnRep_Pawn()
+{
+	Super::OnRep_Pawn();
+
+	// OnPossess of Client Returns Pawn as Nullptr
+	if (GetPawn())
+	{
+		MainWidget->Init(GetPawn());
+	}
+	else CLog::Print("ADungeonPlayerController::OnRep_Pawn is nullptr", -1, 10, FColor::Red);
 }
 
 void ADungeonPlayerController::OnRep_ItemManager()
@@ -186,6 +198,13 @@ void ADungeonPlayerController::Client_CreateMainWidget_Implementation()
 	{
 		MainWidget = CreateWidget<UUW_Main, ADungeonPlayerController>(this, MainWidgetClass);
 		MainWidget->AddToViewport();
+		if (HasAuthority())
+		{
+			APawn* pawn = GetPawn();
+			if (pawn)MainWidget->Init(pawn);
+			else CLog::Print("ADungeonPlayerController::Client_CreateMainWidget_Implementation sever pawn is nulltpr", -1, 10, FColor::Red);
+
+		}
 	}
 }
 

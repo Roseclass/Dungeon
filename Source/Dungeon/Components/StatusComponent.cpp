@@ -43,8 +43,14 @@ void UStatusComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	if (GetOwner()->HasAuthority())
 	{
-		AmountOfHealthRegen += HealthRegen * DeltaTime;
-		AmountOfManaRegen += ManaRegen * DeltaTime;
+		AmountOfHealthRegen_Server += HealthRegen * DeltaTime;
+		AmountOfManaRegen_Server += ManaRegen * DeltaTime;
+	}
+
+	if (GetOwner()->GetOwner())
+	{
+		AmountOfHealthRegen_Client += HealthRegen * DeltaTime;
+		AmountOfManaRegen_Client += ManaRegen * DeltaTime;
 	}
 }
 
@@ -80,13 +86,19 @@ void UStatusComponent::OnRep_MaxHealth()
 void UStatusComponent::OnRep_CurrentHealth()
 {
 	// Current Health Changed
-	// Send Cur/Max rate
+
+	// check error
 	if (MaxHealth < 0)
 	{
 		CLog::Print("OnRep_CurrentHealth, MaxHealth < 0", -1, 10, FColor::Red);
 		return;
 	}
+
+	// Send Cur/Max rate
 	OnCurrentHealthChanged.Broadcast(CurrentHealth / MaxHealth);
+
+	// reset client data
+	AmountOfHealthRegen_Client = 0;
 }
 
 void UStatusComponent::OnRep_HealthRegen()
@@ -104,7 +116,19 @@ void UStatusComponent::OnRep_MaxMana()
 void UStatusComponent::OnRep_CurrentMana()
 {
 	// Current Mana Changed
+
+	// check error
+	if (MaxMana < 0)
+	{
+		CLog::Print("OnRep_CurrentHealth, MaxHealth < 0", -1, 10, FColor::Red);
+		return;
+	}
+
+	// Send Cur/Max rate
 	OnCurrentManaChanged.Broadcast(CurrentMana / MaxMana);
+
+	// reset client data
+	AmountOfManaRegen_Client = 0;
 }
 
 void UStatusComponent::OnRep_ManaRegen()
@@ -290,8 +314,8 @@ void UStatusComponent::UpdateManaRegen()
 
 void UStatusComponent::AdjustCurrentHealth(float InValue)
 {
-	float result = UKismetMathLibrary::FClamp(CurrentHealth + AmountOfHealthRegen, 0, MaxHealth);
-	AmountOfHealthRegen = 0;
+	float result = UKismetMathLibrary::FClamp(CurrentHealth + AmountOfHealthRegen_Server, 0, MaxHealth);
+	AmountOfHealthRegen_Server = 0;
 
 	CurrentHealth = UKismetMathLibrary::FClamp(result + InValue, 0, MaxHealth);
 	if (GetOwner()->HasAuthority()) 
@@ -300,8 +324,8 @@ void UStatusComponent::AdjustCurrentHealth(float InValue)
 
 void UStatusComponent::AdjustCurrentMana(float InValue)
 {
-	float result = UKismetMathLibrary::FClamp(CurrentMana + AmountOfManaRegen, 0, MaxMana);
-	AmountOfManaRegen = 0;
+	float result = UKismetMathLibrary::FClamp(CurrentMana + AmountOfManaRegen_Server, 0, MaxMana);
+	AmountOfManaRegen_Server = 0;
 
 	CurrentMana = UKismetMathLibrary::FClamp(result + InValue, 0, MaxMana);
 	if (GetOwner()->HasAuthority())

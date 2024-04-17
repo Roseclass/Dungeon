@@ -37,9 +37,13 @@ private:
 
 	UPROPERTY(EditAnywhere, ReplicatedUsing = "OnRep_Damage")float Damage;
 
+	// updated only in client
+	float AmountOfHealthRegen_Client;
+	float AmountOfManaRegen_Client;
+
 	// updated only in sever
-	float AmountOfHealthRegen;
-	float AmountOfManaRegen;
+	float AmountOfHealthRegen_Server;
+	float AmountOfManaRegen_Server;
 
 	bool bCanUse = 1;
 	bool bCanMove = 1;
@@ -97,6 +101,11 @@ public:
 	FORCEINLINE float GetMaxMana() const {return MaxMana;}
 	FORCEINLINE float GetCurrentMana() const {return CurrentMana;}
 	FORCEINLINE float GetManaRegen() const {return ManaRegen;}
+
+	FORCEINLINE float GetCurrentHealth_Client() const { return CurrentHealth + AmountOfHealthRegen_Client; }
+	FORCEINLINE float GetCurrentMana_Client() const { return CurrentMana + AmountOfManaRegen_Client; }
+	FORCEINLINE float GetCurrentHealth_Server() const { return CurrentHealth + AmountOfHealthRegen_Server; }
+	FORCEINLINE float GetCurrentMana_Server() const { return CurrentMana + AmountOfManaRegen_Server; }
 
 	FORCEINLINE float GetDamage() const {return Damage;}
 };

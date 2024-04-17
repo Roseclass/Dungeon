@@ -272,6 +272,7 @@ void APlayerCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(0));
+	CheckFalse(Skill->GetQuickSlotManaCost(0) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(0);
@@ -281,6 +282,7 @@ void APlayerCharacter::UseRight()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(1));
+	CheckFalse(Skill->GetQuickSlotManaCost(1) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(1);
@@ -290,6 +292,7 @@ void APlayerCharacter::UseQ()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(2));
+	CheckFalse(Skill->GetQuickSlotManaCost(2) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(2);
@@ -299,6 +302,7 @@ void APlayerCharacter::UseW()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(3));
+	CheckFalse(Skill->GetQuickSlotManaCost(3) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(3);
@@ -308,6 +312,7 @@ void APlayerCharacter::UseE()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(4));
+	CheckFalse(Skill->GetQuickSlotManaCost(4) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(4);
@@ -317,6 +322,7 @@ void APlayerCharacter::UseR()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(5));
+	CheckFalse(Skill->GetQuickSlotManaCost(5) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(5);

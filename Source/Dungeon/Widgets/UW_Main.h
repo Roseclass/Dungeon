@@ -10,13 +10,14 @@
 
 class UUW_QuickSlot;
 class UUW_Orb;
+class APawn;
 
 UCLASS()
 class DUNGEON_API UUW_Main : public UUserWidget
 {
 	GENERATED_BODY()
 protected:
-	virtual void NativeConstruct()override;
+	virtual void NativeOnInitialized()override;
 
 	//property
 private:
@@ -36,7 +37,7 @@ public:
 private:
 protected:
 public:	
-
+	void Init(APawn* NewPawn);
 	FORCEINLINE UUW_QuickSlot* GetQuickSlot() const { return QuickSlot; }
 	FORCEINLINE UUW_Orb* GetHealthOrb() const { return HealthOrb; }
 	FORCEINLINE UUW_Orb* GetManaOrb() const { return ManaOrb; }

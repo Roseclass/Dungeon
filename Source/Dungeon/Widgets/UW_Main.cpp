@@ -5,14 +5,18 @@
 
 #include "Widgets/UW_Orb.h"
 
-void UUW_Main::NativeConstruct()
+void UUW_Main::NativeOnInitialized()
 {
-	Super::NativeConstruct();
+	Super::NativeOnInitialized();
 
-	APawn* pawn = GetOwningPlayer()->GetPawn();
-	if (pawn)
+}
+
+void UUW_Main::Init(APawn* NewPawn)
+{
+	if (NewPawn)
 	{
-		UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(pawn);
+		CLog::Print("IN");
+		UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(NewPawn);
 		if (status)
 		{
 			status->OnMaxHealthChanged.AddUFunction(HealthOrb, "SetMax");
@@ -21,8 +25,8 @@ void UUW_Main::NativeConstruct()
 
 			status->OnMaxManaChanged.AddUFunction(ManaOrb, "SetMax");
 			status->OnCurrentManaChanged.AddUFunction(ManaOrb, "SetCurrent");
-			status->OnManaRegenChanged.AddUFunction(ManaOrb, "SetRegen");			
+			status->OnManaRegenChanged.AddUFunction(ManaOrb, "SetRegen");
 		}
 	}
-
+	else CLog::Print("UUW_Main::Init NewPawn is nullptr", -1, 10, FColor::Red);
 }
