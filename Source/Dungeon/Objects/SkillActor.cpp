@@ -193,7 +193,6 @@ void ASkillActor::Client_Use_Implementation()
 	// update status
 	bCoolDown_Client = 1;
 	OwnerCharacter->SetCannotUse();
-	if(!Data.bCanMove)OwnerCharacter->SetStop();
 
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(OwnerCharacter->GetController());
 	if (controller)Server_Use(controller);

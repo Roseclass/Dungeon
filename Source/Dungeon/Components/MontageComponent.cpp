@@ -63,6 +63,13 @@ int32 UMontageComponent::FindDirection(float FDot, float RDot)
 	return result;
 }
 
+void UMontageComponent::PlayDeadMontage(AActor* InCauser)
+{
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	CheckNull(owner);
+	owner->PlayAnimMontage(DeadMontage);
+}
+
 void UMontageComponent::PlayHitMontage(AActor* InCauser)
 {
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());

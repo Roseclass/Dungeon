@@ -46,7 +46,6 @@ private:
 	float AmountOfManaRegen_Server;
 
 	bool bCanUse = 1;
-	bool bCanMove = 1;
 protected:
 public:
 	FStatusChanged OnMaxHealthChanged;
@@ -90,7 +89,7 @@ public:
 	void Update();
 
 	FORCEINLINE bool CanUse() const {return bCanUse;}
-	FORCEINLINE bool CanMove() const {return bCanMove;}
+	bool CanMove() const;
 
 	FORCEINLINE uint8 GetLevel() const {return Level;}
 

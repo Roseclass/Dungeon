@@ -1,7 +1,9 @@
 #include "Components/StatusComponent.h"
 #include "Global.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Components/InventoryComponent.h"
+
 #include "Objects/Eqquipment.h"
 
 UStatusComponent::UStatusComponent()
@@ -344,12 +346,36 @@ void UStatusComponent::SetCannotUse()
 
 void UStatusComponent::SetMove()
 {
-	bCanMove = 1;
+	if (!GetOwner()->HasAuthority())
+	{
+		CLog::Print("UStatusComponent::SetMove Has NOT Authority", -1, 10, FColor::MakeRandomColor());
+		return;
+	}
+
+	UCharacterMovementComponent* movement = CHelpers::GetComponent<UCharacterMovementComponent>(GetOwner());
+	if (!movement)
+	{
+		CLog::Print("UStatusComponent::SetMove movement is nullptr", -1, 10, FColor::MakeRandomColor());
+		return;
+	}
+	movement->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
 void UStatusComponent::SetStop()
 {
-	bCanMove = 0;
+	if (!GetOwner()->HasAuthority())
+	{
+		CLog::Print("UStatusComponent::SetStop Has NOT Authority", -1, 10, FColor::MakeRandomColor());
+		return;
+	}
+
+	UCharacterMovementComponent* movement = CHelpers::GetComponent<UCharacterMovementComponent>(GetOwner());
+	if (!movement)
+	{
+		CLog::Print("UStatusComponent::SetStop movement is nullptr", -1, 10, FColor::MakeRandomColor());
+		return;
+	}
+	movement->SetMovementMode(EMovementMode::MOVE_None);
 }
 
 void UStatusComponent::Update()
@@ -365,4 +391,12 @@ void UStatusComponent::Update()
 	OnRep_ManaRegen();
 
 	OnRep_Damage();
+}
+
+bool UStatusComponent::CanMove() const
+{
+	UCharacterMovementComponent* movement = CHelpers::GetComponent<UCharacterMovementComponent>(GetOwner());
+	if (!movement)return 0;
+	if (movement->MovementMode == EMovementMode::MOVE_Walking)return 1;
+	return 0;
 }

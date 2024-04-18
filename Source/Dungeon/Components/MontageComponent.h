@@ -26,6 +26,9 @@ public:
 private:
 	FVector Force;
 protected:
+	UPROPERTY(EditAnywhere, Category = "Datas")
+		UAnimMontage* DeadMontage;
+
 	UPROPERTY(EditAnywhere, Category = "HitDatas", meta = (DisplayName = "Fronts"))
 		TArray<UAnimMontage*> HitFronts;
 
@@ -51,6 +54,7 @@ private:
 	int32 FindDirection(float FDot, float RDot);
 protected:
 public:
+	void PlayDeadMontage(AActor* InCauser);
 	void PlayHitMontage(AActor* InCauser);
 	void PlayKnockDownMontage(FVector NewForce);
 

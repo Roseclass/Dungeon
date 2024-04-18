@@ -65,9 +65,26 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 		return result;
 	}
 
+	// is dead?
+	if (State->IsDeadMode())
+	{
+		return result;
+	}
 
+	// refresh status
+	Status->AdjustCurrentHealth(-DamageAmount);
+
+	// is dead?
+	float hp = Status->GetCurrentHealth_Server();
+	if (hp <= 0)
+	{
+		SetDeadMode();
+		Montage->PlayDeadMontage(DamageCauser);
+		return result;
+	}
+
+	// play reaction
 	// None, Normal, KnockBack, KnockDown, Max
-
 	switch (damageType->ReactionType)
 	{
 	case EReactionType::None:HitReaction_None(); break;
@@ -76,9 +93,6 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	case EReactionType::KnockDown:HitReaction_KnockDown(damageType->DamageImpulse,DamageCauser); break;
 	default:break;
 	}
-
-	// refresh status
-	Status->AdjustCurrentHealth(-DamageAmount);
 
 	return result;
 }
@@ -160,7 +174,7 @@ void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
 {
 	if (NewType == EStateType::Dead)
 	{
-		// play dead montage
+
 	}
 }
 
