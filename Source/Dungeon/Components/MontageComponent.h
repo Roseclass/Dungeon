@@ -14,17 +14,18 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UMontageComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	//engine
-private:
-protected:
 public:
 	UMontageComponent();
+protected:
 	virtual void BeginPlay() override;
+public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
-	FVector Force;
+	UPROPERTY(Replicated)AActor* DamageCauser;
+	UPROPERTY(Replicated)FVector Force;
 protected:
 	UPROPERTY(EditAnywhere, Category = "Datas")
 		UAnimMontage* DeadMontage;
@@ -54,9 +55,13 @@ private:
 	int32 FindDirection(float FDot, float RDot);
 protected:
 public:
-	void PlayDeadMontage(AActor* InCauser);
-	void PlayHitMontage(AActor* InCauser);
-	void PlayKnockDownMontage(FVector NewForce);
+	void PlayDeadMontage();
+	void PlayHitMontage();
+	void PlayKnockDownMontage();
+
+	FORCEINLINE void SetDamageCauser(AActor* NewDamageCauser) { DamageCauser = NewDamageCauser; }
+	FORCEINLINE void SetForce(FVector NewForce) { Force = NewForce; }
+
 
 	FORCEINLINE FVector GetForce()const {return Force;}
 };

@@ -6,6 +6,7 @@
 UMontageComponent::UMontageComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(1);
 }
 
 void UMontageComponent::BeginPlay()
@@ -16,6 +17,15 @@ void UMontageComponent::BeginPlay()
 void UMontageComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UMontageComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(UMontageComponent, DamageCauser, COND_None);
+	DOREPLIFETIME_CONDITION(UMontageComponent, Force, COND_None);
 }
 
 int32 UMontageComponent::FindDirection(float FDot, float RDot)
@@ -63,14 +73,14 @@ int32 UMontageComponent::FindDirection(float FDot, float RDot)
 	return result;
 }
 
-void UMontageComponent::PlayDeadMontage(AActor* InCauser)
+void UMontageComponent::PlayDeadMontage()
 {
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	CheckNull(owner);
 	owner->PlayAnimMontage(DeadMontage);
 }
 
-void UMontageComponent::PlayHitMontage(AActor* InCauser)
+void UMontageComponent::PlayHitMontage()
 {
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	CheckNull(owner);
@@ -81,7 +91,7 @@ void UMontageComponent::PlayHitMontage(AActor* InCauser)
 		return;
 	}
 
-	FVector look = InCauser->GetActorLocation() - owner->GetActorLocation();
+	FVector look = DamageCauser->GetActorLocation() - owner->GetActorLocation();
 	look.Z = 0;
 	UKismetMathLibrary::Normal(look);
 
@@ -154,12 +164,13 @@ void UMontageComponent::PlayHitMontage(AActor* InCauser)
 	owner->PlayAnimMontage((*montages)[idx]);
 }
 
-void UMontageComponent::PlayKnockDownMontage(FVector NewForce)
+void UMontageComponent::PlayKnockDownMontage()
 {
-	Force = NewForce;
-
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	CheckNull(owner);
+	FVector force = -Force;
+	force.Normalize();
+	owner->SetActorRotation(UKismetMathLibrary::MakeRotFromX(force));
 	owner->PlayAnimMontage(KnockDownMontage);
 }
 

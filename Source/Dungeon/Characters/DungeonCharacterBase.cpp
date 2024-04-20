@@ -65,21 +65,28 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 		return result;
 	}
 
-	// is dead?
-	if (State->IsDeadMode())
-	{
-		return result;
-	}
+	// is already dead?
+	if (State->IsDeadMode())return result;
 
 	// refresh status
 	Status->AdjustCurrentHealth(-DamageAmount);
+
+	// set montage datas
+	{
+		Montage->SetDamageCauser(DamageCauser);
+
+		FVector force = GetActorLocation() - DamageCauser->GetActorLocation();
+		force.Z = 0;
+		force.Normalize(); 
+
+		Montage->SetForce(damageType->DamageImpulse * force);
+	}
 
 	// is dead?
 	float hp = Status->GetCurrentHealth_Server();
 	if (hp <= 0)
 	{
 		SetDeadMode();
-		Montage->PlayDeadMontage(DamageCauser);
 		return result;
 	}
 
@@ -88,9 +95,9 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	switch (damageType->ReactionType)
 	{
 	case EReactionType::None:HitReaction_None(); break;
-	case EReactionType::Normal:HitReaction_Normal(DamageCauser); break;
-	case EReactionType::KnockBack:HitReaction_KnockBack(damageType->DamageImpulse,DamageCauser); break;
-	case EReactionType::KnockDown:HitReaction_KnockDown(damageType->DamageImpulse,DamageCauser); break;
+	case EReactionType::Normal:SetHitMode(); break;
+	case EReactionType::KnockBack:SetKnockBackMode(); break;
+	case EReactionType::KnockDown:SetKnockDownMode(); break;
 	default:break;
 	}
 
@@ -107,27 +114,20 @@ void ADungeonCharacterBase::HitReaction_None()
 
 }
 
-void ADungeonCharacterBase::HitReaction_Normal(AActor* InCauser)
+void ADungeonCharacterBase::HitReaction_Normal()
 {
-	Montage->PlayHitMontage(InCauser);
+	Montage->PlayHitMontage();
 }
 
-void ADungeonCharacterBase::HitReaction_KnockBack(float InForce, AActor* InCauser)
+void ADungeonCharacterBase::HitReaction_KnockBack()
 {
 
 }
 
-void ADungeonCharacterBase::HitReaction_KnockDown(float InForce, AActor* InCauser)
+void ADungeonCharacterBase::HitReaction_KnockDown()
 {
-	FVector force = GetActorLocation() - InCauser->GetActorLocation();
-	force.Z = 0;
-	force.Normalize();
-
-	SetActorRotation(UKismetMathLibrary::MakeRotFromX(-force));
-
 	GetCharacterMovement()->StopMovementImmediately();
-
-	Montage->PlayKnockDownMontage(force * InForce);
+	Montage->PlayKnockDownMontage();
 }
 
 void ADungeonCharacterBase::ChangeHealthBarMax(float NewMax)
@@ -172,9 +172,23 @@ void ADungeonCharacterBase::Init()
 
 void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
 {
+	CheckTrue(PrevType == NewType);
+
 	if (NewType == EStateType::Dead)
 	{
-
+		Montage->PlayDeadMontage();
+	}
+	else if (NewType == EStateType::Hit)
+	{
+		HitReaction_Normal();
+	}
+	else if (NewType == EStateType::KnockBack)
+	{
+		HitReaction_KnockBack();
+	}
+	else if (NewType == EStateType::KnockDown)
+	{
+		HitReaction_KnockDown();
 	}
 }
 
@@ -245,6 +259,16 @@ void ADungeonCharacterBase::SetSkillMode()
 void ADungeonCharacterBase::SetHitMode()
 {
 	State->SetHitMode();
+}
+
+void ADungeonCharacterBase::SetKnockBackMode()
+{
+	State->SetKnockBackMode();
+}
+
+void ADungeonCharacterBase::SetKnockDownMode()
+{
+	State->SetKnockDownMode();
 }
 
 void ADungeonCharacterBase::SetDeadMode()

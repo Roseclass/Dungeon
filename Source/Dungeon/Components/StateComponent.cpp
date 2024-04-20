@@ -4,6 +4,7 @@
 UStateComponent::UStateComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(1);
 }
 
 void UStateComponent::BeginPlay()
@@ -16,13 +17,27 @@ void UStateComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UStateComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(UStateComponent, Type, COND_None);
+}
+
+void UStateComponent::OnRep_Type()
+{
+	if (OnStateTypeChanged.IsBound())
+		OnStateTypeChanged.Broadcast(PrevType, Type);
+}
+
 void UStateComponent::ChangeType(EStateType InNewType)
 {
-	EStateType prev = Type;
+	PrevType = Type;
 	Type = InNewType;
 
-	if (OnStateTypeChanged.IsBound())
-		OnStateTypeChanged.Broadcast(prev, InNewType);
+	if (GetOwner()->HasAuthority())
+		OnRep_Type();
 }
 
 void UStateComponent::SetIdleMode()
@@ -38,6 +53,16 @@ void UStateComponent::SetSkillMode()
 void UStateComponent::SetHitMode()
 {
 	ChangeType(EStateType::Hit);
+}
+
+void UStateComponent::SetKnockBackMode()
+{
+	ChangeType(EStateType::KnockBack);
+}
+
+void UStateComponent::SetKnockDownMode()
+{
+	ChangeType(EStateType::KnockDown);
 }
 
 void UStateComponent::SetDeadMode()

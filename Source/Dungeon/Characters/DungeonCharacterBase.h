@@ -70,9 +70,9 @@ public:
 	//function
 private:
 	virtual void HitReaction_None();
-	virtual void HitReaction_Normal(AActor* InCauser);
-	virtual void HitReaction_KnockBack(float InForce, AActor* InCauser);
-	virtual void HitReaction_KnockDown(float InForce,AActor* InCauser);
+	virtual void HitReaction_Normal();
+	virtual void HitReaction_KnockBack();
+	virtual void HitReaction_KnockDown();
 
 	UFUNCTION()void ChangeHealthBarMax(float NewMax);
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
@@ -106,5 +106,7 @@ public:
 	UFUNCTION(BlueprintCallable)virtual void SetIdleMode();
 	UFUNCTION(BlueprintCallable)virtual void SetSkillMode();
 	UFUNCTION(BlueprintCallable)virtual void SetHitMode();
+	UFUNCTION(BlueprintCallable)virtual void SetKnockBackMode();
+	UFUNCTION(BlueprintCallable)virtual void SetKnockDownMode();
 	UFUNCTION(BlueprintCallable)virtual void SetDeadMode();
 };

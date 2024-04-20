@@ -11,7 +11,7 @@
 UENUM()
 enum class EStateType : uint8
 {
-	Idle, Skill, Hit, Dead, Sequence, Max
+	Idle, Skill, Hit, KnockBack, KnockDown, Dead, Sequence, Max
 };
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FStateTypeChanged, EStateType, EStateType);
@@ -27,10 +27,12 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
-	EStateType Type;
+	UPROPERTY(Replicated)EStateType PrevType;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_Type")EStateType Type;
 	bool bIsInvincible;
 protected:
 public:
@@ -38,12 +40,15 @@ public:
 
 	//function
 private:
+	UFUNCTION()void OnRep_Type();
 	void ChangeType(EStateType InNewType);
 protected:
 public:
 	void SetIdleMode();
 	void SetSkillMode();
 	void SetHitMode();
+	void SetKnockBackMode();
+	void SetKnockDownMode();
 	void SetDeadMode(); 
 	void SetSequenceMode();
 
