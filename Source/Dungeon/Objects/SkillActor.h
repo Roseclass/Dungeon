@@ -15,6 +15,7 @@ class ADungeonPlayerController;
 class UImage;
 
 DECLARE_MULTICAST_DELEGATE(FSkillTreeSkillStateChanged);
+DECLARE_MULTICAST_DELEGATE_OneParam(FSkillUsing, ASkillActor*);
 
 UENUM(BlueprintType)
 enum class ESkillTreeSkillState : uint8
@@ -150,6 +151,8 @@ public:
 	FSkillTreeSkillStateChanged OnLocked;
 	FSkillTreeSkillStateChanged OnUnlocked;
 	FSkillTreeSkillStateChanged OnAcquired;
+
+	FSkillUsing OnSkillUsing;
 	//function
 private:
 	UFUNCTION()void OnRep_ChildrenSkills();
@@ -165,7 +168,7 @@ protected:
 public:
 	virtual void Load();
 	UFUNCTION(Client, Reliable)virtual void Client_Use();
-	UFUNCTION(Reliable, Server)virtual void Server_SpawnProjectile();
+	virtual void SpawnProjectile();
 	virtual void SpawnWarningSign(int32 InIndex);
 
 	//getter

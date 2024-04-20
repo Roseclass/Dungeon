@@ -116,18 +116,29 @@ void ADungeonCharacterBase::HitReaction_None()
 
 void ADungeonCharacterBase::HitReaction_Normal()
 {
-	Montage->PlayHitMontage();
+	// restore state(bp notify)
 }
 
 void ADungeonCharacterBase::HitReaction_KnockBack()
 {
+	// stop 
+	GetCharacterMovement()->StopMovementImmediately();
 
+	// set move for addforce
+	SetMove();
+
+	// restore state(bp notify)
 }
 
 void ADungeonCharacterBase::HitReaction_KnockDown()
 {
+	// stop 
 	GetCharacterMovement()->StopMovementImmediately();
-	Montage->PlayKnockDownMontage();
+
+	// set move for addforce
+	SetMove();
+
+	// restore state(bp notify)
 }
 
 void ADungeonCharacterBase::ChangeHealthBarMax(float NewMax)
@@ -180,25 +191,25 @@ void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
 	}
 	else if (NewType == EStateType::Hit)
 	{
-		HitReaction_Normal();
+		Montage->PlayHitMontage();
 	}
 	else if (NewType == EStateType::KnockBack)
 	{
-		HitReaction_KnockBack();
+		//playmontage
 	}
 	else if (NewType == EStateType::KnockDown)
 	{
-		HitReaction_KnockDown();
+		Montage->PlayKnockDownMontage();
 	}
 }
 
 bool ADungeonCharacterBase::CanUse()
 {
-	return Status->CanUse();
+	return State->IsIdleMode() && Status->CanUse();
 }
 bool ADungeonCharacterBase::CanMove()
 {
-	return Status->CanMove();
+	return !State->IsKnockBackMode() && !State->IsKnockDownMode() && Status->CanMove();
 }
 
 void ADungeonCharacterBase::SetUse()
@@ -259,19 +270,23 @@ void ADungeonCharacterBase::SetSkillMode()
 void ADungeonCharacterBase::SetHitMode()
 {
 	State->SetHitMode();
+	HitReaction_Normal();
 }
 
 void ADungeonCharacterBase::SetKnockBackMode()
 {
 	State->SetKnockBackMode();
+	HitReaction_KnockBack();
 }
 
 void ADungeonCharacterBase::SetKnockDownMode()
 {
 	State->SetKnockDownMode();
+	HitReaction_KnockDown();
 }
 
 void ADungeonCharacterBase::SetDeadMode()
 {
 	State->SetDeadMode();
+	SetStop();
 }

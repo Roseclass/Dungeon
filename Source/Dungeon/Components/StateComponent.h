@@ -55,6 +55,8 @@ public:
 	FORCEINLINE bool IsIdleMode() { return Type == EStateType::Idle; }
 	FORCEINLINE bool IsActionMode() { return Type == EStateType::Skill; }
 	FORCEINLINE bool IsHitMode() { return Type == EStateType::Hit; }
+	FORCEINLINE bool IsKnockBackMode() { return Type == EStateType::KnockBack; }
+	FORCEINLINE bool IsKnockDownMode() { return Type == EStateType::KnockDown; }
 	FORCEINLINE bool IsDeadMode() { return Type == EStateType::Dead; }
 	FORCEINLINE bool IsSequenceMode() { return Type == EStateType::Sequence; }
 	FORCEINLINE bool IsHitable() { return !IsHitMode() || !bIsInvincible; }

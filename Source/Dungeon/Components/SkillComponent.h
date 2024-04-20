@@ -47,6 +47,7 @@ public:
 	//function
 private:
 	UFUNCTION() void OnRep_SkillActors();
+	UFUNCTION() void SetCurrent(ASkillActor* NewCurrent);
 protected:
 public:
 	void SpawnSkillActors();
@@ -65,11 +66,11 @@ public:
 
 	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
 	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };
-	FORCEINLINE ASkillActor* GetLeft() const { return SkillActors.IsValidIndex(0) ? SkillActors[0] : nullptr; };
-	FORCEINLINE ASkillActor* GetRight() const { return SkillActors.IsValidIndex(1) ? SkillActors[1] : nullptr; };
-	FORCEINLINE ASkillActor* GetQ() const { return SkillActors.IsValidIndex(2) ? SkillActors[2] : nullptr; };
-	FORCEINLINE ASkillActor* GetW() const { return SkillActors.IsValidIndex(3) ? SkillActors[3] : nullptr; };
-	FORCEINLINE ASkillActor* GetE() const { return SkillActors.IsValidIndex(4) ? SkillActors[4] : nullptr; };
-	FORCEINLINE ASkillActor* GetR() const { return SkillActors.IsValidIndex(5) ? SkillActors[5] : nullptr; };
+	FORCEINLINE ASkillActor* GetLeft() const { return QuickSlotSkillActors.IsValidIndex(0) ? QuickSlotSkillActors[0] : nullptr; };
+	FORCEINLINE ASkillActor* GetRight() const { return QuickSlotSkillActors.IsValidIndex(1) ? QuickSlotSkillActors[1] : nullptr; };
+	FORCEINLINE ASkillActor* GetQ() const { return QuickSlotSkillActors.IsValidIndex(2) ? QuickSlotSkillActors[2] : nullptr; };
+	FORCEINLINE ASkillActor* GetW() const { return QuickSlotSkillActors.IsValidIndex(3) ? QuickSlotSkillActors[3] : nullptr; };
+	FORCEINLINE ASkillActor* GetE() const { return QuickSlotSkillActors.IsValidIndex(4) ? QuickSlotSkillActors[4] : nullptr; };
+	FORCEINLINE ASkillActor* GetR() const { return QuickSlotSkillActors.IsValidIndex(5) ? QuickSlotSkillActors[5] : nullptr; };
 	FORCEINLINE ASkillActor* GetCurrentSkill() const { return CurrentSkill; };
 };

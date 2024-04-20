@@ -56,7 +56,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		float dist = UKismetMathLibrary::Vector_Distance(myPawn->GetActorLocation(), Target->GetActorLocation());
 		if (dist < 500)
 		{
-			StopMovement();
+			StopPawnImmediately();
 			if (myPawn->CanUse())
 			{
 				Client_ReplicateRotation(UKismetMathLibrary::FindLookAtRotation(myPawn->GetActorLocation(), Target->GetActorLocation()));
@@ -71,7 +71,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 	{
 		if (myPawn->IsOverlappingActor(Item))
 		{
-			StopMovement();
+			StopPawnImmediately();
 			myPawn->TryAddItem(Item);
 			Item = nullptr;
 		}
@@ -83,7 +83,7 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		AActor* inter = Cast<AActor>(Iteractable->_getUObject());
 		if (myPawn->IsOverlappingActor(inter))
 		{
-			StopMovement();
+			StopPawnImmediately();
 			Server_Interaction(inter);
 			Iteractable = nullptr;
 		}
@@ -250,7 +250,7 @@ void ADungeonPlayerController::OnSetDestinationPressed()
 	Item = nullptr;
 	Iteractable = nullptr;
 	bInputPressed = true;
-	StopMovement();
+	StopPawnImmediately();
 }
 
 void ADungeonPlayerController::OnSetDestinationReleased()

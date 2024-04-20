@@ -114,5 +114,7 @@ public:
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	virtual void SetDeadMode()override;
 };
 

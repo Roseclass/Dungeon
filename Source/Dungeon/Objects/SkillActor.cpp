@@ -157,6 +157,12 @@ void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 	StartWorldTime = StartServerWorldTime;
 	skill->SetCoolDown(this);	
 
+	// change ownerstate
+	OwnerCharacter->SetSkillMode();
+
+	// Broadcast
+	OnSkillUsing.Broadcast(this);
+
 	// reserve cooldown end event
 	FTimerHandle WaitHandle;
 	float WaitTime = Data.CoolDown;
@@ -198,8 +204,9 @@ void ASkillActor::Client_Use_Implementation()
 	if (controller)Server_Use(controller);
 }
 
-void ASkillActor::Server_SpawnProjectile_Implementation()
+void ASkillActor::SpawnProjectile()
 {
+	CheckFalse(HasAuthority());
 	CheckNull(OwnerCharacter);
 	FVector loc = OwnerCharacter->GetMesh()->GetSocketLocation(Data.SocketName);
 	FRotator rot = OwnerCharacter->GetMesh()->GetSocketRotation(Data.SocketName);

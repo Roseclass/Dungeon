@@ -436,6 +436,12 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	//SkillTree->LoadData(ReadData);
 }
 
+void APlayerCharacter::SetDeadMode()
+{
+	Super::SetDeadMode();
+
+	TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
+}
 
 //UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);
 //UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);

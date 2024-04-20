@@ -44,6 +44,11 @@ void USkillComponent::OnRep_SkillActors()
 	}
 }
 
+void USkillComponent::SetCurrent(ASkillActor* NewCurrent)
+{
+	CurrentSkill = NewCurrent;
+}
+
 void USkillComponent::SpawnSkillActors()
 {
 	if (!SkillActors.IsEmpty())
@@ -61,6 +66,7 @@ void USkillComponent::SpawnSkillActors()
 	{
 		i->SetOwnerCharacter(Cast<ADungeonCharacterBase>(GetOwner()));
 		i->SetOwner(GetOwner());
+		i->OnSkillUsing.AddUFunction(this, "SetCurrent");
 	}
 
 	for (auto i : SkillActors)
@@ -79,7 +85,7 @@ void USkillComponent::UseSkill(int32 Idx)
 	CheckFalse(SkillActors.IsValidIndex(Idx));
 	CheckNull(SkillActors[Idx]);
 	CurrentSkill = SkillActors[Idx];
-	SkillActors[Idx]->Client_Use();
+	CurrentSkill->Client_Use();
 }
 
 void USkillComponent::UseQuickSlotSkill(int32 Idx)
@@ -93,7 +99,7 @@ void USkillComponent::UseQuickSlotSkill(int32 Idx)
 void USkillComponent::SpawnProjectile()
 {
 	CheckNull(CurrentSkill);
-	CurrentSkill->Server_SpawnProjectile();
+	CurrentSkill->SpawnProjectile();
 }
 
 void USkillComponent::SpawnWarningSign(int32 InIndex)
