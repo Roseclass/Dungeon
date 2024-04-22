@@ -65,7 +65,6 @@ void UConfirmPopupComponent::Client_UpdateSign_Implementation(AActor* PortraitAc
 	// update sign
 	if (PopupWidget)
 		PopupWidget->UpdateSign(PortraitActor, NewState);
-	else CLog::Print("UConfirmPopupComponent::Client_UpdateSign_Implementation PopupWidget is nullptr", -1, 10, FColor::Red);
 }
 
 void UConfirmPopupComponent::Client_ConfirmedSequence_Implementation()
@@ -73,7 +72,6 @@ void UConfirmPopupComponent::Client_ConfirmedSequence_Implementation()
 	// update sign
 	if (PopupWidget)
 		PopupWidget->ConfirmedSequence();
-	else CLog::Print("UConfirmPopupComponent::Client_UpdateSign_Implementation PopupWidget is nullptr", -1, 10, FColor::Red);
 }
 
 void UConfirmPopupComponent::SendPopupAllPlayers(FString InString, TFunction<bool()> FinishedEvent, float NewTimeLimit)

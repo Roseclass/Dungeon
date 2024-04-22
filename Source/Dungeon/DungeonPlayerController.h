@@ -77,6 +77,7 @@ private:
 
 	UFUNCTION(Reliable, Server)void Server_Interaction(AActor* InInteractable);
 	UFUNCTION(Reliable, Server)void Server_SelectReply(AActor* InInteractable, int32 NextPoint);
+
 protected:
 	//skill input
 	void OnSetDestinationPressed();
@@ -89,11 +90,17 @@ protected:
 	//widget input
 	void OnSkillTree();
 	void OnInventory();
+	void OnChat();
 public:
+	// dialog
 	UFUNCTION(Client, Reliable)void Client_DialogInit(ANPC* InNPC);
 	UFUNCTION(Client, Reliable)void Client_DialogSpeak(const FText& InText);
 	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
 	UFUNCTION(Client, Reliable)void Client_DialogExit();
+
+	// chat
+	UFUNCTION(Reliable, Server)void Server_SendChat(const FText& InText);
+	UFUNCTION(Client, Reliable)void Client_SendChat(const FText& InText);
 
 	// input
 	void SetUIOnlyMode();

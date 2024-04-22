@@ -222,8 +222,6 @@ void APlayerCharacter::Init()
 		OnAfterLoad(saveGameData);
 	}
 
-
-	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
 	if (HealthBarWidget)
 	{
 		HealthBarWidget->Init(Name, Status->GetLevel());
@@ -233,6 +231,18 @@ void APlayerCharacter::Init()
 			HealthBarWidget->SetOtherPlayerType();
 	}
 	else CLog::Print("APlayerCharacter::Init HealthBarWidget cast failed", -1, 10, FColor::Red);
+
+}
+
+void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
+{
+	Super::ChangeState(PrevType, NewType);
+
+	if (NewType == EStateType::Dead)
+	{
+		TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
+		TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
+	}
 
 }
 
@@ -434,13 +444,6 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	//Reset();
 	//Inventory->LoadData(ReadData);
 	//SkillTree->LoadData(ReadData);
-}
-
-void APlayerCharacter::SetDeadMode()
-{
-	Super::SetDeadMode();
-
-	TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 }
 
 //UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);

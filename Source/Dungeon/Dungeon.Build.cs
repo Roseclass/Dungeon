@@ -14,6 +14,7 @@ public class Dungeon : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
+			"Slate",
 			"SlateCore",
 			"HeadMountedDisplay",
 			"NavigationSystem",

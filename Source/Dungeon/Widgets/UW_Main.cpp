@@ -3,19 +3,18 @@
 
 #include "Components/StatusComponent.h"
 
+#include "Widgets/UW_Chat.h"
 #include "Widgets/UW_Orb.h"
 
 void UUW_Main::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-
 }
 
 void UUW_Main::Init(APawn* NewPawn)
 {
 	if (NewPawn)
 	{
-		CLog::Print("IN");
 		UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(NewPawn);
 		if (status)
 		{
@@ -29,4 +28,14 @@ void UUW_Main::Init(APawn* NewPawn)
 		}
 	}
 	else CLog::Print("UUW_Main::Init NewPawn is nullptr", -1, 10, FColor::Red);
+}
+
+void UUW_Main::OnChat()
+{
+	Chat->OnChat();
+}
+
+void UUW_Main::OnMessageUpdated(const FText& Text, const FLinearColor& Color)
+{
+	Chat->OnMessageUpdated(Text, Color);
 }

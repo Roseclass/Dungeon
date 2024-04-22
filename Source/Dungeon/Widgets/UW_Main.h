@@ -10,6 +10,7 @@
 
 class UUW_QuickSlot;
 class UUW_Orb;
+class UUW_Chat;
 class APawn;
 
 UCLASS()
@@ -31,6 +32,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_Orb* ManaOrb;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_Chat* Chat;
+
 public:
 
 	//function
@@ -38,7 +42,12 @@ private:
 protected:
 public:	
 	void Init(APawn* NewPawn);
+
+	void OnChat();
+	void OnMessageUpdated(const FText& Text, const FLinearColor& Color);
+
 	FORCEINLINE UUW_QuickSlot* GetQuickSlot() const { return QuickSlot; }
 	FORCEINLINE UUW_Orb* GetHealthOrb() const { return HealthOrb; }
 	FORCEINLINE UUW_Orb* GetManaOrb() const { return ManaOrb; }
+	FORCEINLINE UUW_Chat* GetChat() const { return Chat; }
 };

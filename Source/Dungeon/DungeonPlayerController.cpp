@@ -147,6 +147,7 @@ void ADungeonPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SkillTree", IE_Pressed, this, &ADungeonPlayerController::OnSkillTree);
 	InputComponent->BindAction("Inventory", IE_Pressed, this, &ADungeonPlayerController::OnInventory);
+	InputComponent->BindAction("Chat", IE_Pressed, this, &ADungeonPlayerController::OnChat);
 }
 
 void ADungeonPlayerController::PostNetInit()
@@ -251,6 +252,8 @@ void ADungeonPlayerController::OnSetDestinationPressed()
 	Iteractable = nullptr;
 	bInputPressed = true;
 	StopPawnImmediately();
+
+	CLog::Print("OnSetDestinationPressed");
 }
 
 void ADungeonPlayerController::OnSetDestinationReleased()
@@ -348,6 +351,12 @@ void ADungeonPlayerController::OnInventory()
 	myPawn->ToggleInventory();
 }
 
+void ADungeonPlayerController::OnChat()
+{
+	CheckNull(MainWidget);
+	MainWidget->OnChat();
+}
+
 void ADungeonPlayerController::Client_DialogInit_Implementation(ANPC* InNPC)
 {
 	if (!InNPC)
@@ -405,6 +414,27 @@ void ADungeonPlayerController::Client_DialogExit_Implementation()
 
 	DialogWidget->Exit();
 
+}
+
+void ADungeonPlayerController::Server_SendChat_Implementation(const FText& InText)
+{
+	// send chat to every clients
+	int32 max = UGameplayStatics::GetNumLocalPlayerControllers(GetWorld());
+
+	for (int32 i = 0; i < max; ++i)
+	{
+		ADungeonPlayerController* player = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), i));
+		if (!player)continue;
+		player->Client_SendChat(InText);
+	}	
+}
+
+void ADungeonPlayerController::Client_SendChat_Implementation(const FText& InText)
+{
+	// update chat
+
+	CheckNull(MainWidget);
+	MainWidget->OnMessageUpdated(InText, FColor::Red);
 }
 
 void ADungeonPlayerController::SetUIOnlyMode()

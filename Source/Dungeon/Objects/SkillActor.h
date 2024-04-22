@@ -79,16 +79,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 		bool bUseSocketRotation = 0;
 
-	UPROPERTY(EditAnywhere, Category = "Damage")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float BaseDamage = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Damage")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float AdditiveDamage = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Damage")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float BaseDamageRate = 1;
 
-	UPROPERTY(EditAnywhere, Category = "Damage")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float AdditiveDamageRate = 1;
 
 	UPROPERTY(EditAnywhere, Category = "Widget")
@@ -141,7 +141,7 @@ private:
 	bool bLoad;
 protected:
 	//트리형태로 스킬트리가될 예정
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		FSkillData Data;
 
 	UPROPERTY(EditAnywhere, Category = "Widget")

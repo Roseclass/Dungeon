@@ -95,6 +95,14 @@ void UStatusComponent::OnRep_CurrentHealth()
 		CLog::Print("OnRep_CurrentHealth, MaxHealth < 0", -1, 10, FColor::Red);
 		return;
 	}
+	
+	// check dead
+	if (CurrentHealth <= 0)
+	{
+		// No regen
+		OnHealthRegenChanged.Broadcast(0);
+		OnManaRegenChanged.Broadcast(0);
+	}
 
 	// Send Cur/Max rate
 	OnCurrentHealthChanged.Broadcast(CurrentHealth / MaxHealth);

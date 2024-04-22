@@ -78,6 +78,7 @@ private:
 	void OffAllWidget();
 protected:
 	virtual void Init()override;
+	virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:
 	void InitClientWidget();
 	
@@ -115,6 +116,5 @@ public:
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
-	virtual void SetDeadMode()override;
 };
 

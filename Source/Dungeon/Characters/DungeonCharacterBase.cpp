@@ -173,11 +173,14 @@ void ADungeonCharacterBase::ChangeHealthBarRegen(float NewRegen)
 
 void ADungeonCharacterBase::Init()
 {
+	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
 
 	Status->OnMaxHealthChanged.AddUFunction(this, "ChangeHealthBarMax");
 	Status->OnCurrentHealthChanged.AddUFunction(this, "ChangeHealthBarPercent");
 	Status->OnHealthRegenChanged.AddUFunction(this, "ChangeHealthBarRegen");
+
 	Status->Update();
 }
 
