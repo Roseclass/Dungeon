@@ -121,6 +121,7 @@ void UUW_LobbySession::NativeConstruct()
 	Find->OnClicked.AddDynamic(this, &UUW_LobbySession::OnFindButtonClicked);
 	OnFindSessions = FOnFindSessionsCompleteDelegate::CreateUObject(this, &UUW_LobbySession::OnFindSessionsCompleted);
 
+	Refresh();
 }
 
 void UUW_LobbySession::OnMaxPlayers_2StateChanged(bool bIsChecked)
@@ -183,6 +184,8 @@ void UUW_LobbySession::OnNewButtonClicked()
 	controller->RevealCharater(SlotIndex);
 	SetVisibility(ESlateVisibility::Collapsed);
 	OnNewButtonClickedDelegate.ExecuteIfBound();
+
+	Refresh();
 }
 
 void UUW_LobbySession::OnDeleteButtonClicked()
@@ -201,6 +204,8 @@ void UUW_LobbySession::OnDeleteButtonClicked()
 
 	controller->DeleteCharacter();
 	OnDeleteButtonClickedDelegate.ExecuteIfBound();
+
+	Refresh();
 }
 
 void UUW_LobbySession::OnPrevButtonClicked()
@@ -218,8 +223,7 @@ void UUW_LobbySession::OnPrevButtonClicked()
 		Prev->SetIsEnabled(0);
 	}
 	Next->SetIsEnabled(1);
-	controller->SetViewTarget(SlotIndex);
-	controller->RefreshCurrentSlot();
+	Refresh();
 }
 
 void UUW_LobbySession::OnNextButtonClicked()
@@ -236,8 +240,7 @@ void UUW_LobbySession::OnNextButtonClicked()
 		Next->SetIsEnabled(0);
 	}
 	Prev->SetIsEnabled(1);
-	controller->SetViewTarget(SlotIndex);
-	controller->RefreshCurrentSlot();
+	Refresh();
 }
 
 void UUW_LobbySession::OnCreateButtonClicked()
@@ -383,5 +386,29 @@ void UUW_LobbySession::OnFindSessionsCompleted(bool bSuccess)
 	else
 	{
 		CLog::Print("Failed", -1, 10.f, FColor::Red);
+	}
+}
+
+void UUW_LobbySession::Refresh()
+{
+	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
+	CheckNull(controller);
+
+	controller->SetViewTarget(SlotIndex);
+	controller->RefreshCurrentSlot();
+
+	CharacterName->SetText(FText::FromString(controller->GetCharacterName(SlotIndex)));
+
+	if (controller->IsCurrentSlotActive())
+	{
+		New->SetIsEnabled(0);
+		Delete->SetIsEnabled(1);
+		CharacterName->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		New->SetIsEnabled(1);
+		Delete->SetIsEnabled(0);
+		CharacterName->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

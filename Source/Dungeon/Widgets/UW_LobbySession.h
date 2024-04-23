@@ -82,6 +82,9 @@ protected:
 		UCheckBox* Lan;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UTextBlock* CharacterName;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UButton* New;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -146,4 +149,5 @@ private:
 	void OnFindSessionsCompleted(bool bSuccess);
 protected:
 public:
+	void Refresh();
 };

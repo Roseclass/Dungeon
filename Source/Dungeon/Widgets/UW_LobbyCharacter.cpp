@@ -1,5 +1,6 @@
 #include "Widgets/UW_LobbyCharacter.h"
 #include "Global.h"
+#include "Animation/WidgetAnimation.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
@@ -191,7 +192,7 @@ FLinearColor UUW_LobbyCharacter::Palette_Skin(float X, float Y)
 void UUW_LobbyCharacter::OnConfirmClicked()
 {
 	//
-	// save specific actor 
+	// save character 
 	// hide character widget
 	// reveal session widget
 	//
@@ -200,6 +201,15 @@ void UUW_LobbyCharacter::OnConfirmClicked()
 	CheckNull(controller);
 
 	FString name = NameBox->GetText().ToString();
+
+	// check name
+	if (!name.Len())
+	{
+		PlayAnimationForward(NameError);
+		return;
+	}
+
+	NameBox->SetText(FText());
 
 	controller->CreateCharacter(name);
 	SetVisibility(ESlateVisibility::Collapsed);
@@ -213,6 +223,8 @@ void UUW_LobbyCharacter::OnCancelClicked()
 	// hide character widget
 	// reveal session widget
 	//
+
+	NameBox->SetText(FText());
 
 	ALobbyPlayerController* controller = Cast<ALobbyPlayerController>(GetOwningPlayer());
 	CheckNull(controller);

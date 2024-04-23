@@ -30,13 +30,14 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	//property
 private:
 protected:
-	UPROPERTY(EditAnywhere, Category = "HealthBarInfo")
+	UPROPERTY(EditAnywhere, Category = "HealthBarInfo", ReplicatedUsing = "OnRep_Name")
 		FText Name = FText::FromString("Monster");
 	UUW_HealthBar* HealthBarWidget;
 
@@ -77,9 +78,13 @@ private:
 	UFUNCTION()void ChangeHealthBarMax(float NewMax);
 	UFUNCTION()void ChangeHealthBarPercent(float NewPercent);
 	UFUNCTION()void ChangeHealthBarRegen(float NewRegen);
+
+	UFUNCTION()void OnRep_Name();
 protected:
 	virtual void Init();
 	
+	UFUNCTION(Reliable, Server)void Server_SetName(const FText& NewName);
+
 	//State
 	UFUNCTION()virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:

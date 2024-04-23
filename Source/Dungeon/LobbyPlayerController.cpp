@@ -108,6 +108,8 @@ void ALobbyPlayerController::CreateCharacter(FString InCharacterName)
 	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("CreateCharacter SlotNames.IsValidIndex"); return; }
 	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("CreateCharacter Characters.IsValidIndex"); return; }
 
+	Characters[CurrentCharacter]->SetName(InCharacterName);
+
 	TScriptInterface<IISave> ptr = Characters[CurrentCharacter];
 	USaveManager::SaveActor(ptr);
 	USaveManager::SaveCharacterName(InCharacterName);
@@ -128,4 +130,11 @@ ALobbyCharacter* ALobbyPlayerController::GetCurrentCharacter()
 	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCurrentCharacter SlotNames.IsValidIndex"); return nullptr; }
 	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCurrentCharacter Characters.IsValidIndex"); return nullptr; }
 	return Characters[CurrentCharacter];
+}
+
+FString ALobbyPlayerController::GetCharacterName(int32 InIndex)
+{
+	if (!SlotNames.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCharacterName SlotNames.IsValidIndex"); return FString(); }
+	if (!Characters.IsValidIndex(CurrentCharacter)) { CLog::Print("GetCharacterName Characters.IsValidIndex"); return FString(); }
+	return Characters[CurrentCharacter]->GetName();
 }

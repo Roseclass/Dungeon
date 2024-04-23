@@ -25,6 +25,11 @@ void UUW_Chat::OnTextCommitted(const FText& Text, ETextCommit::Type CommitMethod
 	{
 		controller->Server_SendChat(Text);
 
+		// release focus
+		FInputModeGameOnly game;
+		controller->SetInputMode(game);
+
+		// for OnSetDestinationPressed
 		FInputModeGameAndUI f; f.SetHideCursorDuringCapture(0);
 		controller->SetInputMode(f);
 	}

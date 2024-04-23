@@ -84,5 +84,7 @@ void ALobbyCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	FString name = GetUniqueSaveName();
 	CheckNull(ReadData);
 
+	Name = ReadData->PlayerData.CharacterName;
+
 	Appearance->LoadData(ReadData);
 }

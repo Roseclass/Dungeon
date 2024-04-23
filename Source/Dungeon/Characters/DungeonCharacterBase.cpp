@@ -44,6 +44,14 @@ void ADungeonCharacterBase::ADungeonCharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void ADungeonCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(ADungeonCharacterBase, Name, COND_None);
+}
+
 float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -171,9 +179,21 @@ void ADungeonCharacterBase::ChangeHealthBarRegen(float NewRegen)
 	HealthBarWidget->SetRegen(NewRegen);
 }
 
+void ADungeonCharacterBase::OnRep_Name()
+{
+	if (!HealthBarWidget)
+	{
+		CLog::Print("OnRep_Name, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetName(Name);
+}
+
 void ADungeonCharacterBase::Init()
 {
 	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+
+	HealthBarWidget->Init(Name,Status->GetLevel());
 
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
 
@@ -182,6 +202,12 @@ void ADungeonCharacterBase::Init()
 	Status->OnHealthRegenChanged.AddUFunction(this, "ChangeHealthBarRegen");
 
 	Status->Update();
+}
+
+void ADungeonCharacterBase::Server_SetName_Implementation(const FText& NewName)
+{
+	Name = NewName;
+	OnRep_Name();
 }
 
 void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)

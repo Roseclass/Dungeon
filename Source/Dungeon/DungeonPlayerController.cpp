@@ -252,8 +252,6 @@ void ADungeonPlayerController::OnSetDestinationPressed()
 	Iteractable = nullptr;
 	bInputPressed = true;
 	StopPawnImmediately();
-
-	CLog::Print("OnSetDestinationPressed");
 }
 
 void ADungeonPlayerController::OnSetDestinationReleased()

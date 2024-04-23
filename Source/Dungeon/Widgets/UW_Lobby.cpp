@@ -26,9 +26,11 @@ void UUW_Lobby::OnSessionWidgetNewButtonClicked()
 void UUW_Lobby::OnCharacterWidgetConfirmButtonClicked()
 {
 	SessionWidget->SetVisibility(ESlateVisibility::Visible);
+	SessionWidget->Refresh();
 }
 
 void UUW_Lobby::OnCharacterWidgetCancelButtonClicked()
 {
 	SessionWidget->SetVisibility(ESlateVisibility::Visible);
+	SessionWidget->Refresh();
 }

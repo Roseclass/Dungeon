@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 		FString UniqueName = "Player";
 
+	UPROPERTY(EditAnywhere)
+		FString Name = "Player";
+
 	UPROPERTY(EditDefaultsOnly, Category = "Zoom")
 		FVector minLoc = { 50,30,120 }; 
 
@@ -79,4 +82,6 @@ public:
 	virtual	void OnBeforeSave(USaveGameData* SaveData) override;
 	virtual	void OnAfterLoad(USaveGameData* const ReadData) override;
 
+	FORCEINLINE void SetName(FString NewName) { Name = NewName; };
+	FORCEINLINE FString GetName()const { return Name; };
 };

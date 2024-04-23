@@ -440,6 +440,8 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	FString name = GetUniqueSaveName();
 	CheckNull(ReadData);
 
+	Server_SetName(FText::FromString(ReadData->PlayerData.CharacterName));
+
 	Appearance->LoadData(ReadData);
 	//Reset();
 	//Inventory->LoadData(ReadData);

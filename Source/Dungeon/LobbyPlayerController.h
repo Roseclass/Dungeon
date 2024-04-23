@@ -58,4 +58,5 @@ public:
 	void DeleteCharacter();
 
 	ALobbyCharacter* GetCurrentCharacter();
+	FString GetCharacterName(int32 InIndex);
 };

@@ -117,6 +117,19 @@ void USaveManager::SaveCharacterName(FString InCharacterName)
 		saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(CurrentSaveSlot, 0));
 	}
 	saveGameData->PlayerData.CharacterName = InCharacterName;
+
+	// save the game to the curren slot
+	UGameplayStatics::SaveGameToSlot(saveGameData, CurrentSaveSlot, 0);
+
+	// update the metadata file with the new slot
+	USaveGameMetaData* saveGameMetaData = Cast<USaveGameMetaData>(UGameplayStatics::LoadGameFromSlot(kMetadataSaveSlot, 0));
+
+	FSaveMetaData& saveMetadata = saveGameMetaData->SavedGamesMetaData.FindOrAdd(CurrentSaveSlot);
+	saveMetadata.SlotName = CurrentSaveSlot;
+	saveMetadata.Date = FDateTime::Now();
+
+	// save the changes to the metadata file
+	UGameplayStatics::SaveGameToSlot(saveGameMetaData, kMetadataSaveSlot, 0);
 }
 
 void USaveManager::LoadGame()

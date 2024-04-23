@@ -60,6 +60,11 @@ void UUW_HealthBar::Init(FText NewName, uint8 NewLevel)
 	BindToAnimationStarted(HitEffect, start);
 }
 
+void UUW_HealthBar::SetName(FText NewName)
+{
+	Name->SetText(NewName);
+}
+
 void UUW_HealthBar::SetMax(float NewMax)
 {
 	Max = NewMax;

@@ -60,6 +60,7 @@ private:
 protected:
 public:
 	void Init(FText NewName, uint8 NewLevel);
+	void SetName(FText NewName);
 	void SetMax(float NewMax);
 	void SetPercent(float NewPercent);
 	void SetRegen(float NewRegen);

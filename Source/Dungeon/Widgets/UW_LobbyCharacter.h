@@ -15,6 +15,7 @@ class UTextBlock;
 class UEditableTextBox;
 class ALobbyCharacter;
 class UUW_LobbyCharacter;
+class UWidgetAnimation;
 
 enum class EAppearancePart : uint8;
 
@@ -59,6 +60,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Text;
+
 public:
 	FCreateColor OnCreateColor;
 	FPaletteButtonClicked OnPaletteButtonClicked;
@@ -123,6 +125,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UEditableTextBox* NameBox;
+
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+		UWidgetAnimation* NameError;
 
 public:
 	FLobbyCharacter OnConfirmButtonClickedDelegate;
