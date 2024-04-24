@@ -56,6 +56,7 @@ public:
 	//property
 private:
 	bool bActive;
+	bool bLoad;
 	EStageList CurrentStage = EStageList::Max;
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
@@ -74,9 +75,13 @@ public:
 private:
 	void LoadLevel(FStageData InData);
 	void LoadLevel(FName InLevelName);
+	void LoadLevelStarted();
+	UFUNCTION()void LoadLevelFinished();
+	UFUNCTION(NetMulticast, Reliable)void Multicast_ForwardSequence();
+	UFUNCTION(NetMulticast, Reliable)void Multicast_ReverseSequence();
+	UFUNCTION()void ForwardSequenceFinished(APlayerCharacter* InPlayerCharacter);
+	void StartReverseSequence();
 protected:
-	UFUNCTION(BlueprintImplementableEvent)void LoadLevelStarted();
-	UFUNCTION(BlueprintImplementableEvent)void LoadLevelFinished();
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent) void Activate();
 	void Activate_Implementation();

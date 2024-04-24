@@ -355,8 +355,6 @@ void AEqquipment::SetMode(EItemMode InMode)
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
 {
-	TArray<FItemAppearanceData> result;
-
 	if (ItemType == EItemType::Helms)
 		return HelmsAppearanceDatas;
 	else if (ItemType == EItemType::UpperBody)
@@ -368,5 +366,6 @@ const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
 	else if (ItemType == EItemType::Gloves)
 		return GlovesAppearanceDatas;
 
-	return result;
+	CLog::Print("AEqquipment::GetAppearanceDatas");
+	return HelmsAppearanceDatas;
 }

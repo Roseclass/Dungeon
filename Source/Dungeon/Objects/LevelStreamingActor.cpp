@@ -8,6 +8,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Components/QuestComponent.h"
 #include "Components/ConfirmPopupComponent.h"
+#include "Components/TravelEffectComponent.h"
 
 #include "Objects/Quest.h"
 
@@ -117,6 +118,105 @@ void ALevelStreamingActor::LoadLevel(FName InLevelName)
 	LoadLevelStarted();
 }
 
+void ALevelStreamingActor::LoadLevelStarted()
+{
+	// this is server
+
+	// for multicast
+	SetOwner(UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0));
+
+	// get all player characters
+	TArray<AActor*> characters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), characters);
+
+	// set values
+	SequenceMap.Empty();
+	for (auto i : characters)
+	{
+		APlayerCharacter* ch = Cast<APlayerCharacter>(i);
+		if (!ch)continue;
+		SequenceMap.Add(ch, 0);
+
+		UTravelEffectComponent* travel = CHelpers::GetComponent<UTravelEffectComponent>(ch);
+		if(!travel)continue;
+		travel->OnStartSequenceFinishedCheck.AddDynamic(this, &ALevelStreamingActor::ForwardSequenceFinished);
+	}
+
+	// play forward sequence
+	Multicast_ForwardSequence();
+}
+
+void ALevelStreamingActor::LoadLevelFinished()
+{
+	// this is server
+
+	bLoad = 1;
+
+	// play reverse sequence
+	StartReverseSequence();
+}
+
+void ALevelStreamingActor::Multicast_ForwardSequence_Implementation()
+{
+	APawn* pawn = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn();
+
+	UTravelEffectComponent* travel = CHelpers::GetComponent<UTravelEffectComponent>(pawn);
+	if (travel)
+		travel->Play();
+}
+
+void ALevelStreamingActor::Multicast_ReverseSequence_Implementation()
+{
+	APawn* pawn = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn();
+
+	UTravelEffectComponent* travel = CHelpers::GetComponent<UTravelEffectComponent>(pawn);
+	if (travel)
+		travel->Reverse();
+}
+
+void ALevelStreamingActor::ForwardSequenceFinished(APlayerCharacter* InPlayerCharacter)
+{
+	SequenceMap.FindOrAdd(InPlayerCharacter) = 1;
+	StartReverseSequence();
+}
+
+void ALevelStreamingActor::StartReverseSequence()
+{
+	// is load?
+	CheckFalse(bLoad);
+
+	// check sequencemap
+	for (auto i : SequenceMap)
+		CheckFalse(i.Value);
+
+	// set values
+	int32 idx = 0;
+	for (auto i : SequenceMap)
+	{
+		while (1)
+			if (!GetCurrentData().StartLocations.IsValidIndex(idx))
+			{
+				CLog::Print("ALevelStreamingActor::StartReverseSequence " + FString::FromInt(idx) + "is not valid idx");
+				if (!idx)return;
+				--idx;
+				continue;
+			}
+			else break;
+		FVector loc = GetCurrentData().StartLocations[idx++];
+		i.Key->SetActorLocation(loc);
+	}
+
+	// reeset values
+	bLoad = 0;
+	SequenceMap.Empty();
+
+	FTimerHandle WaitHandle;
+	float WaitTime = 0.5;
+	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+	{
+		Multicast_ReverseSequence();
+	}), WaitTime, false);
+}
 
 void ALevelStreamingActor::Activate_Implementation()
 {
