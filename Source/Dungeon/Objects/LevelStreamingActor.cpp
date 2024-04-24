@@ -61,7 +61,10 @@ void ALevelStreamingActor::Interact(ADungeonPlayerController* InPlayer)
 			return 1;
 		};		
 
-		if (confirm)confirm->SendPopupAllPlayers("ebs?", func);
+		UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
+		if (!quest)return;
+
+		if (confirm)confirm->SendPopupAllPlayers(quest->GetQuest()->GetPopupMessage() , func);
 		else CLog::Print("nullptr");
 	}
 

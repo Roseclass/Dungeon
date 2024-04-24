@@ -232,6 +232,16 @@ void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
 	}
 }
 
+void ADungeonCharacterBase::HideHealthBar()
+{
+	HealthBar->SetHiddenInGame(1);
+}
+
+void ADungeonCharacterBase::RevealHealthBar()
+{
+	HealthBar->SetHiddenInGame(0);
+}
+
 bool ADungeonCharacterBase::CanUse()
 {
 	return State->IsIdleMode() && Status->CanUse();

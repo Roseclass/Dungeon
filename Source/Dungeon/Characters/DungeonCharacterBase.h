@@ -88,6 +88,10 @@ protected:
 	//State
 	UFUNCTION()virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:
+	//HealthBar
+	virtual void HideHealthBar();
+	virtual void RevealHealthBar();
+
 	//Skill
 	virtual void UseSkill(int32 Idx) {};
 

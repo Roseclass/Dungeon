@@ -60,3 +60,5 @@ public:
 	UFUNCTION(BlueprintCallable)void Play();
 	UFUNCTION(BlueprintCallable)void Reverse();
 };
+
+/* hide hud, reveal hud*/

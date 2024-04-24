@@ -3,6 +3,7 @@
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Camera/CameraComponent.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
 
 UTravelEffectComponent::UTravelEffectComponent()
@@ -93,6 +94,25 @@ void UTravelEffectComponent::Play()
 		return;
 	}
 
+
+	// hide widget
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(GetOwner()->GetOwner()); 
+	if (controller)
+	{
+		controller->HideWidget();
+
+		TArray<AActor*> characters;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADungeonCharacterBase::StaticClass(), characters);
+
+		for (auto i : characters)
+		{
+			ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(i);
+			if (!ch)continue;
+			ch->HideHealthBar();
+		}
+	}
+	else CLog::Print("UTravelEffectComponent::Play controller is null ptr", -1, 10, FColor::Red);
+
 	SequenceTimeline.Play();
 
 	FTimerHandle WaitHandle;
@@ -150,6 +170,24 @@ void UTravelEffectComponent::Reverse()
 			OnEndSequenceFinished.Broadcast();
 			OnEndSequenceFinished.Clear();
 		}
+
+		// reveal widget
+		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(GetOwner()->GetOwner());
+		if (controller)
+		{
+			controller->RevealMainWidget();
+
+			TArray<AActor*> characters;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADungeonCharacterBase::StaticClass(), characters);
+
+			for (auto i : characters)
+			{
+				ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(i);
+				if (!ch)continue;
+				ch->RevealHealthBar();
+			}
+		}
+
 		Server_EndSequenceFinished();
 	}), WaitTime, false);
 }

@@ -390,7 +390,6 @@ void APlayerCharacter::HideInventory()
 	Inventory->OffWidget();
 }
 
-
 FString APlayerCharacter::GetUniqueSaveName()
 {
 	return "Player";

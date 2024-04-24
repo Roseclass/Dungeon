@@ -95,6 +95,9 @@ protected:
 		FName StreamingLevelName;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
+		FString PopupMessage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		TArray<FQuestCondition> MainConditions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
@@ -110,4 +113,5 @@ public:
 	FORCEINLINE UQuest_Objective* GetMainQuestOjbective() const { return MainQuestOjbective; }
 	FORCEINLINE UQuest_Objective* GetAdditiveQuestOjbective() const { return AdditiveQuestOjbective; }
 	FORCEINLINE FName GetStreamingLevelName() const { return StreamingLevelName; }
+	FORCEINLINE FString GetPopupMessage() const { return PopupMessage; }
 };
