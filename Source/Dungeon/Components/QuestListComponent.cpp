@@ -26,7 +26,15 @@ void UQuestListComponent::BeginPlay()
 		DataTable->GetAllRows<FQuestTreeData>("", datas);
 		for (auto i : datas)Quests.Add(*i); 
 	}
+
+	if (QuestBoard && GetOwner()->HasAuthority())
+	{
+		QuestBoard->SetList(this);
+		QuestBoard->GenerateQuests();
+	}
+
 	return;
+
 	USkeletalMeshComponent* mesh = CHelpers::GetComponent<USkeletalMeshComponent>(GetOwner());
 	if (!mesh)return;
 
@@ -51,6 +59,7 @@ void UQuestListComponent::BeginPlay()
 		PSign = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), p, loc, rot, AdditiveTransform.GetScale3D());
 		PSign->SetVisibility(0);
 	}
+
 }
 
 void UQuestListComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -58,11 +67,12 @@ void UQuestListComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-bool UQuestListComponent::FindAvailableQuest(TArray<FQuestTreeData>& InArray, int32 InLevel)
+bool UQuestListComponent::FindAvailableQuest(TArray<FQuestTreeData>& InArray)
 {
+	//uint8 lv =  GetOwner()->GetLevel();
 	for (auto i : Quests)
 	{
-		if (i.QuestLevel > InLevel)continue;
+		//if (i.QuestLevel > InLevel)continue;
 		InArray.Add(i);
 	}
 	return InArray.Num() > 0;

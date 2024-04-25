@@ -31,8 +31,6 @@ void UQuestComponent::BeginPlay()
 			QuestWidget->AddToViewport();
 		}else CLog::Print("QuestWidgetClass is null");
 	}
-
-
 }
 
 void UQuestComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -55,6 +53,7 @@ void UQuestComponent::RemoveQuest(AQuest* InQuest)
 
 void UQuestComponent::ToggleWidget()
 {
+	CheckFalse(bCanToggle);
 	if (!QuestWidget) { CLog::Print("UQuestComponent::ToggleWidget, QuestWidget Is Nullptr"); return; }
 	QuestWidget->IsVisible() ? OffWidget() : OnWidget();
 }
@@ -72,4 +71,24 @@ void UQuestComponent::OffWidget()
 	if (!QuestWidget) { CLog::Print("UQuestComponent::OffWidget, QuestWidget Is Nullptr"); return; }
 
 	QuestWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UQuestComponent::SetCanToggle()
+{
+	bCanToggle = 1;
+}
+
+void UQuestComponent::SetCannotToggle()
+{
+	bCanToggle = 0;
+}
+
+void UQuestComponent::SetPreview(AQuest* InQuest)
+{
+	if (!InQuest)
+	{
+		CLog::Print("nullptr");
+		return;
+	}
+	QuestWidget->SetQuest(InQuest);
 }

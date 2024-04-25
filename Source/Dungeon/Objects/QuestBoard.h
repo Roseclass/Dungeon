@@ -8,7 +8,9 @@ class UCameraComponent;
 class USpringArmComponent;
 class USceneComponent;
 class AQuest;
+class AQuestPoster;
 class ADungeonPlayerController;
+class UQuestListComponent;
 
 UCLASS()
 class DUNGEON_API AQuestBoard : public AActor
@@ -24,21 +26,37 @@ public:
 
 	//property
 private:
+	bool bClicked;
+
+	UPROPERTY()UQuestListComponent* List;
+	TArray<AQuest*> Quests;
+	TArray<AQuestPoster*> QuestPosters;
 	TArray<USceneComponent*> PosterPinRoots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Poster")
 		FName ComponentTag = "PosterPinRoot";
+
+	UPROPERTY(EditDefaultsOnly, Category = "Poster")
+		TSubclassOf<AQuestPoster> PosterClass;
 protected:
 	//scene
 	UPROPERTY(VisibleAnywhere)
 		USceneComponent* RootScene;
+
 public:
 
 	//function
 private:
+	void GeneratePosters();
 protected:
+	UFUNCTION(BlueprintCallable)void ActivateQuestPosters();
+	UFUNCTION(BlueprintCallable)void DeactivateQuestPosters();
 public:
-	void GenerateQuests(TArray<TSubclassOf<AQuest>> InQuests);
+	void GenerateQuests();
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)void BlendSequence(ADungeonPlayerController* InPlayer);
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)void EndSequence();
+
+	FORCEINLINE void SetList(UQuestListComponent* NewList) { List = NewList;}
+	FORCEINLINE void SetClicked(bool NewClicked) { bClicked = NewClicked;}
+	FORCEINLINE bool IsClicked()const { return bClicked;}
 };

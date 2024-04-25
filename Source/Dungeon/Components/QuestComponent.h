@@ -21,6 +21,7 @@ public:
 
 	//property
 private:
+	bool bCanToggle = 1;
 	AQuest* Quest;
 	UPROPERTY()UUW_Quest* QuestWidget;
 protected:
@@ -38,6 +39,11 @@ public:
 	void ToggleWidget();
 	UFUNCTION(BlueprintCallable)void OnWidget();
 	UFUNCTION(BlueprintCallable)void OffWidget();
+
+	// for poster
+	void SetCanToggle();
+	void SetCannotToggle();
+	void SetPreview(AQuest* InQuest);
 
 	FORCEINLINE AQuest* GetQuest() const { return Quest; }
 };

@@ -68,7 +68,7 @@ public:
 private:
 protected:
 public:
-	bool FindAvailableQuest(TArray<FQuestTreeData>& InArray, int32 InLevel);
+	bool FindAvailableQuest(TArray<FQuestTreeData>& InArray);
 
 	void ShowList(ADungeonPlayerController* InPlayer);
 };
