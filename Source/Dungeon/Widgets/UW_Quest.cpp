@@ -67,7 +67,14 @@ void UUW_QuestEntry::OnExpandButtonClicked()
 void UUW_Quest::SetQuest(AQuest* NewQuest)
 {
 	Quest = NewQuest;
+
 	ObjectTreeView->ClearListItems();
+	if (!Quest)
+	{
+		// TODO:: Set default
+		return;
+	}
+
 	ObjectTreeView->AddItem(Quest->GetMainQuestOjbective());
 	ObjectTreeView->AddItem(Quest->GetAdditiveQuestOjbective());
 }

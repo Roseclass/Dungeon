@@ -21,6 +21,9 @@ UCLASS()
 class DUNGEON_API UUW_QuestPopup : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual void NativeOnInitialized()override;
+
 	//property
 private:
 protected:

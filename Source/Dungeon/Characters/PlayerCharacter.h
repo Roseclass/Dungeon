@@ -103,10 +103,13 @@ public:
 	//widget
 	void ToggleSkillTree();
 	void ToggleInventory();
+	void ToggleQuest();
 	void RevealSkillTree();
 	void RevealInventory();
+	void RevealQuest();
 	void HideSkillTree();
 	void HideInventory();
+	void HideQuest();
 
 	//Save Load
 	virtual	FString GetUniqueSaveName() override;

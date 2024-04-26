@@ -90,6 +90,7 @@ protected:
 	//widget input
 	void OnSkillTree();
 	void OnInventory();
+	void OnQuest();
 	void OnChat();
 public:
 	// dialog

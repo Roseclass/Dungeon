@@ -370,6 +370,11 @@ void APlayerCharacter::ToggleInventory()
 	}
 }
 
+void APlayerCharacter::ToggleQuest()
+{
+	Quest->ToggleWidget();
+}
+
 void APlayerCharacter::RevealSkillTree()
 {
 	SkillTree->OnWidget();
@@ -380,6 +385,11 @@ void APlayerCharacter::RevealInventory()
 	Inventory->OnWidget();
 }
 
+void APlayerCharacter::RevealQuest()
+{
+	Quest->OnWidget();
+}
+
 void APlayerCharacter::HideSkillTree()
 {
 	SkillTree->OffWidget();
@@ -388,6 +398,11 @@ void APlayerCharacter::HideSkillTree()
 void APlayerCharacter::HideInventory()
 {
 	Inventory->OffWidget();
+}
+
+void APlayerCharacter::HideQuest()
+{
+	Quest->OffWidget();
 }
 
 FString APlayerCharacter::GetUniqueSaveName()

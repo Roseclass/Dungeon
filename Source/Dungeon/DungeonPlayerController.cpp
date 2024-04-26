@@ -147,6 +147,7 @@ void ADungeonPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SkillTree", IE_Pressed, this, &ADungeonPlayerController::OnSkillTree);
 	InputComponent->BindAction("Inventory", IE_Pressed, this, &ADungeonPlayerController::OnInventory);
+	InputComponent->BindAction("Quest", IE_Pressed, this, &ADungeonPlayerController::OnQuest);
 	InputComponent->BindAction("Chat", IE_Pressed, this, &ADungeonPlayerController::OnChat);
 }
 
@@ -349,6 +350,13 @@ void ADungeonPlayerController::OnInventory()
 	myPawn->ToggleInventory();
 }
 
+void ADungeonPlayerController::OnQuest()
+{
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
+	CheckNull(myPawn);
+	myPawn->ToggleQuest();
+}
+
 void ADungeonPlayerController::OnChat()
 {
 	CheckNull(MainWidget);
@@ -468,6 +476,7 @@ void ADungeonPlayerController::HideAddtiveWidget()
 	CheckNull(myPawn);
 	myPawn->HideSkillTree();
 	myPawn->HideInventory();
+	myPawn->HideQuest();
 }
 
 void ADungeonPlayerController::StopPawnImmediately()
