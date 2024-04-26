@@ -242,6 +242,10 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 	{
 		TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 		TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
+
+		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
+		if (controller && controller->IsLocalController())
+			controller->CreateDeadWidget();
 	}
 
 }

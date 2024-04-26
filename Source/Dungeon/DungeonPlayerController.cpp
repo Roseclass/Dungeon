@@ -18,6 +18,7 @@
 #include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_Dialog.h"
+#include "Widgets/UW_Dead.h"
 
 #include "Interfaces/IInteractable.h"
 
@@ -420,6 +421,16 @@ void ADungeonPlayerController::Client_DialogExit_Implementation()
 
 	DialogWidget->Exit();
 
+}
+
+void ADungeonPlayerController::CreateDeadWidget()
+{
+	if (DeadWidgetClass)
+	{
+		DeadWidget = CreateWidget<UUW_Dead, ADungeonPlayerController>(this, DeadWidgetClass);
+		DeadWidget->AddToViewport();
+		DeadWidget->On();
+	}
 }
 
 void ADungeonPlayerController::Server_SendChat_Implementation(const FText& InText)

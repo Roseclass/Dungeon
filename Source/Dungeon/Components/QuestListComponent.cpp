@@ -80,6 +80,5 @@ bool UQuestListComponent::FindAvailableQuest(TArray<FQuestTreeData>& InArray)
 
 void UQuestListComponent::ShowList(ADungeonPlayerController* InPlayer)
 {
-	InPlayer->SetViewTargetWithBlend(QuestBoard);
 	if (QuestBoard)QuestBoard->BlendSequence(InPlayer);
 }

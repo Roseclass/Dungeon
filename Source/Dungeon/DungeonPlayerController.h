@@ -15,6 +15,7 @@ class UConfirmPopupComponent;
 class IIInteractable;
 class UUW_Main;
 class UUW_Dialog;
+class UUW_Dead;
 
 UCLASS()
 class ADungeonPlayerController : public APlayerController
@@ -60,9 +61,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Dialog")
 		TSubclassOf<UUW_Dialog> DialogWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Dead")
+		TSubclassOf<UUW_Dead> DeadWidgetClass;
+
 	uint32 bMoveToMouseCursor : 1;
 	UPROPERTY()UUW_Main* MainWidget;
 	UPROPERTY()UUW_Dialog* DialogWidget;
+	UPROPERTY()UUW_Dead* DeadWidget;
 public:
 
 	//function
@@ -98,6 +103,9 @@ public:
 	UFUNCTION(Client, Reliable)void Client_DialogSpeak(const FText& InText);
 	UFUNCTION(Client, Reliable)void Client_DialogReply(const TArray<FText>& InReplies);
 	UFUNCTION(Client, Reliable)void Client_DialogExit();
+
+	// dead
+	void CreateDeadWidget();
 
 	// chat
 	UFUNCTION(Reliable, Server)void Server_SendChat(const FText& InText);
