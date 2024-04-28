@@ -12,11 +12,12 @@
 class AEqquipment;
 class AWeapon;
 class UUW_Inventory;
+class USaveGameData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedDataChanged, UItemObject*, InObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryEquippedChanged, EAppearancePart, InMeshPart, int32, InIndex);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedChangeMeshVisiblity, bool, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedVisiblity, bool, NewState);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API UInventoryComponent : public UActorComponent
@@ -57,7 +58,7 @@ public:
 	FInventoryChanged OnInventoryEquippedItemsChanged;
 	TArray<FInventoryEquippedDataChanged> OnInventoryEquippedDataChanged;
 	FInventoryEquippedChanged OnInventoryEquippedChanged;
-	FInventoryEquippedChangeMeshVisiblity OnChangeHairVisiblity;
+	FInventoryEquippedVisiblity OnChangeHairVisiblity;
 	//function
 private:
 	void InitDefault();
@@ -68,6 +69,7 @@ private:
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
 	bool GetItemAtIndex(int32 InIndex, AEqquipment** OutObject);
+	UFUNCTION(Reliable, Server)void Server_LoadData(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses);
 protected:
 public:
 	void OnCollision();
@@ -101,6 +103,11 @@ public:
 	bool IsWidgetVisible();
 	void OnWidget();
 	void OffWidget();
+	
+	//for save
+	void SaveData(USaveGameData* SaveData);
+	void LoadData(USaveGameData* const ReadData);
+
 
 	//
 	// 드래그 드롭 - 이동 및 장착, 해제
@@ -109,8 +116,4 @@ public:
 	// 장착시 외형 변경, 효과 적용
 	// 드롭시 등급에 맞는 이펙트
 	//
-	
-	//ui
-	//void LoadData(UCSaveGameData* const InData);
-
 };

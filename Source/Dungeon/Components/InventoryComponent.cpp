@@ -1,6 +1,7 @@
 #include "Components/InventoryComponent.h"
 #include "Global.h"
 
+#include "SaveManager.h"
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "DungeonPlayerController.h"
@@ -156,6 +157,39 @@ bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AEqquipment** OutObject)
 	if (!Items.IsValidIndex(InIndex))return 0;
 	*OutObject = Items[InIndex];
 	return 1;
+}
+
+void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses)
+{
+	AItemManager* manager = Cast<AItemManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass()));
+	if (!manager)
+	{
+		CLog::Print("UInventoryComponent::Server_LoadData manager is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	FTransform transform;
+	// spawn equipped items		
+	for (auto i : EquippedClasses)
+	{
+		if (!i)continue;
+		AEqquipment* equipment = manager->SpawnItem(i, transform);
+		if (!equipment)continue;
+
+		// equip item
+		Server_Equip(equipment);
+	}
+
+	// spawn inventory items
+	for (int32 i = 0; i < InventoryClasses.Num(); ++i)
+	{
+		if (!InventoryClasses[i])continue;
+		AEqquipment* equipment = manager->SpawnItem(InventoryClasses[i], transform);
+		if (!equipment)continue;
+
+		// add items to inventory
+		Server_AddItemAt(equipment, TileToIndex(Locations[i].X, Locations[i].Y));
+	}
 }
 
 void UInventoryComponent::OnCollision()
@@ -438,4 +472,45 @@ void UInventoryComponent::OnWidget()
 void UInventoryComponent::OffWidget()
 {
 	Widget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UInventoryComponent::SaveData(USaveGameData* SaveData)
+{
+	//save EquippedData
+	SaveData->PlayerData.EquippedClasses.Empty();
+	for (auto i : EquippedItems)
+	{
+		if (!i)continue;
+		SaveData->PlayerData.EquippedClasses.Add(i->GetClass());
+	}	
+
+	//save InventoryData
+	SaveData->PlayerData.InventoryClasses.Empty();
+	TMap<AEqquipment*, TTuple<int32, int32>> m;
+	GetAllItems(m);
+	for (auto i : m)
+	{
+		if (!i.Key)continue;
+		AEqquipment* eqquipment = i.Key;
+		if (!eqquipment)continue;
+		SaveData->PlayerData.InventoryClasses.Add(FVector2D(i.Value.Key, i.Value.Value), eqquipment->GetClass());
+	}
+}
+
+void UInventoryComponent::LoadData(USaveGameData* const ReadData)
+{
+	TArray<TSubclassOf<AEqquipment>> equippedClasses;
+	TArray<FVector2D> locations;
+	TArray<TSubclassOf<AEqquipment>> inventoryClasses;
+
+	for (auto i : ReadData->PlayerData.EquippedClasses)
+		equippedClasses.Add(i);
+
+	for (auto i : ReadData->PlayerData.InventoryClasses)
+	{
+		locations.Add(i.Key);
+		inventoryClasses.Add(i.Value);
+	}
+
+	Server_LoadData(equippedClasses, locations, inventoryClasses);
 }

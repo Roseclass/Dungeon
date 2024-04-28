@@ -417,30 +417,8 @@ FString APlayerCharacter::GetUniqueSaveName()
 void APlayerCharacter::OnBeforeSave(USaveGameData* SaveData)
 {
 	//Inventory
-	//EquippedData
-	{
-		SaveData->PlayerData.EquippedClasses.Empty();
-		SaveData->PlayerData.EquippedClasses.Init(nullptr, 3);
-		for (int32 i = 0; i < 3; i++)
-		{
-			AEqquipment* eqquipment = Inventory->GetEquippedItems(i);
-			if (!eqquipment)continue;
-			SaveData->PlayerData.EquippedClasses[i] = eqquipment->GetClass();
-		}
-	}
-
-	//InventoryData
-	{
-		TMap<AEqquipment*, TTuple<int32, int32>> m;
-		Inventory->GetAllItems(m);
-		for (auto i : m)
-		{
-			if (!i.Key)continue;
-			AEqquipment* eqquipment = i.Key;
-			if (!eqquipment)continue;
-			SaveData->PlayerData.InventoryClasses.Add(eqquipment->GetClass());
-		}
-	}
+	Inventory->SaveData(SaveData);
+	
 
 	////SkillTree
 	////SkillPoints
@@ -461,8 +439,8 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 	Server_SetName(FText::FromString(ReadData->PlayerData.CharacterName));
 
 	Appearance->LoadData(ReadData);
+	Inventory->LoadData(ReadData);
 	//Reset();
-	//Inventory->LoadData(ReadData);
 	//SkillTree->LoadData(ReadData);
 }
 

@@ -9,6 +9,7 @@
 #include "SaveManager.generated.h"
 
 class USkeletalMeshComponent;
+class AEqquipment;
 class AWeapon;
 class ASkillActor;
 
@@ -58,10 +59,10 @@ public:
 
 	//Inventory
 	UPROPERTY(VisibleAnywhere)
-		TArray<TSubclassOf<AWeapon>> EquippedClasses;
+		TArray<TSubclassOf<AEqquipment>> EquippedClasses;
 
 	UPROPERTY(VisibleAnywhere)
-		TArray<TSubclassOf<AWeapon>> InventoryClasses;
+		TMap<FVector2D, TSubclassOf<AEqquipment>> InventoryClasses;
 
 	//Skill
 	UPROPERTY(VisibleAnywhere)
