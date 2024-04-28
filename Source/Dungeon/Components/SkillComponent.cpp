@@ -1,6 +1,7 @@
 #include "Components/SkillComponent.h"
 #include "Global.h"
 
+#include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Characters/PlayerCharacter.h"
 #include "Objects/SkillActor.h"
@@ -174,4 +175,18 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InIndex, float& Range)
 	if (!QuickSlotSkillActors[InIndex])return 0;
 	Range = QuickSlotSkillActors[InIndex]->GetSkillData()->Range;
 	return 1;
+}
+
+void USkillComponent::SaveData(USaveGameData* SaveData)
+{
+	for (auto i : QuickSlotSkillActors)
+		if (i)SaveData->PlayerData.SlotSkills.Add(i->StaticClass());
+		else SaveData->PlayerData.SlotSkills.Add(nullptr);
+}
+
+void USkillComponent::LoadData(USaveGameData* const ReadData)
+{
+	ReadData->PlayerData.AcquiredSkills;
+	for (int32 i = 0; i < ReadData->PlayerData.SlotSkills.Num(); ++i)
+		ChangeQuickSlotData(i, QuickSlotSkillActors[i]);
 }

@@ -9,6 +9,7 @@
  */
 
 class ASkillActor;
+class USaveGameData;
 class UUW_SkillTree;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -45,6 +46,10 @@ public:
 	bool IsWidgetVisible();
 	void OnWidget();
 	void OffWidget();
+
+	// save
+	void SaveData(USaveGameData* SaveData);
+	void LoadData(USaveGameData* const ReadData);
 
 	FORCEINLINE const TArray<ASkillActor*>& GetRootActors() { return RootActors; }
 };

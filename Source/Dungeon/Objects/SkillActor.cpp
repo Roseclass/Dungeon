@@ -101,6 +101,26 @@ void ASkillActor::OnRep_CoolDown_Server()
 	}
 }
 
+void ASkillActor::OnRep_SkillTreeState()
+{
+	// update skill button widget
+	if (SkillTreeState == ESkillTreeSkillState::Locked)
+	{
+		if (OnLocked.IsBound())
+			OnLocked.Broadcast();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
+	{
+		if (OnUnlocked.IsBound())
+			OnUnlocked.Broadcast();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Acquired)
+	{
+		if (OnAcquired.IsBound())
+			OnAcquired.Broadcast();
+	}
+}
+
 void ASkillActor::Multicast_Use_Implementation(ADungeonPlayerController* Exception)
 {
 	if (Data.Montage)
@@ -178,18 +198,18 @@ void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 
 void ASkillActor::Load()
 {
-	if (SkillTreeState == ESkillTreeSkillState::Locked)
-	{
-		SetLocked();
-	}
-	else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
-	{
-		SetUnlocked();
-	}
-	else if (SkillTreeState == ESkillTreeSkillState::Acquired)
-	{
-		SetAcquired();
-	}
+	//if (SkillTreeState == ESkillTreeSkillState::Locked)
+	//{
+	//	SetLocked();
+	//}
+	//else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
+	//{
+	//	SetUnlocked();
+	//}
+	//else if (SkillTreeState == ESkillTreeSkillState::Acquired)
+	//{
+	//	SetAcquired();
+	//}
 }
 
 void ASkillActor::Client_Use_Implementation()
@@ -260,31 +280,33 @@ float ASkillActor::GetRemainingCoolDown() const
 	return result;
 }
 
-void ASkillActor::SetLocked() 
+void ASkillActor::Server_SetLocked_Implementation()
 { 
 	SkillTreeState = ESkillTreeSkillState::Locked;
-	if(OnLocked.IsBound())
-		OnLocked.Broadcast();
+	if(HasAuthority())
+		OnRep_SkillTreeState();
 }
 
-void ASkillActor::SetUnlocked() 
+void ASkillActor::Server_SetUnlocked_Implementation()
 { 
 	SkillTreeState = ESkillTreeSkillState::Unlocked;
-	if (OnUnlocked.IsBound())
-		OnUnlocked.Broadcast();
+	if (HasAuthority())
+		OnRep_SkillTreeState();
 }
 
-void ASkillActor::SetAcquired() 
+void ASkillActor::Server_SetAcquired_Implementation()
 {
 	SkillTreeState = ESkillTreeSkillState::Acquired;
-	if (OnAcquired.IsBound())
-		OnAcquired.Broadcast();
-
-	for (auto child : ChildrenSkills)
+	if (HasAuthority())
 	{
-		if (child->GetSkillTreeState() == ESkillTreeSkillState::Locked)
+		OnRep_SkillTreeState();
+
+		for (auto child : ChildrenSkills)
 		{
-			child->SetUnlocked();
+			if (child->GetSkillTreeState() == ESkillTreeSkillState::Locked)
+			{
+				child->Server_SetUnlocked();
+			}
 		}
 	}
 }

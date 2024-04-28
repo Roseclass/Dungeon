@@ -144,7 +144,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		FSkillData Data;
 
-	UPROPERTY(EditAnywhere, Category = "Widget")
+	UPROPERTY(EditAnywhere, Category = "Widget", ReplicatedUsing = "OnRep_SkillTreeState")
 		ESkillTreeSkillState SkillTreeState;
 
 public:
@@ -157,6 +157,7 @@ public:
 private:
 	UFUNCTION()void OnRep_ChildrenSkills();
 	UFUNCTION()void OnRep_CoolDown_Server();
+	UFUNCTION()void OnRep_SkillTreeState();
 protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
 	UFUNCTION(Client, Reliable)virtual void Client_UseAbort();
@@ -185,9 +186,9 @@ public:
 	FORCEINLINE void SetOwnerCharacter(ADungeonCharacterBase* InCharacter) { OwnerCharacter = InCharacter; };
 	FORCEINLINE void SetParent(ASkillActor* InSkillActor) { ParentSkill = InSkillActor; };
 	FORCEINLINE void AddChild(ASkillActor* InSkillActor) { ChildrenSkills.Add(InSkillActor); };
-	void SetLocked();
-	void SetUnlocked();
-	void SetAcquired();
+	UFUNCTION(Reliable, Server)void Server_SetLocked();
+	UFUNCTION(Reliable, Server)void Server_SetUnlocked();
+	UFUNCTION(Reliable, Server)void Server_SetAcquired();
 
 };
 

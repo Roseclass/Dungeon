@@ -80,7 +80,7 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 	if (skill->GetSkillTreeState() == ESkillTreeSkillState::Unlocked)
 	{
 		//조건이 더 필요함 ex)스킬포인트..
-		skill->SetAcquired();
+		OwnerComponent->Acquire(skill);
 	}
 	else if (skill->GetSkillTreeState() == ESkillTreeSkillState::Acquired)
 	{

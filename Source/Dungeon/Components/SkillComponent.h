@@ -10,6 +10,7 @@
  */
 
 class ASkillActor;
+class USaveGameData;
 struct FSkillData;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotDataChanged, int32, ASkillActor*);
@@ -63,6 +64,9 @@ public:
 	bool GetSkillRange(int32 InIndex, float& Range);
 	bool GetQuickSlotSkillRange(int32 InIndex, float& Range);
 
+	// save
+	void SaveData(USaveGameData* SaveData);
+	void LoadData(USaveGameData* const ReadData);
 
 	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
 	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };

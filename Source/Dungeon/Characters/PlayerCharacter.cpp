@@ -416,19 +416,12 @@ FString APlayerCharacter::GetUniqueSaveName()
 
 void APlayerCharacter::OnBeforeSave(USaveGameData* SaveData)
 {
-	//Inventory
+	FString name = GetUniqueSaveName();
+	CheckNull(SaveData);
+
 	Inventory->SaveData(SaveData);
-	
-
-	////SkillTree
-	////SkillPoints
-	//SaveData->PlayerData.SkillPoints = SkillTree->GetSkillPoints();
-
-	////SkillData
-	//SkillTree->GetAcquiredSkills(SaveData->PlayerData.AcquiredSkills);
-
-	////SlotData
-	//SkillTree->GetSlotClassData(SaveData->PlayerData.SlotSkills);
+	Skill->SaveData(SaveData);
+	SkillTree->SaveData(SaveData);
 }
 
 void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
@@ -440,9 +433,6 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 
 	Appearance->LoadData(ReadData);
 	Inventory->LoadData(ReadData);
-	//Reset();
-	//SkillTree->LoadData(ReadData);
+	Skill->LoadData(ReadData);
+	SkillTree->LoadData(ReadData);
 }
-
-//UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);
-//UKismetMaterialLibrary::SetScalarParameterValue(UObject* WorldContextObject, UMaterialParameterCollection* Collection, FName ParameterName, float ParameterValue);
