@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "SaveManager.h"
 #include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
 #include "Components/QuestComponent.h"
@@ -161,7 +162,17 @@ void ALevelStreamingActor::LoadLevelFinished()
 
 void ALevelStreamingActor::Multicast_ForwardSequence_Implementation()
 {
-	APawn* pawn = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn();
+	APlayerCharacter* pawn = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn());
+
+	if (!pawn)
+	{
+		CLog::Print("ALevelStreamingActor::Multicast_ForwardSequence pawn is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	TScriptInterface<IISave> ptr = pawn;
+	USaveManager::SaveActor(ptr);
+	USaveManager::ActivateSlot();
 
 	UTravelEffectComponent* travel = CHelpers::GetComponent<UTravelEffectComponent>(pawn);
 	if (travel)

@@ -31,6 +31,8 @@ public:
 
 	//property
 private:
+	bool bLoad;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Init", meta = (ToolTip = "If SkillActors using with another comp, control generate order in OwnerActor"))
 		bool bAutoGenerate = 1;
 		

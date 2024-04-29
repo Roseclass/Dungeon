@@ -214,7 +214,7 @@ void APlayerCharacter::Init()
 		MinimapCapture->TextureTarget = target;
 	}
 
-	//Load appearance data if its client
+	//Load data if its client
 	if (controller && controller->IsLocalController())
 	{
 		USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(USaveManager::GetCurrentSaveSlot(), 0));
@@ -426,6 +426,9 @@ void APlayerCharacter::OnBeforeSave(USaveGameData* SaveData)
 
 void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 {
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
+	CheckFalse(controller && controller->IsLocalController());
+
 	FString name = GetUniqueSaveName();
 	CheckNull(ReadData);
 
@@ -433,6 +436,14 @@ void APlayerCharacter::OnAfterLoad(USaveGameData* const ReadData)
 
 	Appearance->LoadData(ReadData);
 	Inventory->LoadData(ReadData);
+
+	if (HasAuthority())
+		OnAfterLoad_ClientWidget(ReadData);
+}
+
+void APlayerCharacter::OnAfterLoad_ClientWidget(USaveGameData* const ReadData)
+{
+	// need skillactor repliaction
 	Skill->LoadData(ReadData);
 	SkillTree->LoadData(ReadData);
 }

@@ -76,12 +76,14 @@ void USkillTreeComponent::OffWidget()
 
 void USkillTreeComponent::SaveData(USaveGameData* SaveData)
 {
+	// reset Datas
 	SaveData->PlayerData.SkillPoints;
+	SaveData->PlayerData.AcquiredSkills.Empty();
 
 	for (auto i : RootActors)
 	{
 		if (i->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
-		SaveData->PlayerData.AcquiredSkills.Add(i->StaticClass());
+		SaveData->PlayerData.AcquiredSkills.Add(i->GetClass());
 		TQueue<ASkillActor*> q;
 		q.Enqueue(i);
 		while (!q.IsEmpty())
@@ -90,7 +92,7 @@ void USkillTreeComponent::SaveData(USaveGameData* SaveData)
 			for (auto s : cur->GetChildren())
 			{
 				if (s->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
-				SaveData->PlayerData.AcquiredSkills.Add(s->StaticClass());
+				SaveData->PlayerData.AcquiredSkills.Add(s->GetClass());
 				q.Enqueue(s);
 			}
 		}
@@ -103,7 +105,7 @@ void USkillTreeComponent::LoadData(USaveGameData* const ReadData)
 
 	for (auto i : RootActors)
 	{
-		if (ReadData->PlayerData.AcquiredSkills.Find(i->StaticClass()) == INDEX_NONE)continue;
+		if (ReadData->PlayerData.AcquiredSkills.Find(i->GetClass()) == INDEX_NONE)continue;
 		TQueue<ASkillActor*> q;
 		q.Enqueue(i); i->Server_SetAcquired();
 		while (!q.IsEmpty())
@@ -111,7 +113,7 @@ void USkillTreeComponent::LoadData(USaveGameData* const ReadData)
 			ASkillActor* cur; q.Dequeue(cur);
 			for (auto s : cur->GetChildren())
 			{
-				if (ReadData->PlayerData.AcquiredSkills.Find(s->StaticClass()) == INDEX_NONE)continue;
+				if (ReadData->PlayerData.AcquiredSkills.Find(s->GetClass()) == INDEX_NONE)continue;
 				q.Enqueue(s); s->Server_SetAcquired();
 			}
 		}

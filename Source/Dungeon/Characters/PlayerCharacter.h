@@ -115,6 +115,7 @@ public:
 	virtual	FString GetUniqueSaveName() override;
 	virtual	void OnBeforeSave(USaveGameData* SaveData) override;
 	virtual	void OnAfterLoad(USaveGameData* const ReadData) override;
+	void OnAfterLoad_ClientWidget(USaveGameData* const ReadData);
 
 	FORCEINLINE UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

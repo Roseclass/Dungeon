@@ -34,6 +34,7 @@ void USkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 void USkillComponent::OnRep_SkillActors()
 {
+	// check replication sync
 	int32 cnt = 0;
 	for (auto i : SkillActors)
 		if (i)++cnt;
@@ -42,6 +43,11 @@ void USkillComponent::OnRep_SkillActors()
 		APlayerCharacter* const owner = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(owner);
 		owner->InitClientWidget();
+
+		// load widget datas
+		USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(USaveManager::GetCurrentSaveSlot(), 0));
+		if (!saveGameData) { CLog::Print("saveGameData is nullptr"); return; }
+		owner->OnAfterLoad_ClientWidget(saveGameData);
 	}
 }
 
@@ -79,6 +85,8 @@ void USkillComponent::SpawnSkillActors()
 				j->SetParent(i);
 			}
 		}
+
+	bLoad = 1;
 }
 
 void USkillComponent::UseSkill(int32 Idx)
@@ -179,14 +187,22 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InIndex, float& Range)
 
 void USkillComponent::SaveData(USaveGameData* SaveData)
 {
+	// reset Datas
+	SaveData->PlayerData.SlotSkills.Empty();
+
 	for (auto i : QuickSlotSkillActors)
-		if (i)SaveData->PlayerData.SlotSkills.Add(i->StaticClass());
+		if (i)SaveData->PlayerData.SlotSkills.Add(i->GetClass());
 		else SaveData->PlayerData.SlotSkills.Add(nullptr);
 }
 
 void USkillComponent::LoadData(USaveGameData* const ReadData)
 {
-	ReadData->PlayerData.AcquiredSkills;
 	for (int32 i = 0; i < ReadData->PlayerData.SlotSkills.Num(); ++i)
-		ChangeQuickSlotData(i, QuickSlotSkillActors[i]);
+	{
+		for(auto skill : SkillActors)
+			if(skill->GetClass() == ReadData->PlayerData.SlotSkills[i])
+				ChangeQuickSlotData(i, skill);
+	}
+
+	bLoad = 1;
 }
