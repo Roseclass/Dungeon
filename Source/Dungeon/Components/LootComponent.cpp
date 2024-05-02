@@ -1,6 +1,8 @@
 #include "Components/LootComponent.h"
 #include "Global.h"
+
 #include "Objects/Weapon.h"
+#include "Objects/ItemManager.h"
 
 ULootComponent::ULootComponent()
 {
@@ -28,6 +30,15 @@ void ULootComponent::GenerateItems()
 		return;
 	}
 
+	// find manager
+	AItemManager* manager = Cast<AItemManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass()));
+	if (!manager)
+	{
+		CLog::Print("ULootComponent::GenerateItems manager is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	// generate items
 	for (auto i : Datas)
 	{
 		int32 max = 1;
@@ -41,12 +52,20 @@ void ULootComponent::GenerateItems()
 		int32 num = UKismetMathLibrary::RandomIntegerInRange(0, max);
 		if (num > rate * max) continue;
 		//spawn item
+		FTransform transform;		
+		AEqquipment* equipment = manager->SpawnItemDeferred(i->ItemClass, transform, GetOwner());
+		equipment->SetMode(EItemMode::Inventory);
+		UGameplayStatics::FinishSpawningActor(equipment, transform);
+		LootItems.Add(equipment);
 	}
 }
 
 void ULootComponent::DropItems()
 {
 	//drop item
-
-	//need drop sequence
+	for(auto i : LootItems)
+	{ 
+		// i->SetLootMode(start, end)
+	}
+	LootItems.Empty();
 }

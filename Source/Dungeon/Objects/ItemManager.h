@@ -38,6 +38,7 @@ private:
 	UFUNCTION(Reliable, Server)void Server_SetItemRotation(AEqquipment* InItem, const FRotator& NewRotation, ETeleportType Teleport);
 	UFUNCTION(Reliable, Server)void Server_AttachItemToComponent(AEqquipment* InItem, USceneComponent* Parent, EAttachmentRule Location, EAttachmentRule Rotation, EAttachmentRule Scale, bool bWeldSimulatedBodies, const FName& SocketName);
 	UFUNCTION(Reliable, Server)void Server_ChangeVisibility(AEqquipment* InItem, EItemMode NewMode);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_DropSequence(AEqquipment* InItem, FVector Start, FVector End);
 protected:
 public:
 	void SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);

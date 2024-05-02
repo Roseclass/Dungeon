@@ -11,6 +11,7 @@ class UFXSystemAsset;
 class UShapeComponent;
 class UBoxComponent;
 class UMeshComponent;
+class USplineComponent;
 class UMaterialInstance;
 class ACharacter;
 class UItemObject;
@@ -111,22 +112,30 @@ protected:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
+	virtual void PostNetReceiveLocationAndRotation()override;
 public:	
 	virtual void Tick(float DeltaTime) override;
 
 	//property
 private:
+	bool bUpdateLocationAndRotation = 1;
 	AItemManager* Manager;
-	TArray<UShapeComponent*> InteractCollisionComponents;
+	UShapeComponent* InteractCollisionComponent;
 	TArray<UMeshComponent*> MeshComponents;
 	UPROPERTY()UItemObject* ItemObject;
-	ACharacter* OwnerCharacter;
+	UPROPERTY(Replicated)ACharacter* OwnerCharacter;
 	bool bPickable;
 
 	UPROPERTY(ReplicatedUsing = "OnRep_Mode")EItemMode Mode = EItemMode::Max;
 
-	UNiagaraComponent* NiagaraPickEffect;
-	UParticleSystemComponent* ParticlePickEffect;
+	UPROPERTY()UNiagaraComponent* NiagaraPickEffect;
+	UPROPERTY()UParticleSystemComponent* ParticlePickEffect;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		USceneComponent* Root;
+
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (AllowPrivateAccess = true))
+		USplineComponent* DropSpline;
 
 	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
 		int32 DimensionX;
@@ -186,6 +195,8 @@ protected:
 	virtual void SetInventoryMode();
 	virtual void SetEquipMode();
 
+	UFUNCTION(BlueprintImplementableEvent)void PlayDropTimeline();
+
 public:
 	virtual void SetOwnerCharacter(ACharacter* InCharacter);
 
@@ -194,9 +205,12 @@ public:
 	virtual void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None);
 	virtual void ChangeVisibility(EItemMode InMode);
 	virtual void SetMode(EItemMode InMode);
+	virtual void PlayDropSequence(FVector Start,FVector End);
 
 	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
 
+	FORCEINLINE bool HasOwnerCharacter() const { return OwnerCharacter != nullptr; }
+	FORCEINLINE ACharacter* GetOwnerCharacter() const { return OwnerCharacter; }
 	FORCEINLINE UItemObject* GetItemObject() const { return ItemObject; }
 	FORCEINLINE EItemType GetType() const { return ItemType; }
 	FORCEINLINE FItemStatusData GetItemStatus() const { return ItemStatus; }

@@ -315,6 +315,7 @@ bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 void UInventoryComponent::Server_TryAddItem_Implementation(AEqquipment* InObject)
 {
 	if (!InObject)return;
+	if (InObject->HasOwnerCharacter())return;
 	if (!IsRoomAvailable(InObject))return;
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
@@ -342,6 +343,7 @@ void UInventoryComponent::Server_AddItemAt_Implementation(AEqquipment* InObject,
 	}
 
 	InObject->ChangeVisibility(EItemMode::Inventory);
+	InObject->SetOwnerCharacter(Cast<APlayerCharacter>(GetOwner()));
 	InObject->GetItemObject()->SetInventoryComp(this);
 
 	OnRep_Items();

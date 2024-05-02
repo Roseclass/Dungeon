@@ -2,6 +2,7 @@
 #include "Global.h"
 #include "Components/ShapeComponent.h"
 #include "Components/MeshComponent.h"
+#include "Components/SplineComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -43,6 +44,11 @@ AEqquipment::AEqquipment()
 	GlovesAppearanceDatas.Init(FItemAppearanceData(), 2);
 	GlovesAppearanceDatas[0].PartType = EAppearancePart::HandRight;
 	GlovesAppearanceDatas[1].PartType = EAppearancePart::HandLeft;
+
+	CHelpers::CreateComponent(this, &Root, "Root");
+	CHelpers::CreateComponent(this, &DropSpline, "DropSpline", Root);
+	DropSpline->SetAbsolute(1, 1, 1);
+	DropSpline->AddSplinePoint(FVector(), ESplineCoordinateSpace::World, 1);
 }
 
 void AEqquipment::BeginPlay()
@@ -107,6 +113,12 @@ void AEqquipment::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 }
 #endif
 
+void AEqquipment::PostNetReceiveLocationAndRotation()
+{
+	CheckFalse(bUpdateLocationAndRotation);
+	Super::PostNetReceiveLocationAndRotation();
+}
+
 void AEqquipment::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -127,6 +139,7 @@ void AEqquipment::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(AEqquipment, OwnerCharacter, COND_None);
 	DOREPLIFETIME_CONDITION(AEqquipment, Mode, COND_None);
 }
 
@@ -153,11 +166,13 @@ void AEqquipment::FindComponents()
 		{
 			if (i == FName("InteractCollision"))
 			{
-				InteractCollisionComponents.Add(component);
+				InteractCollisionComponent = component;
 				break;
 			}
 		}
 	}
+	if (!InteractCollisionComponent)
+		CLog::Print("AEqquipment::FindComponents InteractCollisionComponent is nullptr", -1, 10, FColor::Red);
 
 	// find mesh
 	GetComponents<UMeshComponent>(MeshComponents);
@@ -229,7 +244,7 @@ void AEqquipment::DeactivateEffect()
 
 void AEqquipment::SetPickableMode()
 {
-	//bPickable = 1;
+	bPickable = 1;
 
 	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
 	SetEffectLocation();
@@ -239,61 +254,58 @@ void AEqquipment::SetPickableMode()
 		component->SetVisibility(1);
 
 	// On Interaction Collision
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	// Change Owner
-	SetOwnerCharacter(nullptr);
 	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
 	DetachFromActor(f);
 
 	// On Item Effects
 	ActivateEffect();
 
+	// On Widget
+	//InfoWidget->SetVisibility(0);
 }
 
 void AEqquipment::SetInventoryMode()
 {
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
 	bPickable = 0;
-
-	// Off Item Effects
-	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
 
 	// Off Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(0);
 
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-void AEqquipment::SetEquipMode()
-{
-	// Sort Mesh
-	//if (bPickable)SortMesh();
-
-	bPickable = 0;
+	// Off Interaction Collision
+	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Off Item Effects
 	DeactivateEffect();
 
 	// Off Widget
 	//InfoWidget->SetVisibility(0);
+}
 
-	// On Appearance
+void AEqquipment::SetEquipMode()
+{
+	bPickable = 0;
+
+	// Off Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
 
-	//InteractCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// Off Interaction Collision
+	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Off Item Effects
+	DeactivateEffect();
+
+	// Off Widget
+	//InfoWidget->SetVisibility(0);
 }
 
 void AEqquipment::SetOwnerCharacter(ACharacter* InCharacter)
 {
-	OwnerCharacter = Cast<ACharacter>(InCharacter);
+	OwnerCharacter = InCharacter;
 	//if (OwnerCharacter)
 	//{
 	//	State = CHelpers::GetComponent<UCStateComponent>(OwnerCharacter);
@@ -344,13 +356,37 @@ void AEqquipment::ChangeVisibility(EItemMode InMode)
 		CLog::Print(__FUNCTION__);
 		return;
 	}
+	
 	Manager->ChangeVisibility(this, InMode);
 }
 
 void AEqquipment::SetMode(EItemMode InMode)
 {
+	// this is server
 	Mode = InMode;
-	if (HasAuthority())OnRep_Mode();
+	OnRep_Mode();
+}
+
+void AEqquipment::PlayDropSequence(FVector Start, FVector End)
+{
+	// stop update loc n rot
+	bUpdateLocationAndRotation = 0;
+	
+	DropSpline->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	FVector mid = Start;
+	mid.X += End.X; mid.X /= 2;
+	mid.Y += End.Y; mid.Y /= 2;
+	mid.Z += UKismetMathLibrary::Abs(Start.Z - End.Z) * 1.5;
+	DropSpline->SetLocationAtSplinePoint(0, Start, ESplineCoordinateSpace::World);
+	DropSpline->SetLocationAtSplinePoint(1, mid, ESplineCoordinateSpace::World);
+	DropSpline->SetLocationAtSplinePoint(2, End, ESplineCoordinateSpace::World);
+
+	// play timeline
+	PlayDropTimeline();
+
+	// bind end event;
+	// update loc n rot
 }
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const

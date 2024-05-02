@@ -34,15 +34,7 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	{
 		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
 		if (itemWidget)itemWidget->DragDropEnd();
-		AActor* actor = OwnerComponent->GetOwner();
-		FVector start = actor->GetActorLocation() + actor->GetActorForwardVector() * 150.0f;
-		TArray<AActor*> arr; FHitResult hit;
-		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), start, start + FVector(0, 0, -1000), ETraceTypeQuery::TraceTypeQuery1, 0, arr, EDrawDebugTrace::None, hit, 1))
-		{
-			item->GetEqquipment()->SetItemLocation(hit.Location);
-			item->GetEqquipment()->SetItemRotation(FRotator());
-			item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
-		}		
+		item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
 		return result;
 	}
 	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Grid);

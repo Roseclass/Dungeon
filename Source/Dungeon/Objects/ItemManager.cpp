@@ -1,7 +1,9 @@
 #include "Objects/ItemManager.h"
 #include "Global.h"
+#include "Components/CapsuleComponent.h"
 
 #include "DungeonPlayerController.h"
+#include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemObject.h"
 
 AItemManager::AItemManager()
@@ -39,16 +41,59 @@ void AItemManager::Server_SetItemRotation_Implementation(AEqquipment* InItem, co
 	InItem->SetActorRotation(NewRotation, Teleport);
 }
 
-void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, EItemMode NewMode)
-{
-	InItem->SetMode(NewMode);
-}
-
 void AItemManager::Server_AttachItemToComponent_Implementation(AEqquipment* InItem, USceneComponent* Parent, EAttachmentRule Location, EAttachmentRule Rotation, EAttachmentRule Scale, bool bWeldSimulatedBodies, const FName& SocketName)
 {
 	FAttachmentTransformRules rule = { Location ,Rotation ,Scale ,bWeldSimulatedBodies };
 
 	InItem->AttachToComponent(Parent, rule, SocketName);
+}
+
+void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, EItemMode NewMode)
+{
+	InItem->SetMode(NewMode);
+
+	if (NewMode == EItemMode::Loot)
+	{
+		ACharacter* ch = InItem->GetOwnerCharacter();
+		// check location
+		if (!ch)
+		{
+			CLog::Print("AItemManager::Server_ChangeVisibility_Implementation OwnerCharacter is nullptr", -1, 10, FColor::Red);
+			return;
+		}
+
+		// find drop location
+		float halfSize = ch->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+		FVector start = ch->GetActorLocation();
+		start.Z += halfSize;
+
+		FVector end = ch->GetActorLocation();
+
+		TArray<AActor*> arr; FHitResult hit; TArray<TEnumAsByte<EObjectTypeQuery>> types;
+		types.Add(EObjectTypeQuery::ObjectTypeQuery1);//world static
+		types.Add(EObjectTypeQuery::ObjectTypeQuery2);//world dynamic
+
+		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), start, start + ch->GetActorForwardVector() * 50, types, 0, arr, EDrawDebugTrace::None, hit, 1))
+		{
+			end = hit.Location;
+			if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), end + FVector(0, 0, halfSize * 2 + 20), end - FVector(0, 0,5000), types, 0, arr, EDrawDebugTrace::None, hit, 1))
+				end = hit.Location;
+			else end = ch->GetActorLocation();
+		}
+		else if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), start + FVector(0, 0, halfSize * 2 + 20) + ch->GetActorForwardVector() * 50, start + ch->GetActorForwardVector() * 50 - FVector(0, 0, 5000), types, 0, arr, EDrawDebugTrace::None, hit, 1))
+			end = hit.Location;
+		end.Z += 5;
+
+		InItem->SetOwnerCharacter(nullptr);
+
+		Multicast_DropSequence(InItem, start, end);
+	}
+}
+
+void AItemManager::Multicast_DropSequence_Implementation(AEqquipment* InItem, FVector Start, FVector End)
+{
+	InItem->PlayDropSequence(Start, End);
 }
 
 void AItemManager::SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)

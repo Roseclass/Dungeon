@@ -35,6 +35,7 @@ public:
 	//property
 private:
 	TArray<FDropItemTable*> Datas;
+	TArray<AEqquipment*> LootItems;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		UDataTable* DataTable;
