@@ -347,7 +347,7 @@ void APlayerCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActo
 	Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
-void APlayerCharacter::TryAddItem(AWeapon* InObject)
+void APlayerCharacter::TryAddItem(AEqquipment* InObject)
 {
 	Inventory->Server_TryAddItem(InObject);
 }

@@ -10,7 +10,7 @@ class APlayerCharacter;
 class AEnemy;
 class ANPC;
 class AItemManager;
-class AWeapon;
+class AEqquipment;
 class UConfirmPopupComponent;
 class IIInteractable;
 class UUW_Main;
@@ -43,8 +43,10 @@ private:
 
 	AEnemy* Target;
 	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
-	AWeapon* Item;
+	AEqquipment* Item;
 	IIInteractable* Iteractable;
+
+	AEqquipment* CursorItem;
 protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		UConfirmPopupComponent* ConfirmPopup;
@@ -54,6 +56,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		UNiagaraSystem* FXCursor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ItemManager")
+		TSubclassOf<AItemManager> ItemManagerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 		TSubclassOf<UUW_Main> MainWidgetClass;

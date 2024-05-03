@@ -5,6 +5,7 @@
 #include "Engine/EngineTypes.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Characters/CharcterAppearanceData.h"
+#include "Components/TimeLineComponent.h"
 #include "Eqquipment.generated.h"
 
 class UFXSystemAsset;
@@ -158,6 +159,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Loot")
 		FQuat LootEffectWorldRotation;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+		float Speed = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+		uint8 RotationCount = 3;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Drop", meta = (ClampMax = 90.00, ClampMin = 0.00, DisplayPriority = 0))
+		uint8 RotationAngle = 45;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Drop")
+		UCurveFloat* DropCurve;
+	FTimeline DropTimeLine;
+	FOnTimelineFloat DropTimelineFloat;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
 
@@ -195,8 +210,7 @@ protected:
 	virtual void SetInventoryMode();
 	virtual void SetEquipMode();
 
-	UFUNCTION(BlueprintImplementableEvent)void PlayDropTimeline();
-
+	UFUNCTION()void DropTickFunction(float Value);
 public:
 	virtual void SetOwnerCharacter(ACharacter* InCharacter);
 
@@ -206,6 +220,9 @@ public:
 	virtual void ChangeVisibility(EItemMode InMode);
 	virtual void SetMode(EItemMode InMode);
 	virtual void PlayDropSequence(FVector Start,FVector End);
+
+	UFUNCTION(BlueprintImplementableEvent)void StartCursorOver();
+	UFUNCTION(BlueprintImplementableEvent)void EndCursorOver();
 
 	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
 

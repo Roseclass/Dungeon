@@ -54,6 +54,7 @@ AEqquipment::AEqquipment()
 void AEqquipment::BeginPlay()
 {
 	Super::BeginPlay();
+
 	ItemObject = NewObject<UItemObject>(this, FName("Item"));
 	ItemObject->Init(DimensionX, DimensionY, Icon, IconRotated, this, ItemType);
 
@@ -70,6 +71,13 @@ void AEqquipment::BeginPlay()
 		ItemStatus.FinalMaxMana = ItemStatus.BaseMaxMana * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
 		ItemStatus.FinalManaRegen = ItemStatus.BaseManaRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
 		ItemStatus.bRandomize = 1;
+	}
+
+	if (DropCurve)
+	{
+		DropTimelineFloat.BindUFunction(this, "DropTickFunction");
+		DropTimeLine.AddInterpFloat(DropCurve, DropTimelineFloat);
+		DropTimeLine.PlayFromStart();
 	}
 }
 
@@ -122,6 +130,8 @@ void AEqquipment::PostNetReceiveLocationAndRotation()
 void AEqquipment::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	DropTimeLine.TickTimeline(DeltaTime);
 
 	CheckTrue(!NiagaraPickEffect && !ParticlePickEffect);
 	if (NiagaraPickEffect)
@@ -253,9 +263,6 @@ void AEqquipment::SetPickableMode()
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
 
-	// On Interaction Collision
-	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
 	// Change Owner
 	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
 	DetachFromActor(f);
@@ -276,7 +283,8 @@ void AEqquipment::SetInventoryMode()
 		component->SetVisibility(0);
 
 	// Off Interaction Collision
-	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if(InteractCollisionComponent)
+		InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Off Item Effects
 	DeactivateEffect();
@@ -294,13 +302,24 @@ void AEqquipment::SetEquipMode()
 		component->SetVisibility(1);
 
 	// Off Interaction Collision
-	InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (InteractCollisionComponent)
+		InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Off Item Effects
 	DeactivateEffect();
 
 	// Off Widget
 	//InfoWidget->SetVisibility(0);
+}
+
+void AEqquipment::DropTickFunction(float Value)
+{
+	SetActorLocation(DropSpline->GetLocationAtTime(Value, ESplineCoordinateSpace::World));
+	float pitch = UKismetMathLibrary::DegCos(Value * 360 * RotationCount)* RotationAngle;
+	float yaw = 0;
+	float roll = UKismetMathLibrary::DegSin(Value * 360 * RotationCount)* RotationAngle;
+	for (auto i : MeshComponents)
+		i->SetRelativeRotation(FRotator(pitch, 0, roll));
 }
 
 void AEqquipment::SetOwnerCharacter(ACharacter* InCharacter)
@@ -370,7 +389,8 @@ void AEqquipment::SetMode(EItemMode InMode)
 void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 {
 	// stop update loc n rot
-	bUpdateLocationAndRotation = 0;
+	if(!HasAuthority())
+		bUpdateLocationAndRotation = 0;
 	
 	DropSpline->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
@@ -383,10 +403,23 @@ void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 	DropSpline->SetLocationAtSplinePoint(2, End, ESplineCoordinateSpace::World);
 
 	// play timeline
-	PlayDropTimeline();
+	SetActorRotation(FRotator(0, 0, -90));
 
-	// bind end event;
-	// update loc n rot
+	FOnTimelineEventStatic end;
+	end.BindLambda([this]() 
+	{
+		if (!HasAuthority())
+			bUpdateLocationAndRotation = 1; 
+
+		// On Interaction Collision
+		if (InteractCollisionComponent)
+			InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	});
+	DropTimeLine.SetTimelineFinishedFunc(end);
+
+	DropTimeLine.SetPlayRate(Speed);
+	DropTimeLine.PlayFromStart();
 }
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const

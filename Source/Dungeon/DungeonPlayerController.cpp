@@ -28,6 +28,8 @@ ADungeonPlayerController::ADungeonPlayerController()
 	DefaultMouseCursor = EMouseCursor::Default;
 
 	CHelpers::CreateActorComponent<UConfirmPopupComponent>(this, &ConfirmPopup, "ConfirmPopup");
+
+	CHelpers::GetClass(&ItemManagerClass, "Blueprint'/Game/TopDown/BP_ItemManager.BP_ItemManager_C'");
 }
 
 void ADungeonPlayerController::BeginPlay()
@@ -36,7 +38,7 @@ void ADungeonPlayerController::BeginPlay()
 
 	if (HasAuthority())
 	{
-		ItemManager = GetWorld()->SpawnActor<AItemManager>(AItemManager::StaticClass());
+		ItemManager = GetWorld()->SpawnActor<AItemManager>(ItemManagerClass);
 		ItemManager->SetOwner(this);
 		if (IsLocalController())OnRep_ItemManager();
 	}
@@ -51,6 +53,21 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 
 	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(GetPawn());
 	CheckNull(myPawn);
+
+	// get hit result under cursor
+	FVector HitLocation = FVector::ZeroVector;
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, true, Hit);
+	HitLocation = Hit.Location;
+
+	if (Hit.GetActor())
+	{
+		AEqquipment* equipment = Cast<AEqquipment>(Hit.GetActor());
+		if (CursorItem && CursorItem != equipment)
+			CursorItem->EndCursorOver();
+		CursorItem = equipment;
+		if (CursorItem)CursorItem->StartCursorOver();
+	}
 
 	if (Target)
 	{		
@@ -94,11 +111,6 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 	if(bInputPressed)
 	{
 		FollowTime += DeltaTime;
-
-		FVector HitLocation = FVector::ZeroVector;
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
-		HitLocation = Hit.Location;
 
 		AEnemy* const other = Cast<AEnemy>(Hit.GetActor());
 		float dist = 1e9;
@@ -182,8 +194,6 @@ void ADungeonPlayerController::OnRep_ItemManager()
 
 	if (ItemManager)
 	{
-		CLog::Print("load");
-
 		TArray<AActor*>arr;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeapon::StaticClass(), arr);
 		for (auto i : arr)

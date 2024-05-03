@@ -19,6 +19,7 @@ class UAppearanceComponent;
 class UClearViewComponent;
 class USkillTreeComponent;
 class UQuestComponent;
+class AEqquipment;
 
 struct FSkillData;
 
@@ -98,7 +99,7 @@ public:
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
 
 	//Inventory
-	virtual void TryAddItem(AWeapon* InObject);
+	virtual void TryAddItem(AEqquipment* InObject);
 
 	//widget
 	void ToggleSkillTree();

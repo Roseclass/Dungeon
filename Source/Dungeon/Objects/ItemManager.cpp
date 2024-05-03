@@ -87,6 +87,8 @@ void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, E
 
 		InItem->SetOwnerCharacter(nullptr);
 
+		CLog::Print(GetOwner()->GetName());
+
 		Multicast_DropSequence(InItem, start, end);
 	}
 }
