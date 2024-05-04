@@ -3,6 +3,7 @@
 #include "Components/ShapeComponent.h"
 #include "Components/MeshComponent.h"
 #include "Components/SplineComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -12,6 +13,8 @@
 #include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
+#include "Widgets/UW_Item.h"
+
 
 AEqquipment::AEqquipment()
 {
@@ -46,9 +49,15 @@ AEqquipment::AEqquipment()
 	GlovesAppearanceDatas[1].PartType = EAppearancePart::HandLeft;
 
 	CHelpers::CreateComponent(this, &Root, "Root");
+
 	CHelpers::CreateComponent(this, &DropSpline, "DropSpline", Root);
 	DropSpline->SetAbsolute(1, 1, 1);
 	DropSpline->AddSplinePoint(FVector(), ESplineCoordinateSpace::World, 1);
+
+	CHelpers::CreateComponent(this, &NameWidget, "Name", Root);
+	NameWidget->SetDrawAtDesiredSize(1);
+	NameWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	NameWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AEqquipment::BeginPlay()
@@ -78,6 +87,13 @@ void AEqquipment::BeginPlay()
 		DropTimelineFloat.BindUFunction(this, "DropTickFunction");
 		DropTimeLine.AddInterpFloat(DropCurve, DropTimelineFloat);
 		DropTimeLine.PlayFromStart();
+	}
+
+	{
+		UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
+		if (widget)
+			widget->SetName(ItemStatus.Name);
+		else CLog::Print(GetName() + " AEqquipment::BeginPlay widget is nullptr", -1, 10, FColor::Red);
 	}
 }
 
@@ -256,6 +272,9 @@ void AEqquipment::SetPickableMode()
 {
 	bPickable = 1;
 
+	// show name widget
+	NameWidget->SetVisibility(1);
+
 	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
 	SetEffectLocation();
 
@@ -269,14 +288,14 @@ void AEqquipment::SetPickableMode()
 
 	// On Item Effects
 	ActivateEffect();
-
-	// On Widget
-	//InfoWidget->SetVisibility(0);
 }
 
 void AEqquipment::SetInventoryMode()
 {
 	bPickable = 0;
+
+	// hide name widget
+	NameWidget->SetVisibility(0);
 
 	// Off Appearance
 	for (auto component : MeshComponents)
@@ -288,14 +307,14 @@ void AEqquipment::SetInventoryMode()
 
 	// Off Item Effects
 	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
 }
 
 void AEqquipment::SetEquipMode()
 {
 	bPickable = 0;
+
+	// hide name widget
+	NameWidget->SetVisibility(0);
 
 	// Off Appearance
 	for (auto component : MeshComponents)
@@ -307,9 +326,6 @@ void AEqquipment::SetEquipMode()
 
 	// Off Item Effects
 	DeactivateEffect();
-
-	// Off Widget
-	//InfoWidget->SetVisibility(0);
 }
 
 void AEqquipment::DropTickFunction(float Value)
@@ -420,6 +436,20 @@ void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 
 	DropTimeLine.SetPlayRate(Speed);
 	DropTimeLine.PlayFromStart();
+}
+
+void AEqquipment::StartCursorOver()
+{
+	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
+	if (widget)
+		widget->StartCursorOver();
+}
+
+void AEqquipment::EndCursorOver()
+{
+	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
+	if (widget)
+		widget->EndCursorOver();
 }
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const

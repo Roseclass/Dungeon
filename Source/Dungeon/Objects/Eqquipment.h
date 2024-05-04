@@ -13,6 +13,7 @@ class UShapeComponent;
 class UBoxComponent;
 class UMeshComponent;
 class USplineComponent;
+class UWidgetComponent;
 class UMaterialInstance;
 class ACharacter;
 class UItemObject;
@@ -60,6 +61,9 @@ friend class AEqquipment;
 
 	// this data will be saved
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetInfo")
+		FString Name;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 		float BaseDamage;
 
@@ -94,6 +98,7 @@ private:
 		bool bRandomize;
 
 public:
+	FORCEINLINE FString GetName()const { return Name; }
 	FORCEINLINE float GetFinalDamage()const { return BaseDamage; }
 	FORCEINLINE float GetFinalMaxHealth()const { return FinalMaxHealth; }
 	FORCEINLINE float GetFinalHealthRegen()const { return FinalHealthRegen; }
@@ -137,6 +142,9 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (AllowPrivateAccess = true))
 		USplineComponent* DropSpline;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UWidgetComponent* NameWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
 		int32 DimensionX;
@@ -221,8 +229,8 @@ public:
 	virtual void SetMode(EItemMode InMode);
 	virtual void PlayDropSequence(FVector Start,FVector End);
 
-	UFUNCTION(BlueprintImplementableEvent)void StartCursorOver();
-	UFUNCTION(BlueprintImplementableEvent)void EndCursorOver();
+	void StartCursorOver();
+	void EndCursorOver();
 
 	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
 
