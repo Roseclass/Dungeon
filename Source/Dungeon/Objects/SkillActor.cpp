@@ -121,7 +121,7 @@ void ASkillActor::OnRep_SkillTreeState()
 	}
 }
 
-void ASkillActor::Multicast_Use_Implementation(ADungeonPlayerController* Exception)
+void ASkillActor::Multicast_Use_Implementation()
 {
 	if (Data.Montage)
 		OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
@@ -137,7 +137,7 @@ void ASkillActor::Client_UseAbort_Implementation()
 	OwnerCharacter->SetMove();
 }
 
-void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
+void ASkillActor::Server_Use_Implementation()
 {
 	// check owner
 	if (!OwnerCharacter)
@@ -193,7 +193,7 @@ void ASkillActor::Server_Use_Implementation(ADungeonPlayerController* Exception)
 	}), WaitTime, false);
 
 	// next sequence
-	Multicast_Use(Exception);
+	Multicast_Use();
 }
 
 void ASkillActor::Load()
@@ -219,9 +219,7 @@ void ASkillActor::Client_Use_Implementation()
 	// update status
 	bCoolDown_Client = 1;
 	OwnerCharacter->SetCannotUse();
-
-	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(OwnerCharacter->GetController());
-	if (controller)Server_Use(controller);
+	Server_Use();
 }
 
 void ASkillActor::SpawnProjectile()

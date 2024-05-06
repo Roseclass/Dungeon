@@ -118,6 +118,11 @@ bool UBehaviorComponent::IsSequenceMode()
 	return GetType() == EBehaviorType::Sequence;
 }
 
+UBlackBoardPlayerArrayObject* UBehaviorComponent::GetPerceptedPlayers()
+{
+	return Cast<UBlackBoardPlayerArrayObject>(Blackboard->GetValueAsObject(PerceptedPlayersKey));
+}
+
 APlayerCharacter* UBehaviorComponent::GetTarget()
 {
 	return Cast<APlayerCharacter>(Blackboard->GetValueAsObject(TargetKey));

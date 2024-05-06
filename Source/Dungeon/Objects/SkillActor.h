@@ -159,9 +159,9 @@ private:
 	UFUNCTION()void OnRep_CoolDown_Server();
 	UFUNCTION()void OnRep_SkillTreeState();
 protected:
-	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use(ADungeonPlayerController* Exception);
+	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use();
 	UFUNCTION(Client, Reliable)virtual void Client_UseAbort();
-	UFUNCTION(Reliable, Server)virtual void Server_Use(ADungeonPlayerController* Exception);
+	UFUNCTION(Reliable, Server)virtual void Server_Use();
 
 	UFUNCTION(BlueprintImplementableEvent)float CalculateDamage(float InCharacterDamage);
 

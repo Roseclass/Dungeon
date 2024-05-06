@@ -100,6 +100,7 @@ public:
 	bool IsStrafingMode();
 	bool IsSequenceMode();
 
+	UBlackBoardPlayerArrayObject* GetPerceptedPlayers();
 	APlayerCharacter* GetTarget();
 	FVector GetGoalLocation();
 
