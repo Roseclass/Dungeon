@@ -12,6 +12,11 @@ void UEQC_Player::ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryCont
 	AEnemy* aiObject = Cast<AEnemy>(QueryInstance.Owner.Get());
 	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(aiObject->GetController());
 
-	if (behavior->GetTarget())
-		UEnvQueryItemType_Actor::SetContextHelper(ContextData, behavior->GetTarget());
+	TArray<AActor*> arr;
+	if (behavior && behavior->GetPerceptedPlayers())
+	{
+		for (auto i : behavior->GetPerceptedPlayers()->GetPlayers())
+			arr.Add(i);
+		UEnvQueryItemType_Actor::SetContextHelper(ContextData, arr);
+	}
 }
