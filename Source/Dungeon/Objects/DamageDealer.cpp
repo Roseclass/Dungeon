@@ -76,6 +76,8 @@ void ADamageDealer::FindCollision()
 
 void ADamageDealer::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult)
 {
+	CheckFalse(HasAuthority());
+
 	ACharacter* ch = Cast<ACharacter>(GetOwner());
 	AController* inst = nullptr;
 	if (ch)inst = ch->GetController();
@@ -95,7 +97,9 @@ void ADamageDealer::SendDamage(float InDamage, AActor* OtherActor, const FHitRes
 
 void ADamageDealer::SendNormalDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)
 {
-	UGameplayStatics::ApplyDamage(OtherActor, InDamage, EventInstigator, this, DamageTypeClass);
+	FDamageEvent damageEvent;
+	damageEvent.DamageTypeClass = DamageTypeClass;
+	OtherActor->TakeDamage(InDamage, damageEvent, EventInstigator, this);
 }
 
 void ADamageDealer::SendPointDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)

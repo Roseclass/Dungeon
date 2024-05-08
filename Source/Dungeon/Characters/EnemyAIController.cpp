@@ -81,19 +81,19 @@ void AEnemyAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActor
 	}
 
 	// already exsist?
-	UBlackBoardPlayerArrayObject* obj = Cast<UBlackBoardPlayerArrayObject>(Blackboard->GetValueAsObject(Behavior->GetPerceptedPlayersKey()));
-	if (!obj)obj = NewObject<UBlackBoardPlayerArrayObject>();
+	if (!PerceptedPlayers)
+		PerceptedPlayers = NewObject<UBlackBoardPlayerArrayObject>();
 
 	// check failed
-	if (!obj)
+	if (!PerceptedPlayers)
 	{
 		CLog::Print("AEnemyAIController::OnPerceptionUpdated NewObject Failed", -1, 10, FColor::Red);
 		return;
 	}
 
 	// set obj
-	obj->SetPlayers(players);
-	Blackboard->SetValueAsObject(Behavior->GetPerceptedPlayersKey(), obj);
+	PerceptedPlayers->SetPlayers(players);
+	Blackboard->SetValueAsObject(Behavior->GetPerceptedPlayersKey(), PerceptedPlayers);
 }
 
 void AEnemyAIController::StopLogic(FString Reason)

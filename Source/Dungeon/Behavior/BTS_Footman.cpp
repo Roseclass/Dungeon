@@ -1,4 +1,4 @@
-#include "Behavior/BTS_Ghost.h"
+#include "Behavior/BTS_Footman.h"
 #include "Global.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -9,15 +9,15 @@
 #include "Components/StatusComponent.h"
 #include "Components/BehaviorComponent.h"
 
-UBTS_Ghost::UBTS_Ghost()
+UBTS_Footman::UBTS_Footman()
 {
-	NodeName = "Ghost";
+	NodeName = "Footman";
 
-	PerceptedPlayerObject.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_Ghost, PerceptedPlayerObject), UBlackBoardPlayerArrayObject::StaticClass());
-	Target.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_Ghost, Target), APlayerCharacter::StaticClass());
+	PerceptedPlayerObject.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_Footman, PerceptedPlayerObject), UBlackBoardPlayerArrayObject::StaticClass());
+	Target.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTS_Footman, Target), APlayerCharacter::StaticClass());
 }
 
-void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTS_Footman::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
@@ -33,23 +33,6 @@ void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 
 	CheckTrue(state->IsDeadMode());
 	CheckTrue(state->IsSequenceMode());
-
-	{
-		UBlackBoardPlayerArrayObject* obj = Cast<UBlackBoardPlayerArrayObject>(BlackboardComp->GetValueAsObject(PerceptedPlayerObject.SelectedKeyName));
-		if (obj)
-		{
-			for (auto i : obj->GetPlayers())
-			{
-				float dist = UKismetMathLibrary::Vector_Distance(i->GetActorLocation(), aiPawn->GetActorLocation());
-				if (dist < behavior->GetAvoidRange())
-				{
-					behavior->SetAvoidMode();
-					return;
-				}
-			}
-			behavior->SetWaitMode();
-		}
-	}
 
 	if (state->IsHitMode())
 	{

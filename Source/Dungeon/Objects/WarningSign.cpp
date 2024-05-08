@@ -37,6 +37,9 @@ void AWarningSign::Tick(float DeltaTime)
 
 void AWarningSign::Activate(float NewDuration, float NewExtraDuration)
 {
+	Duration= NewDuration;
+	ExtraDuration= NewExtraDuration;
+
 	Decal->SetDecalMaterial(UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), Sign));
 	bActivate = 1;
 	StartTime = GetWorld()->GetTimeSeconds();

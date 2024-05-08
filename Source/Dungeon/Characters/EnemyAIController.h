@@ -12,6 +12,7 @@ class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class AEnemy;
 class UBehaviorComponent;
+class UBlackBoardPlayerArrayObject;
 
 UCLASS()
 class DUNGEON_API AEnemyAIController : public AAIController
@@ -37,6 +38,7 @@ private:
 	AEnemy* OwnerEnemy;
 	UAISenseConfig_Sight* Sight;
 
+	UPROPERTY()UBlackBoardPlayerArrayObject* PerceptedPlayers;
 protected:
 public:
 
