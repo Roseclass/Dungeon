@@ -18,6 +18,7 @@ class UStatusComponent;
 class UStateComponent;
 class UInventoryComponent;
 class UDamageTextComponent;
+class ULootComponent;
 class UItemObject;
 class ASkillActor;
 
@@ -42,6 +43,9 @@ protected:
 
 	//actor
 	UPROPERTY(EditDefaultsOnly)
+		ULootComponent* Loot;
+
+	UPROPERTY(EditDefaultsOnly)
 		UDamageTextComponent* DamageText;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -58,13 +62,18 @@ protected:
 	virtual void Init()override;
 public:	
 	UFUNCTION(BlueprintNativeEvent)void PlaySequence(int32 InIndex);
-	void PlaySequence_Implementation(int32 InIndex);
-	
+	void PlaySequence_Implementation(int32 InIndex);	
 
 	FORCEINLINE class UBehaviorTree* GetBehaviorTree() { return BehaviorTree; }
 
 	//Skill
 	virtual void UseSkill(int32 Idx)override;
+
+	//state
+	virtual void SetDeadMode()override;
+
+	//Loot
+	void GenerateLootItems();
 
 	//for notify
 	UFUNCTION(BlueprintCallable)virtual void SpawnWarningSign(int32 InIndex);

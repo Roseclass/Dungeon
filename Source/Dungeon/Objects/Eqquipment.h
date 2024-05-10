@@ -222,6 +222,7 @@ protected:
 public:
 	virtual void SetOwnerCharacter(ACharacter* InCharacter);
 
+	virtual void FindManager();
 	virtual void SetItemLocation(const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);
 	virtual void SetItemRotation(FRotator NewRotation, ETeleportType Teleport = ETeleportType::None);
 	virtual void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None);

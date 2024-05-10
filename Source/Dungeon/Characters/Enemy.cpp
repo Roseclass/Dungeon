@@ -10,6 +10,7 @@
 #include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/DamageTextComponent.h"
+#include "Components/LootComponent.h"
 
 #include "Widgets/UW_HealthBar.h"
 
@@ -23,6 +24,7 @@ AEnemy::AEnemy()
 
 	//actor
 	CHelpers::CreateActorComponent<UDamageTextComponent>(this, &DamageText, "DamageText");
+	CHelpers::CreateActorComponent<ULootComponent>(this, &Loot, "Loot");
 }
 
 void AEnemy::BeginPlay()
@@ -94,6 +96,18 @@ void AEnemy::UseSkill(int32 Idx)
 	Super::UseSkill(Idx);
 	State->SetSkillMode();
 	Multicast_UseSkill(Idx);
+}
+
+void AEnemy::SetDeadMode()
+{
+	Super::SetDeadMode();
+	// Drop Items
+	Loot->DropItems();
+}
+
+void AEnemy::GenerateLootItems()
+{
+	Loot->GenerateItems();
 }
 
 void AEnemy::SpawnWarningSign(int32 InIndex)

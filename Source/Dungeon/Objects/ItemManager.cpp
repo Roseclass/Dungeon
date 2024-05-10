@@ -3,6 +3,7 @@
 #include "Components/CapsuleComponent.h"
 
 #include "DungeonPlayerController.h"
+#include "Characters/Enemy.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemObject.h"
 
@@ -16,11 +17,24 @@ void AItemManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	{
+		TArray<AActor*> arr;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEqquipment::StaticClass(), arr);
+		for (auto i : arr)
+			Cast<AEqquipment>(i)->SetManager(this);
+	}
+
 	FTimerHandle WaitHandle;
-	float WaitTime = 10;
+	float WaitTime = 1;
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
 	{
-		
+		if (HasAuthority())
+		{
+			TArray<AActor*> arr;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), arr);
+			for (auto i : arr)
+				Cast<AEnemy>(i)->GenerateLootItems();
+		}
 	}), WaitTime, false);
 
 }

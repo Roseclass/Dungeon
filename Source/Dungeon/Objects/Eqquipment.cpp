@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
@@ -353,8 +354,15 @@ void AEqquipment::SetOwnerCharacter(ACharacter* InCharacter)
 	//}
 }
 
+void AEqquipment::FindManager()
+{
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	Manager = controller->GetItemManager();
+}
+
 void AEqquipment::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
 {
+	if (!Manager)FindManager();
 	if (!Manager)
 	{
 		CLog::Print(__FUNCTION__);
@@ -365,6 +373,7 @@ void AEqquipment::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitR
 
 void AEqquipment::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
 {
+	if (!Manager)FindManager();
 	if (!Manager)
 	{
 		CLog::Print(__FUNCTION__);
@@ -375,6 +384,7 @@ void AEqquipment::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
 
 void AEqquipment::AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName)
 {
+	if (!Manager)FindManager();
 	if (!Manager)
 	{
 		CLog::Print(__FUNCTION__);
@@ -386,6 +396,7 @@ void AEqquipment::AttachItemToComponent(USceneComponent* Parent, const FAttachme
 void AEqquipment::ChangeVisibility(EItemMode InMode)
 {
 	if (InMode == EItemMode::Max)return;
+	if (!Manager)FindManager();
 	if (!Manager)
 	{
 		CLog::Print(__FUNCTION__);
