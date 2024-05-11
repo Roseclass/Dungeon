@@ -42,9 +42,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AWeapon> DefaultWeapon;
 
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<AEqquipment> InvTestClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (ClampMin = 1.00))
 		int32 Columns = 1;
 

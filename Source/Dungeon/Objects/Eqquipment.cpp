@@ -87,7 +87,6 @@ void AEqquipment::BeginPlay()
 	{
 		DropTimelineFloat.BindUFunction(this, "DropTickFunction");
 		DropTimeLine.AddInterpFloat(DropCurve, DropTimelineFloat);
-		DropTimeLine.PlayFromStart();
 	}
 
 	{
@@ -273,15 +272,15 @@ void AEqquipment::SetPickableMode()
 {
 	bPickable = 1;
 
-	// show name widget
-	NameWidget->SetVisibility(1);
-
 	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
 	SetEffectLocation();
 
 	// On Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
+
+	// show name widget
+	NameWidget->SetVisibility(1);
 
 	// Change Owner
 	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
@@ -295,12 +294,12 @@ void AEqquipment::SetInventoryMode()
 {
 	bPickable = 0;
 
-	// hide name widget
-	NameWidget->SetVisibility(0);
-
 	// Off Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(0);
+
+	// hide name widget
+	NameWidget->SetVisibility(0);
 
 	// Off Interaction Collision
 	if(InteractCollisionComponent)
@@ -314,12 +313,12 @@ void AEqquipment::SetEquipMode()
 {
 	bPickable = 0;
 
-	// hide name widget
-	NameWidget->SetVisibility(0);
-
 	// Off Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
+
+	// hide name widget
+	NameWidget->SetVisibility(0);
 
 	// Off Interaction Collision
 	if (InteractCollisionComponent)

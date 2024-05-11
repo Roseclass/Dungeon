@@ -15,6 +15,18 @@ void UStateComponent::BeginPlay()
 void UStateComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	//switch (Type)
+	//{
+	//case EStateType::Idle:CLog::Print("Idle", 213, 0); break;
+	//case EStateType::Skill:CLog::Print("Skill", 213, 0); break;
+	//case EStateType::Hit:CLog::Print("Hit", 213, 0); break;
+	//case EStateType::KnockBack:CLog::Print("KnockBack", 213, 0); break;
+	//case EStateType::KnockDown:CLog::Print("KnockDown", 213, 0); break;
+	//case EStateType::Sequence:CLog::Print("Sequence", 213, 0); break;
+	//case EStateType::Max:CLog::Print("Max", 213, 0); break;
+	//default:break;
+	//}
 }
 
 void UStateComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -43,7 +43,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void UInventoryComponent::InitDefault()
 {
-	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	int32 num = UGameplayStatics::GetNumLocalPlayerControllers(GetWorld());
 	AItemManager* manager = nullptr;
 	for (int32 i = 0; i < num; i++)
@@ -73,13 +73,6 @@ void UInventoryComponent::InitDefault()
 				EquippedItems[idx] = weapon;
 			}
 		}
-	}
-
-	if (InvTestClass)
-	{
-		AEqquipment* test = GetWorld()->SpawnActor<AEqquipment>(InvTestClass);
-		test->SetManager(manager);
-		Server_TryAddItem(test);
 	}
 }
 
@@ -315,7 +308,15 @@ bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 void UInventoryComponent::Server_TryAddItem_Implementation(AEqquipment* InObject)
 {
 	if (!InObject)return;
-	if (InObject->HasOwnerCharacter())return;
+	if (InObject->HasOwnerCharacter())
+	{
+		ACharacter* ownerCharacter = Cast<ACharacter>(GetOwner());
+		if (InObject->GetOwnerCharacter() != ownerCharacter)
+		{
+			CLog::Print("UInventoryComponent::Server_TryAddItem_Implementation owner Error", -1, 10, FColor::Red);
+			return;
+		}
+	}
 	if (!IsRoomAvailable(InObject))return;
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
@@ -415,6 +416,15 @@ void UInventoryComponent::Server_Equip_Implementation(AEqquipment* InData)
 
 void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, AEqquipment* InData)
 {
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+	
+	if (!InData)
+	{
+		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
+		return;
+	
+	}
+
 	int32 idx = int32(InData->GetType());
 
 	if (!EquippedItems.IsValidIndex(idx))return;
@@ -422,6 +432,20 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 	if (EquippedItems[idx] && !IsRoomAvailable(EquippedItems[idx]))return;
 	if (IsRoomAvailable(EquippedItems[idx]))Server_TryAddItem(EquippedItems[idx]);
 	EquippedItems[idx] = InData;
+	EquippedItems[idx]->SetOwner(owner);
+	EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
+
+	if (InData->GetType() == EItemType::Weapon)
+	{
+		AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+		if (weapon)
+		{
+			weapon->OffCollision();
+			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+			weapon->SetTeamID(owner->GetGenericTeamId());
+			weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
+		}
+	}
 
 	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[idx]->GetType() != EItemType::Weapon)
 	{

@@ -326,6 +326,12 @@ void ADungeonCharacterBase::SetKnockDownMode()
 
 void ADungeonCharacterBase::SetDeadMode()
 {
+	//ignore cursor
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	//ignore character
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
 	State->SetDeadMode();
 	SetStop();
 }

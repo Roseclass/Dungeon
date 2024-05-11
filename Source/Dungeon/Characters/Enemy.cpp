@@ -4,6 +4,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 
+#include "Characters/EnemyAIController.h"
+
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StateComponent.h"
@@ -101,6 +103,10 @@ void AEnemy::UseSkill(int32 Idx)
 void AEnemy::SetDeadMode()
 {
 	Super::SetDeadMode();
+
+	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
+	if(controller)controller->StopLogic("");
+
 	// Drop Items
 	Loot->DropItems();
 }

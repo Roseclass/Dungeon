@@ -247,7 +247,10 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 		if (controller && controller->IsLocalController())
 			controller->CreateDeadWidget();
 	}
-
+	else if (PrevType == EStateType::Skill && NewType == EStateType::Hit)
+	{
+		Status->SetUse();
+	}
 }
 
 void APlayerCharacter::InitClientWidget()

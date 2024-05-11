@@ -3,8 +3,11 @@
 #include "Components/ShapeComponent.h"
 
 #include "Characters/DungeonCharacterBase.h"
+#include "Components/StateComponent.h"
+
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
+#include "Objects/CustomDamageType.h"
 
 AWeapon::AWeapon()
 {
@@ -120,8 +123,12 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 	CheckTrue(HitActors.Contains(OtherActor));
 	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
 	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
-	if (!other && !otherCh)
-		return;
+	if (!other && !otherCh)	return;
+
+	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(OtherActor);
+	if (!state)return;
+	if (state->IsDeadMode())return;
+
 
 	//ignore alliance
 	CheckTrue(other->GetGenericTeamId() == TeamID);
@@ -141,6 +148,7 @@ void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& S
 	if (ch)inst = ch->GetController();
 
 	FDamageEvent f;
+	f.DamageTypeClass = DamageTypeClass;
 	OtherActor->TakeDamage(InDamage, f, inst, this);
 	HitActors.Add(OtherActor);
 }

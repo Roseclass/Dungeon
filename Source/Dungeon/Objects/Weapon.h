@@ -8,6 +8,8 @@
  *
  */
 
+class UCustomDamageType;
+
 UCLASS()
 class DUNGEON_API AWeapon : public AEqquipment
 {
@@ -25,6 +27,9 @@ public:
 private:
 	TArray<UShapeComponent*> CollisionComponents;
 	TArray<AActor*> HitActors;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Datas")
+		TSubclassOf<UCustomDamageType> DamageTypeClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Attach")
 		FTransform AttachTransform;
