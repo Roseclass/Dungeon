@@ -13,6 +13,7 @@
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
 #include "Widgets/UW_InventoryItem.h"
+#include "Widgets/UW_InventoryPopup.h"
 
 int32 UUW_InventoryEquipmentSlot::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
@@ -121,6 +122,8 @@ void UUW_InventoryEquipmentSlot::Refresh(UItemObject* InObject)
 
 		widget->Init(FVector2D(0,0), InObject, OwnerComponent);
 		widget->OnInventoryItemRemoved.AddUFunction(this, "OnItemRemoved");
+		widget->OnInventoryItemMouseEnter.AddUFunction(this, "OnInfoPopup");
+		widget->OnInventoryItemMouseLeave.AddUFunction(this, "OffInfoPopup");
 		UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(Pannel->AddChild(widget));
 
 		FAnchors anch;
@@ -133,9 +136,20 @@ void UUW_InventoryEquipmentSlot::Refresh(UItemObject* InObject)
 	}
 }
 
-void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, EItemType NewType, FVector2D NewSize)
+void UUW_InventoryEquipmentSlot::OnInfoPopup(UItemObject* InObject)
+{
+	Popup->On(InObject);
+}
+
+void UUW_InventoryEquipmentSlot::OffInfoPopup()
+{
+	Popup->Off();
+}
+
+void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, UUW_InventoryPopup* InPopup, EItemType NewType, FVector2D NewSize)
 {
 	OwnerComponent = InComponent;
+	Popup = InPopup;
 	SlotType = NewType;
 	Size = NewSize;
 

@@ -41,6 +41,8 @@ void UUW_InventoryItem::NativeOnMouseEnter(const FGeometry& InGeometry, const FP
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 
 	BackgroundBorder->SetBrushColor(FLinearColor(0.5, 0.5, 0.5, 0.2));
+	if (OnInventoryItemMouseEnter.IsBound())
+		OnInventoryItemMouseEnter.Broadcast(ItemObject);
 }
 
 void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
@@ -48,6 +50,8 @@ void UUW_InventoryItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 	Super::NativeOnMouseLeave(InMouseEvent);
 
 	BackgroundBorder->SetBrushColor(FLinearColor(0, 0, 0, 0.5));
+	if (OnInventoryItemMouseLeave.IsBound())
+		OnInventoryItemMouseLeave.Broadcast();
 }
 
 void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)

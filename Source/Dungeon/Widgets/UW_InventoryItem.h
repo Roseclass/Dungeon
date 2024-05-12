@@ -15,6 +15,8 @@ class UItemObject;
 class UInventoryComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryItemRemoved, UItemObject*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryItemMouseEnter, UItemObject*);
+DECLARE_MULTICAST_DELEGATE(FInventoryItemMouseLeave);
 
 UCLASS()
 class DUNGEON_API UUW_InventoryItem : public UUserWidget
@@ -43,6 +45,8 @@ protected:
 
 public:
 	FInventoryItemRemoved OnInventoryItemRemoved;
+	FInventoryItemMouseEnter OnInventoryItemMouseEnter;
+	FInventoryItemMouseLeave OnInventoryItemMouseLeave;
 	//function
 private:
 	UFUNCTION(BlueprintCallable, BlueprintPure) FSlateBrush GetIconImage();

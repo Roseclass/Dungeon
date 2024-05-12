@@ -15,6 +15,7 @@ class UInventoryComponent;
 class AEqquipment;
 class UItemObject;
 class UUW_InventoryItem;
+class UUW_InventoryPopup;
 
 enum class EItemType : uint8;
 
@@ -34,6 +35,8 @@ public:
 	//property
 private:
 	UPROPERTY()UInventoryComponent* OwnerComponent;
+	UPROPERTY()UUW_InventoryPopup* Popup;
+
 	bool DragDropEnter;
 
 	FVector2D Size = FVector2D(1, 1);
@@ -58,9 +61,11 @@ public:
 private:
 	UFUNCTION()void OnItemRemoved(UItemObject* InObject);
 	UFUNCTION()void Refresh(UItemObject* InObject = nullptr);
+	UFUNCTION()void OnInfoPopup(UItemObject* InObject);
+	UFUNCTION()void OffInfoPopup();
 protected:
 public:
-	void Init(UInventoryComponent* InComponent, EItemType NewType, FVector2D NewSize);
+	void Init(UInventoryComponent* InComponent, UUW_InventoryPopup* InPopup, EItemType NewType, FVector2D NewSize);
 	void ChangeEquippedData(int32 InIdx, AEqquipment* InData);
 };
 /*

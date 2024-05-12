@@ -13,6 +13,7 @@ class UButton;
 class UCanvasPanel;
 class UUW_InventoryGrid;
 class UUW_InventoryEquipmentSlot;
+class UUW_InventoryPopup;
 class UInventoryComponent;
 
 UCLASS()
@@ -59,6 +60,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_InventoryEquipmentSlot* BootsSlot;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_InventoryPopup* Popup;
 
 public:
 

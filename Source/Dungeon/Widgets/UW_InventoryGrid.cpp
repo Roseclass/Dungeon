@@ -15,6 +15,7 @@
 #include "Components/InventoryComponent.h"
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_InventoryItem.h"
+#include "Widgets/UW_InventoryPopup.h"
 
 int32 UUW_InventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled)const
 {
@@ -183,6 +184,8 @@ void UUW_InventoryGrid::Refresh()
 		UItemObject* obj = i.Key->GetItemObject();
 		widget->Init(gap, obj, OwnerComponent);
 		widget->OnInventoryItemRemoved.AddUFunction(this, "OnItemRemoved");
+		widget->OnInventoryItemMouseEnter.AddUFunction(this, "OnInfoPopup");
+		widget->OnInventoryItemMouseLeave.AddUFunction(this, "OffInfoPopup");
 		UCanvasPanelSlot* slot = Cast<UCanvasPanelSlot>(GridCanvasPanel->AddChild(widget));
 		if (!slot)continue;
 
@@ -211,6 +214,16 @@ void UUW_InventoryGrid::OnItemRemoved(UItemObject* InObject)
 
 }
 
+void UUW_InventoryGrid::OnInfoPopup(UItemObject* InObject)
+{
+	Popup->On(InObject);
+}
+
+void UUW_InventoryGrid::OffInfoPopup()
+{
+	Popup->Off();
+}
+
 FEventReply UUW_InventoryGrid::OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent)
 {
 	return UWidgetBlueprintLibrary::Handled();
@@ -222,9 +235,11 @@ void UUW_InventoryGrid::DropItem(UItemObject* InObject)
 	InObject->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
 }
 
-void UUW_InventoryGrid::Init(UInventoryComponent* InComponent)
+void UUW_InventoryGrid::Init(UInventoryComponent* InComponent, UUW_InventoryPopup* InPopup)
 {
 	OwnerComponent = InComponent;
+	Popup = InPopup;
+
 	Background->OnMouseButtonDownEvent.BindUFunction(this, "OnGridBorderMouseButtonDown");
 
 	if (!OwnerComponent)
@@ -243,7 +258,7 @@ void UUW_InventoryGrid::Init(UInventoryComponent* InComponent)
 void UUW_InventoryGrid::ChangeOwnerComponent(UInventoryComponent* InComponent)
 {
 	//바인딩해제
-	//if (OwnerComponent)OwnerComponent->OnInventroyChanged.Remove(this, "Refresh");
+
 	//오너 변경
 	OwnerComponent = InComponent;
 

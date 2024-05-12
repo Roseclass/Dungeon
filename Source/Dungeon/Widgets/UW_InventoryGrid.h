@@ -13,6 +13,7 @@ class UCanvasPanel;
 class USlateBrushAsset;
 class UInventoryComponent;
 class UUW_InventoryItem;
+class UUW_InventoryPopup;
 
 UCLASS()
 class DUNGEON_API UUW_InventoryGrid : public UUserWidget
@@ -28,7 +29,9 @@ public:
 
 	//property
 private:
-	UInventoryComponent* OwnerComponent;
+	UPROPERTY()UInventoryComponent* OwnerComponent;
+	UPROPERTY()UUW_InventoryPopup* Popup;
+
 	bool DrawBox;
 	int32 BoxLeft = 0;
 	int32 BoxRight = 0;
@@ -64,11 +67,13 @@ private:
 	void ChangeGridSize(int32 InRowSize = 1, int32 InColumnSize = 1);
 	UFUNCTION()void Refresh();
 	UFUNCTION()void OnItemRemoved(UItemObject* InObject);
+	UFUNCTION()void OnInfoPopup(UItemObject* InObject);
+	UFUNCTION()void OffInfoPopup();
 	UFUNCTION()FEventReply OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent);
 	void DropItem(UItemObject* InObject);
 
 protected:
 public:
-	void Init(UInventoryComponent* InComponent);
+	void Init(UInventoryComponent* InComponent, UUW_InventoryPopup* InPopup);
 	void ChangeOwnerComponent(UInventoryComponent* InComponent);
 };

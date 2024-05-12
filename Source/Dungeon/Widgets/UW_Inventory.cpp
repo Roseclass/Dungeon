@@ -58,11 +58,11 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 void UUW_Inventory::Init(UInventoryComponent* InComponent)
 {
 	OwnerComponent = InComponent;
-	Grid->Init(OwnerComponent);
-	WeaponSlot->Init(OwnerComponent, EItemType::Weapon, FVector2D(2, 4));
-	HelmSlot->Init(OwnerComponent, EItemType::Helms, FVector2D(2, 2));
-	UpperBodySlot->Init(OwnerComponent, EItemType::UpperBody, FVector2D(2, 2));
-	LowerBodySlot->Init(OwnerComponent, EItemType::LowerBody, FVector2D(2, 2));
-	GlovesSlot->Init(OwnerComponent, EItemType::Gloves, FVector2D(2, 2));
-	BootsSlot->Init(OwnerComponent, EItemType::Boots, FVector2D(2, 2));
+	Grid->Init(OwnerComponent, Popup);
+	WeaponSlot->Init(OwnerComponent, Popup, EItemType::Weapon, FVector2D(2, 4));
+	HelmSlot->Init(OwnerComponent, Popup, EItemType::Helms, FVector2D(2, 2));
+	UpperBodySlot->Init(OwnerComponent, Popup, EItemType::UpperBody, FVector2D(2, 2));
+	LowerBodySlot->Init(OwnerComponent, Popup, EItemType::LowerBody, FVector2D(2, 2));
+	GlovesSlot->Init(OwnerComponent, Popup, EItemType::Gloves, FVector2D(2, 2));
+	BootsSlot->Init(OwnerComponent, Popup, EItemType::Boots, FVector2D(2, 2));
 }
