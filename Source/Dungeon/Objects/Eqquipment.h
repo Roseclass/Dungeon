@@ -99,7 +99,7 @@ private:
 
 public:
 	FORCEINLINE FString GetName()const { return Name; }
-	FORCEINLINE float GetFinalDamage()const { return BaseDamage; }
+	FORCEINLINE float GetFinalDamage()const { return FinalDamage; }
 	FORCEINLINE float GetFinalMaxHealth()const { return FinalMaxHealth; }
 	FORCEINLINE float GetFinalHealthRegen()const { return FinalHealthRegen; }
 	FORCEINLINE float GetFinalMaxMana()const { return FinalMaxMana; }
@@ -184,7 +184,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Data")
+	UPROPERTY(EditDefaultsOnly, Category = "Data", ReplicatedUsing = "OnRep_Status")
 		FItemStatusData ItemStatus;
 
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Helms", EditConditionHides,DisplayName = "Datas"))
@@ -208,6 +208,7 @@ public:
 private:
 protected:
 	UFUNCTION()virtual void OnRep_Mode();
+	UFUNCTION()virtual void OnRep_Status();
 	virtual void FindComponents();
 	virtual void SpawnLootEffects();
 	virtual void SetEffectLocation();
@@ -232,6 +233,8 @@ public:
 
 	void StartCursorOver();
 	void EndCursorOver();
+
+	void Load(const FItemStatusData& InData);
 
 	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
 

@@ -167,6 +167,7 @@ void AEqquipment::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	// Replicated 변수를 여기에 추가
 	DOREPLIFETIME_CONDITION(AEqquipment, OwnerCharacter, COND_None);
 	DOREPLIFETIME_CONDITION(AEqquipment, Mode, COND_None);
+	DOREPLIFETIME_CONDITION(AEqquipment, ItemStatus, COND_None);
 }
 
 void AEqquipment::OnRep_Mode()
@@ -179,6 +180,11 @@ void AEqquipment::OnRep_Mode()
 	case EItemMode::Max:break;
 	default:break;
 	}
+}
+
+void AEqquipment::OnRep_Status()
+{
+	CLog::Print(ItemStatus.GetFinalDamage());
 }
 
 void AEqquipment::FindComponents()
@@ -460,6 +466,11 @@ void AEqquipment::EndCursorOver()
 	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
 	if (widget)
 		widget->EndCursorOver();
+}
+
+void AEqquipment::Load(const FItemStatusData& InData)
+{
+	ItemStatus = InData;
 }
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const

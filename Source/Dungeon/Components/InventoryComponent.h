@@ -66,7 +66,8 @@ private:
 	void Reset();
 	void IndexToTile(int32 InIndex, int32& X, int32& Y);
 	bool GetItemAtIndex(int32 InIndex, AEqquipment** OutObject);
-	UFUNCTION(Reliable, Server)void Server_LoadData(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses);
+	UFUNCTION(Reliable, Server)void Server_LoadData(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FItemStatusData>& EquippedDatas,
+													const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses, const TArray<FItemStatusData>& InventoryDatas);
 protected:
 public:
 	void OnCollision();

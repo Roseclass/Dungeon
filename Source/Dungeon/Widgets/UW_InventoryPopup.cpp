@@ -1,4 +1,4 @@
-#include "Widgets/UW_InventoryPopup.h"
+﻿#include "Widgets/UW_InventoryPopup.h"
 #include "Global.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
@@ -31,6 +31,11 @@ void UUW_InventoryPopup::On(UItemObject* InObject)
 
 	//set name
 	Name->SetText(FText::FromString(data.GetName()));
+
+	int32 damage = data.GetFinalDamage();
+	Damage->SetText(FText::FromString(
+		FString::Printf(TEXT("데미지 : %i"), damage)
+		));
 
 	SetVisibility(ESlateVisibility::HitTestInvisible);
 }

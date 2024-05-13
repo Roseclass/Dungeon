@@ -6,6 +6,7 @@
 #include "RunTime/Core/Public/Misc/DateTime.h"
 #include "Interfaces/ISave.h"
 #include "Components/AppearanceComponent.h"
+#include "Objects/Eqquipment.h"
 #include "SaveManager.generated.h"
 
 class USkeletalMeshComponent;
@@ -62,7 +63,13 @@ public:
 		TArray<TSubclassOf<AEqquipment>> EquippedClasses;
 
 	UPROPERTY(VisibleAnywhere)
+		TArray<FItemStatusData> EquippedDatas;
+
+	UPROPERTY(VisibleAnywhere)
 		TMap<FVector2D, TSubclassOf<AEqquipment>> InventoryClasses;
+
+	UPROPERTY(VisibleAnywhere)
+		TArray<FItemStatusData> InventoryDatas;
 
 	//Skill
 	UPROPERTY(VisibleAnywhere)

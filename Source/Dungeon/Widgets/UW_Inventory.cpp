@@ -13,6 +13,7 @@
 #include "Widgets/UW_InventoryGrid.h"
 #include "Widgets/UW_InventoryEquipmentSlot.h"
 #include "Widgets/UW_InventoryItem.h"
+#include "Widgets/UW_InventoryPopup.h"
 
 bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
@@ -35,6 +36,7 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
 		if (itemWidget)itemWidget->DragDropEnd();
 		item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
+		Popup->Off();
 		return result;
 	}
 	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Grid);

@@ -26,7 +26,7 @@ public:
 
 	//property
 private:
-	UInventoryComponent* OwnerComponent;
+	UPROPERTY()UInventoryComponent* OwnerComponent;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCanvasPanel* BackgroundPanel;

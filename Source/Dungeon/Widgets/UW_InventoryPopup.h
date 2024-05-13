@@ -25,6 +25,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Name;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UTextBlock* Type;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UTextBlock* Damage;
+
 public:
 
 	//function
