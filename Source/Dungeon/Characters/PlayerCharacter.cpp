@@ -204,7 +204,7 @@ void APlayerCharacter::Init()
 		MinimapCapture->ShowFlags.AmbientCubemap = 1;
 		MinimapCapture->ShowFlags.TexturedLightProfiles = 1;
 		MinimapCapture->ShowFlags.Game = 1;
-		MinimapCapture->ShowFlags.Lighting = 1;
+		MinimapCapture->ShowFlags.Lighting = 0;
 		MinimapCapture->ShowFlags.PathTracing = 0;
 		MinimapCapture->ShowFlags.PostProcessing = 1;
 
