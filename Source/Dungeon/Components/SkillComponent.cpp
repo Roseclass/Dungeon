@@ -40,6 +40,19 @@ void USkillComponent::OnRep_SkillActors()
 		if (i)++cnt;
 	if (SkillActors.Num() == cnt)
 	{
+		for (auto i : SkillActors)
+		{
+			i->SetOwnerCharacter(Cast<ADungeonCharacterBase>(GetOwner()));
+			for (auto j : SkillActors)
+			{
+				if (i->GetSkillData()->PannelPosition == j->GetSkillData()->ParentPosition)
+				{
+					i->AddChild(j);
+					j->SetParent(i);
+				}
+			}
+		}
+
 		APlayerCharacter* const owner = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(owner);
 		owner->InitClientWidget();
@@ -48,6 +61,8 @@ void USkillComponent::OnRep_SkillActors()
 		USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(USaveManager::GetCurrentSaveSlot(), 0));
 		if (!saveGameData) { CLog::Print("saveGameData is nullptr"); return; }
 		owner->OnAfterLoad_ClientWidget(saveGameData);
+
+		bLoad = 1;
 	}
 }
 
@@ -71,22 +86,11 @@ void USkillComponent::SpawnSkillActors()
 
 	for (auto i : SkillActors)
 	{
-		i->SetOwnerCharacter(Cast<ADungeonCharacterBase>(GetOwner()));
 		i->SetOwner(GetOwner());
 		i->OnSkillUsing.AddUFunction(this, "SetCurrent");
 	}
 
-	for (auto i : SkillActors)
-		for (auto j : SkillActors)
-		{
-			if (i->GetSkillData()->PannelPosition == j->GetSkillData()->ParentPosition)
-			{
-				i->AddChild(j);
-				j->SetParent(i);
-			}
-		}
-
-	bLoad = 1;
+	OnRep_SkillActors();
 }
 
 void USkillComponent::UseSkill(int32 Idx)

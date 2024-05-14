@@ -81,7 +81,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Init();
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)

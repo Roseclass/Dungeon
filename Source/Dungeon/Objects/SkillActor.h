@@ -129,9 +129,9 @@ public:
 
 	//property
 private:
-	UPROPERTY(Replicated)ADungeonCharacterBase* OwnerCharacter;
-	UPROPERTY(Replicated)ASkillActor* ParentSkill;
-	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_ChildrenSkills")TArray<ASkillActor*> ChildrenSkills;
+	ADungeonCharacterBase* OwnerCharacter;
+	ASkillActor* ParentSkill;
+	TArray<ASkillActor*> ChildrenSkills;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_CoolDown_Server")bool bCoolDown_Server;
 	UPROPERTY(Replicated)float StartServerWorldTime;
 
@@ -140,7 +140,6 @@ private:
 
 	bool bLoad;
 protected:
-	//트리형태로 스킬트리가될 예정
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		FSkillData Data;
 

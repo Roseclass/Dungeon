@@ -60,9 +60,9 @@ void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
-	DOREPLIFETIME_CONDITION(ASkillActor, OwnerCharacter, COND_None);
-	DOREPLIFETIME_CONDITION(ASkillActor, ParentSkill, COND_None);
-	DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
+	//DOREPLIFETIME_CONDITION(ASkillActor, OwnerCharacter, COND_None);
+	//DOREPLIFETIME_CONDITION(ASkillActor, ParentSkill, COND_None);
+	//DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, bCoolDown_Server, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, StartServerWorldTime, COND_None);
 }
