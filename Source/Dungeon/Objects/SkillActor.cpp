@@ -25,34 +25,6 @@ void ASkillActor::BeginPlay()
 void ASkillActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	/*
-	float FActiveGameplayEffectsContainer::GetServerWorldTime() const
-	{
-		UWorld* World = Owner->GetWorld();
-		AGameStateBase* GameState = World->GetGameState();
-		if (GameState)
-		{
-			return GameState->GetServerWorldTimeSeconds();
-		}
-	
-		return World->GetTimeSeconds();
-	}
-	
-	float FActiveGameplayEffectsContainer::GetWorldTime() const
-	{
-		UWorld *World = Owner->GetWorld();
-		return World->GetTimeSeconds();
-	}
-	void FActiveGameplayEffect::RecomputeStartWorldTime(const FActiveGameplayEffectsContainer& InArray)
-	{
-		RecomputeStartWorldTime(InArray.GetWorldTime(), InArray.GetServerWorldTime());
-	}
-	
-	void FActiveGameplayEffect::RecomputeStartWorldTime(const float WorldTime, const float ServerWorldTime)
-	{
-		StartWorldTime = WorldTime - (ServerWorldTime - StartServerWorldTime);
-	}
-	*/
 }
 
 void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -60,22 +32,9 @@ void ASkillActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
-	//DOREPLIFETIME_CONDITION(ASkillActor, OwnerCharacter, COND_None);
-	//DOREPLIFETIME_CONDITION(ASkillActor, ParentSkill, COND_None);
-	//DOREPLIFETIME_CONDITION(ASkillActor, ChildrenSkills, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, bCoolDown_Server, COND_None);
 	DOREPLIFETIME_CONDITION(ASkillActor, StartServerWorldTime, COND_None);
-}
-
-void ASkillActor::OnRep_ChildrenSkills()
-{
-	int32 cnt = 0;
-	for (auto i : ChildrenSkills)
-		if (i)++cnt;
-	if (ChildrenSkills.Num() == cnt)
-	{
-		Load();
-	}
+	DOREPLIFETIME_CONDITION(ASkillActor, SkillTreeState, COND_None);
 }
 
 void ASkillActor::OnRep_CoolDown_Server()
@@ -103,22 +62,7 @@ void ASkillActor::OnRep_CoolDown_Server()
 
 void ASkillActor::OnRep_SkillTreeState()
 {
-	// update skill button widget
-	if (SkillTreeState == ESkillTreeSkillState::Locked)
-	{
-		if (OnLocked.IsBound())
-			OnLocked.Broadcast();
-	}
-	else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
-	{
-		if (OnUnlocked.IsBound())
-			OnUnlocked.Broadcast();
-	}
-	else if (SkillTreeState == ESkillTreeSkillState::Acquired)
-	{
-		if (OnAcquired.IsBound())
-			OnAcquired.Broadcast();
-	}
+	RefreshWidget();
 }
 
 void ASkillActor::Multicast_Use_Implementation()
@@ -196,20 +140,24 @@ void ASkillActor::Server_Use_Implementation()
 	Multicast_Use();
 }
 
-void ASkillActor::Load()
+void ASkillActor::RefreshWidget()
 {
-	//if (SkillTreeState == ESkillTreeSkillState::Locked)
-	//{
-	//	SetLocked();
-	//}
-	//else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
-	//{
-	//	SetUnlocked();
-	//}
-	//else if (SkillTreeState == ESkillTreeSkillState::Acquired)
-	//{
-	//	SetAcquired();
-	//}
+	// update skill button widget
+	if (SkillTreeState == ESkillTreeSkillState::Locked)
+	{
+		if (OnLocked.IsBound())
+			OnLocked.Broadcast();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Unlocked)
+	{
+		if (OnUnlocked.IsBound())
+			OnUnlocked.Broadcast();
+	}
+	else if (SkillTreeState == ESkillTreeSkillState::Acquired)
+	{
+		if (OnAcquired.IsBound())
+			OnAcquired.Broadcast();
+	}
 }
 
 void ASkillActor::Client_Use_Implementation()

@@ -154,7 +154,6 @@ public:
 	FSkillUsing OnSkillUsing;
 	//function
 private:
-	UFUNCTION()void OnRep_ChildrenSkills();
 	UFUNCTION()void OnRep_CoolDown_Server();
 	UFUNCTION()void OnRep_SkillTreeState();
 protected:
@@ -166,7 +165,7 @@ protected:
 
 	FORCEINLINE ADungeonCharacterBase* GetOwnerCharacter() { return OwnerCharacter; }
 public:
-	virtual void Load();
+	virtual void RefreshWidget();
 	UFUNCTION(Client, Reliable)virtual void Client_Use();
 	virtual void SpawnProjectile();
 	virtual void SpawnWarningSign(int32 InIndex);

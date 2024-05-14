@@ -61,8 +61,6 @@ void USkillComponent::OnRep_SkillActors()
 		USaveGameData* saveGameData = Cast<USaveGameData>(UGameplayStatics::LoadGameFromSlot(USaveManager::GetCurrentSaveSlot(), 0));
 		if (!saveGameData) { CLog::Print("saveGameData is nullptr"); return; }
 		owner->OnAfterLoad_ClientWidget(saveGameData);
-
-		bLoad = 1;
 	}
 }
 

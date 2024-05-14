@@ -138,7 +138,6 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, USkillTreeComponent*
 		slot->SetOffsets(FMargin(0));//기본 오프셋 존재를 모르고 한참 걸림;
 
 		Icons.Add(i->GetSkillData()->PannelPosition, scale);
-		if(i->HasAuthority())i->Load();
 	}
 
 	//팝업 버튼 클릭 함수 바인딩

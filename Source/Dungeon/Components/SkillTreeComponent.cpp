@@ -103,6 +103,21 @@ void USkillTreeComponent::LoadData(USaveGameData* const ReadData)
 {
 	ReadData->PlayerData.SkillPoints;
 
+	// refresh widget
+	for (auto i : RootActors)
+	{
+		TQueue<ASkillActor*> q;
+		q.Enqueue(i);
+		while (!q.IsEmpty())
+		{
+			ASkillActor* cur; q.Dequeue(cur);
+			cur->RefreshWidget();
+			for (auto s : cur->GetChildren())
+				q.Enqueue(s);
+		}
+	}
+
+	// load state
 	for (auto i : RootActors)
 	{
 		if (ReadData->PlayerData.AcquiredSkills.Find(i->GetClass()) == INDEX_NONE)continue;

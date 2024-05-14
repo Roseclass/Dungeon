@@ -184,7 +184,7 @@ void AEqquipment::OnRep_Mode()
 
 void AEqquipment::OnRep_Status()
 {
-	CLog::Print(ItemStatus.GetFinalDamage());
+	//CLog::Print(ItemStatus.GetFinalDamage());
 }
 
 void AEqquipment::FindComponents()
