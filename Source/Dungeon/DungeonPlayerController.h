@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "DungeonPlayerController.generated.h"
 
+class UPathFollowingComponent;
 class UNiagaraSystem;
 class APlayerCharacter;
 class AEnemy;
@@ -46,6 +47,8 @@ private:
 	IIInteractable* Iteractable;
 
 	IIInteractable* CursorIteractable;
+
+	UPROPERTY()UPathFollowingComponent* PathFollowingComp;
 protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		UConfirmPopupComponent* ConfirmPopup;

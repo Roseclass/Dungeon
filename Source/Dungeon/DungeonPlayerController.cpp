@@ -4,6 +4,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerState.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/World.h"
@@ -249,10 +250,14 @@ void ADungeonPlayerController::Server_SelectReply_Implementation(AActor* InInter
 void ADungeonPlayerController::OnSetDestinationPressed()
 {
 	Target = nullptr;
-	//Item = nullptr;
 	Iteractable = nullptr;
 	bInputPressed = true;
-	StopPawnImmediately();
+
+	if (!PathFollowingComp)
+		PathFollowingComp = CHelpers::GetComponent<UPathFollowingComponent>(this);
+
+	if (PathFollowingComp && PathFollowingComp->GetStatus() == EPathFollowingStatus::Moving)
+		PathFollowingComp->AbortMove(*this, FPathFollowingResultFlags::MovementStop);
 }
 
 void ADungeonPlayerController::OnSetDestinationReleased()
