@@ -62,11 +62,11 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 
 	if (Hit.GetActor())
 	{
-		AEqquipment* equipment = Cast<AEqquipment>(Hit.GetActor());
-		if (CursorItem && CursorItem != equipment)
-			CursorItem->EndCursorOver();
-		CursorItem = equipment;
-		if (CursorItem)CursorItem->StartCursorOver();
+		IIInteractable* interactable = Cast<IIInteractable>(Hit.GetActor());
+		if (CursorIteractable && CursorIteractable != interactable)
+			CursorIteractable->EndCursorOver(this);
+		CursorIteractable = interactable;
+		if (CursorIteractable)CursorIteractable->StartCursorOver(this);
 	}
 
 	if (Target)
@@ -81,17 +81,6 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 				myPawn->UseLeft();
 			}
 			Target = nullptr;
-		}
-		return;
-	}
-
-	if (Item)
-	{
-		if (myPawn->IsOverlappingActor(Item))
-		{
-			StopPawnImmediately();
-			myPawn->TryAddItem(Item);
-			Item = nullptr;
 		}
 		return;
 	}
@@ -246,7 +235,7 @@ void ADungeonPlayerController::Server_Interaction_Implementation(AActor* InInter
 {
 	IIInteractable* const interactable = Cast<IIInteractable>(InInteractable);
 	CheckNull(interactable);
-	interactable->Interact(this);
+	interactable->StartInteract(this);
 }
 
 void ADungeonPlayerController::Server_SelectReply_Implementation(AActor* InInteractable, int32 NextPoint)
@@ -260,7 +249,7 @@ void ADungeonPlayerController::Server_SelectReply_Implementation(AActor* InInter
 void ADungeonPlayerController::OnSetDestinationPressed()
 {
 	Target = nullptr;
-	Item = nullptr;
+	//Item = nullptr;
 	Iteractable = nullptr;
 	bInputPressed = true;
 	StopPawnImmediately();
@@ -285,18 +274,12 @@ void ADungeonPlayerController::OnSetDestinationReleased()
 		GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 
 		AEnemy* const other = Cast<AEnemy>(Hit.GetActor());
-		AWeapon* const otherWeapon = Cast<AWeapon>(Hit.GetActor());
 		IIInteractable* const otherInter = Cast<IIInteractable>(Hit.GetActor());
 
 		if (other && other->GetGenericTeamId() != myPawn->GetGenericTeamId())
 		{
 			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, other);
 			Target = other;
-		}
-		else if (otherWeapon)
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, otherWeapon);
-			Item = otherWeapon;
 		}
 		else if (otherInter)
 		{

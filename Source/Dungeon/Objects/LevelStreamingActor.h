@@ -7,6 +7,7 @@
 #include "LevelStreamingActor.generated.h"
 
 class USceneComponent;
+class UMeshComponent;
 class UBoxComponent;
 class APlayerCharacter;
 
@@ -47,17 +48,18 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Interact(ADungeonPlayerController* InPlayer) override;			
-	virtual void PreInteractEvent(ADungeonPlayerController* InPlayer) override;	
-	virtual void InInteractEvent(ADungeonPlayerController* InPlayer) override;	
-	virtual void PostInteractEvent(ADungeonPlayerController* InPlayer) override;
-	virtual bool IsInteractable() override;
+	virtual void StartInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void EndInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void StartCursorOver(ADungeonPlayerController* InPlayer)override;
+	virtual void EndCursorOver(ADungeonPlayerController* InPlayer)override;
+	virtual bool IsInteractable()override;
 
 	//property
 private:
 	bool bActive;
 	bool bLoad;
 	EStageList CurrentStage = EStageList::Max;
+	TArray<UMeshComponent*> MeshComponents;
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
 		UBoxComponent* InteractCollision;

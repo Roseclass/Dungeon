@@ -43,10 +43,9 @@ private:
 
 	AEnemy* Target;
 	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
-	AEqquipment* Item;
 	IIInteractable* Iteractable;
 
-	AEqquipment* CursorItem;
+	IIInteractable* CursorIteractable;
 protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		UConfirmPopupComponent* ConfirmPopup;

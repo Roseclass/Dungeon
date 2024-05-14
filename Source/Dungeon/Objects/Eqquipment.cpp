@@ -11,7 +11,7 @@
 #include "NiagaraSystem.h"
 
 #include "DungeonPlayerController.h"
-#include "Characters/DungeonCharacterBase.h"
+#include "Characters/PlayerCharacter.h"
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_Item.h"
@@ -160,6 +160,43 @@ void AEqquipment::Tick(float DeltaTime)
 	}
 }
 
+void AEqquipment::StartInteract(ADungeonPlayerController* InPlayer)
+{
+	APlayerCharacter* const myPawn = Cast<APlayerCharacter>(InPlayer->GetPawn());
+	CheckNull(myPawn);
+	myPawn->TryAddItem(this);
+}
+
+void AEqquipment::EndInteract(ADungeonPlayerController* InPlayer)
+{
+
+}
+
+void AEqquipment::StartCursorOver(ADungeonPlayerController* InPlayer)
+{
+	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
+	if (widget)
+		widget->StartCursorOver();
+
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(1);
+}
+
+void AEqquipment::EndCursorOver(ADungeonPlayerController* InPlayer)
+{
+	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
+	if (widget)
+		widget->EndCursorOver();
+
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(0);
+}
+
+bool AEqquipment::IsInteractable()
+{
+	return bPickable;
+}
+
 void AEqquipment::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -208,6 +245,7 @@ void AEqquipment::FindComponents()
 
 	// find mesh
 	GetComponents<UMeshComponent>(MeshComponents);
+	MeshComponents.Remove(NameWidget);
 }
 
 void AEqquipment::SpawnLootEffects()
@@ -452,20 +490,6 @@ void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 
 	DropTimeLine.SetPlayRate(Speed);
 	DropTimeLine.PlayFromStart();
-}
-
-void AEqquipment::StartCursorOver()
-{
-	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
-	if (widget)
-		widget->StartCursorOver();
-}
-
-void AEqquipment::EndCursorOver()
-{
-	UUW_Item* widget = Cast<UUW_Item>(NameWidget->GetWidget());
-	if (widget)
-		widget->EndCursorOver();
 }
 
 void AEqquipment::Load(const FItemStatusData& InData)

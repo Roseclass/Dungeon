@@ -1,6 +1,7 @@
 #include "Objects/LevelStreamingActor.h"
 #include "Global.h"
 #include "Components/SceneComponent.h"
+#include "Components/MeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -37,6 +38,8 @@ void ALevelStreamingActor::BeginPlay()
 		}
 	}
 
+	// find mesh
+	GetComponents<UMeshComponent>(MeshComponents);
 }
 
 void ALevelStreamingActor::Tick(float DeltaTime)
@@ -44,7 +47,7 @@ void ALevelStreamingActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ALevelStreamingActor::Interact(ADungeonPlayerController* InPlayer) 
+void ALevelStreamingActor::StartInteract(ADungeonPlayerController* InPlayer)
 {
 	CheckFalse(bActive);
 
@@ -71,19 +74,21 @@ void ALevelStreamingActor::Interact(ADungeonPlayerController* InPlayer)
 
 }
 
-void ALevelStreamingActor::PreInteractEvent(ADungeonPlayerController* InPlayer) 
+void ALevelStreamingActor::EndInteract(ADungeonPlayerController* InPlayer)
 {
 
 }
 
-void ALevelStreamingActor::InInteractEvent(ADungeonPlayerController* InPlayer) 
+void ALevelStreamingActor::StartCursorOver(ADungeonPlayerController* InPlayer)
 {
-
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(1);
 }
 
-void ALevelStreamingActor::PostInteractEvent(ADungeonPlayerController* InPlayer) 
+void ALevelStreamingActor::EndCursorOver(ADungeonPlayerController* InPlayer)
 {
-
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(0);
 }
 
 bool ALevelStreamingActor::IsInteractable() 

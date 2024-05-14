@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Characters/CharcterAppearanceData.h"
 #include "Components/TimeLineComponent.h"
+#include "Interfaces/IInteractable.h"
 #include "Eqquipment.generated.h"
 
 class UFXSystemAsset;
@@ -107,7 +108,7 @@ public:
 };
 
 UCLASS()
-class DUNGEON_API AEqquipment : public AActor
+class DUNGEON_API AEqquipment : public AActor, public IIInteractable
 {
 	GENERATED_BODY()
 	
@@ -121,6 +122,12 @@ protected:
 	virtual void PostNetReceiveLocationAndRotation()override;
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void StartInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void EndInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void StartCursorOver(ADungeonPlayerController* InPlayer)override;
+	virtual void EndCursorOver(ADungeonPlayerController* InPlayer)override;
+	virtual bool IsInteractable()override;
 
 	//property
 private:
@@ -230,9 +237,6 @@ public:
 	virtual void ChangeVisibility(EItemMode InMode);
 	virtual void SetMode(EItemMode InMode);
 	virtual void PlayDropSequence(FVector Start,FVector End);
-
-	void StartCursorOver();
-	void EndCursorOver();
 
 	void Load(const FItemStatusData& InData);
 

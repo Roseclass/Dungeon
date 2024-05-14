@@ -6,6 +6,7 @@
 #include "NPC.generated.h"
 
 class UShapeComponent;
+class UMeshComponent;
 class UDialogComponent;
 
 UCLASS()
@@ -20,10 +21,10 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Interact(ADungeonPlayerController* InPlayer)override;
-	virtual void PreInteractEvent(ADungeonPlayerController* InPlayer)override;
-	virtual void InInteractEvent(ADungeonPlayerController* InPlayer)override;
-	virtual void PostInteractEvent(ADungeonPlayerController* InPlayer)override;
+	virtual void StartInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void EndInteract(ADungeonPlayerController* InPlayer)override;
+	virtual void StartCursorOver(ADungeonPlayerController* InPlayer)override;
+	virtual void EndCursorOver(ADungeonPlayerController* InPlayer)override;
 	virtual bool IsInteractable()override;
 
 	virtual void Init();
@@ -32,6 +33,7 @@ public:
 private:
 	bool IsInteracting;
 	TArray<UShapeComponent*> InteractionCollisionComponents;
+	TArray<UMeshComponent*> MeshComponents;
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 		UDialogComponent* Dialog;
@@ -42,7 +44,7 @@ public:
 	//function
 private:
 	void FindInteractionCollision();
+	void FindMesh();
 protected:
 public:
-	void EndInteract();
 };

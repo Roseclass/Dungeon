@@ -1,6 +1,7 @@
 #include "Characters/NPC.h"
 #include "Global.h"
 #include "Components/ShapeComponent.h"
+#include "Components/MeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "DungeonPlayerController.h"
@@ -18,6 +19,7 @@ void ANPC::BeginPlay()
 {
 	Super::BeginPlay();	
 	FindInteractionCollision();
+	FindMesh();
 	Init();
 }
 
@@ -26,7 +28,7 @@ void ANPC::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ANPC::Interact(ADungeonPlayerController* InPlayer)
+void ANPC::StartInteract(ADungeonPlayerController* InPlayer)
 {
 	CheckNull(InPlayer);
 	Dialog->OnInteraction(InPlayer);
@@ -36,19 +38,21 @@ void ANPC::Interact(ADungeonPlayerController* InPlayer)
 	playerPawn->GetCharacterMovement()->DisableMovement();
 }
 
-void ANPC::PreInteractEvent(ADungeonPlayerController* InPlayer)
+void ANPC::EndInteract(ADungeonPlayerController* InPlayer)
 {
-
+	IsInteracting = 0;
 }
 
-void ANPC::InInteractEvent(ADungeonPlayerController* InPlayer)
+void ANPC::StartCursorOver(ADungeonPlayerController* InPlayer)
 {
-
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(1);
 }
 
-void ANPC::PostInteractEvent(ADungeonPlayerController* InPlayer)
+void ANPC::EndCursorOver(ADungeonPlayerController* InPlayer)
 {
-
+	for (auto i : MeshComponents)
+		i->SetRenderCustomDepth(0);
 }
 
 bool ANPC::IsInteractable()
@@ -79,7 +83,8 @@ void ANPC::FindInteractionCollision()
 	}
 }
 
-void ANPC::EndInteract()
+void ANPC::FindMesh()
 {
-	IsInteracting = 0;
+	// find mesh
+	GetComponents<UMeshComponent>(MeshComponents);
 }
