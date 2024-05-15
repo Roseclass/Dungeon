@@ -12,6 +12,7 @@
 class AEqquipment;
 class AWeapon;
 class UUW_Inventory;
+class UUW_Trade;
 class USaveGameData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
@@ -38,6 +39,7 @@ private:
 	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<AEqquipment*> EquippedItems;
 
 	UPROPERTY()UUW_Inventory* Widget;
+	UPROPERTY()UUW_Trade* TradeWidget;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AWeapon> DefaultWeapon;
@@ -50,6 +52,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widget")
 		TSubclassOf<UUW_Inventory> WidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TradeWidget")
+		TSubclassOf<UUW_Trade> TradeWidgetClass;
 public:
 	FInventoryChanged OnInventoryChanged;
 	FInventoryChanged OnInventoryEquippedItemsChanged;
@@ -68,12 +73,16 @@ private:
 	bool GetItemAtIndex(int32 InIndex, AEqquipment** OutObject);
 	UFUNCTION(Reliable, Server)void Server_LoadData(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FItemStatusData>& EquippedDatas,
 													const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses, const TArray<FItemStatusData>& InventoryDatas);
+
+	UFUNCTION(Client, Reliable)void Client_Trade(AActor* InActor);
 protected:
 public:
+	//for equipment
 	void OnCollision();
 	void OffCollision();
 	void ResetHitActors();
 
+	//for inventory grid
 	bool IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIndex);
 	bool IsRoomAvailable(AEqquipment* InObject);
 	bool IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex);
@@ -88,6 +97,9 @@ public:
 	FORCEINLINE int32 TileToIndex(int32 X, int32 Y) {return X + (Y * Columns);}
 	FORCEINLINE int32 GetRows() { return Rows; }
 	FORCEINLINE int32 GetColumns() { return Columns; }
+
+	//for trade
+	void Trade(AActor* InActor);
 
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);

@@ -9,6 +9,7 @@
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
 #include "Widgets/UW_Inventory.h"
+#include "Widgets/UW_Trade.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -185,6 +186,17 @@ void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassO
 		// add items to inventory
 		Server_AddItemAt(equipment, TileToIndex(Locations[i].X, Locations[i].Y));
 	}
+}
+
+void UInventoryComponent::Client_Trade_Implementation(AActor* InActor)
+{
+	UInventoryComponent* trade = CHelpers::GetComponent<UInventoryComponent>(InActor);
+	CheckNull(trade);
+	TradeWidget->Trade(trade);
+
+	// reveal widget
+	Widget->SetVisibility(ESlateVisibility::Visible);
+	TradeWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UInventoryComponent::OnCollision()
@@ -372,6 +384,12 @@ void UInventoryComponent::GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& 
 		IndexToTile(i, x, y);
 		Map.Add(cur, TTuple < int32, int32>(x, y));
 	}
+}
+
+void UInventoryComponent::Trade(AActor* InActor)
+{
+	CheckFalse(InActor->GetIsReplicated());
+	Client_Trade(InActor);
 }
 
 bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)

@@ -17,6 +17,8 @@ class UInventoryComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryItemRemoved, UItemObject*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryItemMouseEnter, UItemObject*);
 DECLARE_MULTICAST_DELEGATE(FInventoryItemMouseLeave);
+DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryItemClicked, UItemObject*);
+
 
 UCLASS()
 class DUNGEON_API UUW_InventoryItem : public UUserWidget
@@ -25,6 +27,7 @@ class DUNGEON_API UUW_InventoryItem : public UUserWidget
 protected:
 	virtual void NativeOnInitialized()override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)override;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent)override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)override;
@@ -32,9 +35,9 @@ public:
 
 	//property
 private:
-	FVector2D WidgetSize;//드래그 드롭때 크기를 유지하기 위함
-	UItemObject* ItemObject;
-	UInventoryComponent* OwnerComponent;
+	FVector2D WidgetSize;//maintain size while drag and drop
+	UPROPERTY()UItemObject* ItemObject;
+	UPROPERTY()UInventoryComponent* OwnerComponent;
 	bool bDragDetected;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -47,6 +50,8 @@ public:
 	FInventoryItemRemoved OnInventoryItemRemoved;
 	FInventoryItemMouseEnter OnInventoryItemMouseEnter;
 	FInventoryItemMouseLeave OnInventoryItemMouseLeave;
+	FInventoryItemClicked OnLeftClicked;
+	FInventoryItemClicked OnRightClicked;
 	//function
 private:
 	UFUNCTION(BlueprintCallable, BlueprintPure) FSlateBrush GetIconImage();

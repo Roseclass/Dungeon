@@ -36,6 +36,22 @@ FReply UUW_InventoryItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, c
 	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
 
+FReply UUW_InventoryItem::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (FKey("LeftMouseButton") == InMouseEvent.GetEffectingButton())
+	{
+		if (OnLeftClicked.IsBound())
+			OnLeftClicked.Broadcast(ItemObject);
+	}
+	else if (FKey("RightMouseButton") == InMouseEvent.GetEffectingButton())
+	{
+		if (OnRightClicked.IsBound())
+			OnRightClicked.Broadcast(ItemObject);
+	}
+
+	return Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
+}
+
 void UUW_InventoryItem::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
