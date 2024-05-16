@@ -21,6 +21,7 @@ protected:
 
 	//property
 private:
+	bool bOn;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Name;
@@ -35,6 +36,7 @@ public:
 
 	//function
 private:
+	void RefreshLocation();
 protected:
 public:
 	void On(UItemObject* InObject);

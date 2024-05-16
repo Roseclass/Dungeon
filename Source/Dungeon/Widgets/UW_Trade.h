@@ -10,7 +10,6 @@
 
 class UBorder;
 class UCanvasPanel;
-class USlateBrushAsset;
 class UInventoryComponent;
 class UUW_InventoryItem;
 class UUW_InventoryPopup;
@@ -37,6 +36,9 @@ private:
 	int32 BoxBottom = 0;
 
 protected:
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UBorder* Border;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UBorder* Background;
 

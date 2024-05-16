@@ -52,8 +52,8 @@ bool UUW_Trade::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& 
 	if (InOperation) item = Cast<UItemObject>(InOperation->Payload.Get());
 	if (!item)return 1;
 
-	//sell items
-	//OwnerComponent->Server_Sell(item->GetEquipment());
+	// sell items
+	OwnerComponent->Server_Sell(item->GetEqquipment());
 
 	return result;
 }
@@ -72,6 +72,16 @@ void UUW_Trade::Refresh()
 	GridCanvasPanel->ClearChildren();
 	CheckNull(TradeComponent);
 	TradeComponent->GetAllItems(map);
+
+	{
+		FAnchors anch;
+		anch.Minimum = FVector2D(0, 0);
+		anch.Maximum = FVector2D((0.0325 * double(RowSize)) + 0.04, (0.065 * double(ColumnSize)) + 0.06);
+		UCanvasPanelSlot* border = UWidgetLayoutLibrary::SlotAsCanvasSlot(this);			
+		border->SetAnchors(anch); 
+		border->SetOffsets(FMargin(0));
+	}
+
 
 	FVector2D size = USlateBlueprintLibrary::GetLocalSize(Background->GetCachedGeometry());
 	FVector2D gap = FVector2D(size.X / RowSize, size.Y / ColumnSize);
@@ -102,11 +112,7 @@ void UUW_Trade::Refresh()
 
 void UUW_Trade::Buy(UItemObject* InObject)
 {
-	//check condition
-
-	//send message
-
-	//add to inv
+	OwnerComponent->Buy(InObject->GetEqquipment());
 }
 
 void UUW_Trade::OnInfoPopup(UItemObject* InObject)

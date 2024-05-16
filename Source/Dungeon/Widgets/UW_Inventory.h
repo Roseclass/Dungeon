@@ -14,6 +14,7 @@ class UCanvasPanel;
 class UUW_InventoryGrid;
 class UUW_InventoryEquipmentSlot;
 class UUW_InventoryPopup;
+class UUW_Trade;
 class UInventoryComponent;
 
 UCLASS()
@@ -64,6 +65,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_InventoryPopup* Popup;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_Trade* TradeWidget;
+
 public:
 
 	//function
@@ -71,6 +75,7 @@ private:
 protected:
 public:
 	void Init(UInventoryComponent* InComponent);
+	void Trade(UInventoryComponent* InComponent);
 };
 
 /*

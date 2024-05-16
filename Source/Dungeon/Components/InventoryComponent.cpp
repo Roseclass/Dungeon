@@ -22,9 +22,9 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	ACharacter* owner = Cast<ACharacter>(GetOwner());
+	if (owner && owner->HasAuthority())InitDefault();
 	ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
-	if (owner->HasAuthority())InitDefault();
 	if (pc && pc->IsLocalController())InitWidget();
 }
 
@@ -74,6 +74,18 @@ void UInventoryComponent::InitDefault()
 				EquippedItems[idx] = weapon;
 			}
 		}
+	}
+
+	for (auto i : DefaultItems)
+	{
+		FTransform transform;
+		AEqquipment* item = GetWorld()->SpawnActorDeferred<AEqquipment>(i, transform);
+		if (IsRoomAvailable(item))
+		{
+			UGameplayStatics::FinishSpawningActor(item, transform);
+			Server_TryAddItem(item);
+		}
+		else item->Destroy();
 	}
 }
 
@@ -192,11 +204,40 @@ void UInventoryComponent::Client_Trade_Implementation(AActor* InActor)
 {
 	UInventoryComponent* trade = CHelpers::GetComponent<UInventoryComponent>(InActor);
 	CheckNull(trade);
-	TradeWidget->Trade(trade);
 
-	// reveal widget
+	// TODO::reveal widget
+	Widget->Trade(trade);
 	Widget->SetVisibility(ESlateVisibility::Visible);
-	TradeWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UInventoryComponent::Server_Buy_Implementation(AEqquipment* InObject)
+{
+	// TODO::check gold condition
+
+	//check room
+	if (!IsRoomAvailable(InObject))
+	{
+		return;
+	}
+
+	// spawn,tryadd,reducegold->client:refresh
+	FTransform transform;
+	AEqquipment* item = GetWorld()->SpawnActorDeferred<AEqquipment>(InObject->GetClass(), transform);
+	UGameplayStatics::FinishSpawningActor(item, transform);
+	Server_TryAddItem(item);
+
+	// TODO::send message
+	//if(flag == 0) proceed
+	//if(flag == 1) not enough gold
+	//if(flag == 2) no rooms
+
+	// TODO::system message
+	// static
+	// init in mainhud
+	// 
+	// USystemMessage::SetTextblock(utextblock* InText);
+	// USystemMessage::Send("");
+	//
 }
 
 void UInventoryComponent::OnCollision()
@@ -262,10 +303,9 @@ bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject)
 
 	//히스토그램으로 사각형 찾기
 	TArray<int32> arr; arr.Init(0, Columns * Rows);
-	int32 cnt = 0; int32 rcnt = 0;
-	int32 x = 0, y = 0, rx = 0, ry = 0;
-	InObject->GetItemObject()->GetDimensions(x, y); InObject->GetItemObject()->Rotate();
-	InObject->GetItemObject()->GetDimensions(rx, ry); InObject->GetItemObject()->Rotate();
+	int32 cnt = 0;
+	int32 x = 0, y = 0;
+	InObject->GetDimensions(x, y); 
 
 	for (int32 i = 0; i < arr.Num(); i++)
 	{
@@ -276,7 +316,7 @@ bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject)
 
 	for (int32 i = 0; i < arr.Num(); i++)
 	{
-		cnt = 0; rcnt = 0;
+		cnt = 0;
 		if (i % Columns == Columns - 1)
 		{
 			for (int32 j = (i / Columns) * Columns; j <= i; j++)
@@ -285,12 +325,6 @@ bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject)
 				else cnt = 0;
 
 				if (cnt >= x)
-					return 1;
-
-				if (arr[j] >= ry)rcnt++;
-				else rcnt = 0;
-
-				if (rcnt >= rx)
 					return 1;
 			}
 		}
@@ -390,6 +424,23 @@ void UInventoryComponent::Trade(AActor* InActor)
 {
 	CheckFalse(InActor->GetIsReplicated());
 	Client_Trade(InActor);
+}
+
+void UInventoryComponent::Server_Sell_Implementation(AEqquipment* InObject)
+{
+	// TODO::add gold
+	
+	//destroy item
+	InObject->Destroy();
+
+	OnRep_Items();
+}
+
+void UInventoryComponent::Buy(AEqquipment* InObject)
+{
+	// TODO::check gold condition
+
+	Server_Buy(InObject);
 }
 
 bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)

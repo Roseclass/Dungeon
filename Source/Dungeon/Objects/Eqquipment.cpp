@@ -513,3 +513,9 @@ const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
 	CLog::Print("AEqquipment::GetAppearanceDatas");
 	return HelmsAppearanceDatas;
 }
+
+void AEqquipment::GetDimensions(int32& X, int32& Y)
+{
+	X = DimensionX;
+	Y = DimensionY;
+}

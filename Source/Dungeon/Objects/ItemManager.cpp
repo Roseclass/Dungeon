@@ -46,17 +46,20 @@ void AItemManager::Tick(float DeltaTime)
 
 void AItemManager::Server_SetItemLocation_Implementation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep, const FHitResult& OutSweepHitResult, ETeleportType Teleport)
 {
+	CheckNull(InItem);
 	FHitResult f = OutSweepHitResult;
 	InItem->SetActorLocation(NewLocation, bSweep, &f, Teleport);
 }
 
 void AItemManager::Server_SetItemRotation_Implementation(AEqquipment* InItem, const FRotator& NewRotation, ETeleportType Teleport)
 {
+	CheckNull(InItem);
 	InItem->SetActorRotation(NewRotation, Teleport);
 }
 
 void AItemManager::Server_AttachItemToComponent_Implementation(AEqquipment* InItem, USceneComponent* Parent, EAttachmentRule Location, EAttachmentRule Rotation, EAttachmentRule Scale, bool bWeldSimulatedBodies, const FName& SocketName)
 {
+	CheckNull(InItem);
 	FAttachmentTransformRules rule = { Location ,Rotation ,Scale ,bWeldSimulatedBodies };
 
 	InItem->AttachToComponent(Parent, rule, SocketName);
@@ -64,6 +67,7 @@ void AItemManager::Server_AttachItemToComponent_Implementation(AEqquipment* InIt
 
 void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, EItemMode NewMode)
 {
+	CheckNull(InItem);
 	InItem->SetMode(NewMode);
 
 	if (NewMode == EItemMode::Loot)
@@ -109,11 +113,13 @@ void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, E
 
 void AItemManager::Multicast_DropSequence_Implementation(AEqquipment* InItem, FVector Start, FVector End)
 {
+	CheckNull(InItem);
 	InItem->PlayDropSequence(Start, End);
 }
 
 void AItemManager::SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
 {
+	CheckNull(InItem);
 	FHitResult f;
 	if (OutSweepHitResult == nullptr)
 		OutSweepHitResult = &f;
@@ -122,11 +128,13 @@ void AItemManager::SetItemLocation(AEqquipment* InItem, const FVector& NewLocati
 
 void AItemManager::SetItemRotation(AEqquipment* InItem, FRotator NewRotation, ETeleportType Teleport)
 {
+	CheckNull(InItem);
 	Server_SetItemRotation(InItem, NewRotation, Teleport);
 }
 
 void AItemManager::AttachItemToComponent(AEqquipment* InItem, USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName SocketName)
 {
+	CheckNull(InItem);
 	Server_AttachItemToComponent(
 		InItem, 
 		Parent, 
@@ -139,6 +147,7 @@ void AItemManager::AttachItemToComponent(AEqquipment* InItem, USceneComponent* P
 
 void AItemManager::ChangeVisibility(AEqquipment* InItem, EItemMode NewMode)
 {
+	CheckNull(InItem);
 	Server_ChangeVisibility(InItem, NewMode);
 }
 

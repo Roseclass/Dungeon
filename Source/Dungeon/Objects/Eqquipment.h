@@ -248,5 +248,6 @@ public:
 	FORCEINLINE EItemType GetType() const { return ItemType; }
 	FORCEINLINE FItemStatusData GetItemStatus() const { return ItemStatus; }
 	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
+	void GetDimensions(int32& X, int32& Y);
 	
 };

@@ -39,10 +39,12 @@ private:
 	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<AEqquipment*> EquippedItems;
 
 	UPROPERTY()UUW_Inventory* Widget;
-	UPROPERTY()UUW_Trade* TradeWidget;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AWeapon> DefaultWeapon;
+
+	UPROPERTY(EditDefaultsOnly)
+		TArray<TSubclassOf<AEqquipment>> DefaultItems;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widget", meta = (ClampMin = 1.00))
 		int32 Columns = 1;
@@ -52,9 +54,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widget")
 		TSubclassOf<UUW_Inventory> WidgetClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "TradeWidget")
-		TSubclassOf<UUW_Trade> TradeWidgetClass;
 public:
 	FInventoryChanged OnInventoryChanged;
 	FInventoryChanged OnInventoryEquippedItemsChanged;
@@ -75,6 +74,7 @@ private:
 													const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses, const TArray<FItemStatusData>& InventoryDatas);
 
 	UFUNCTION(Client, Reliable)void Client_Trade(AActor* InActor);
+	UFUNCTION(Reliable, Server)void Server_Buy(AEqquipment* InObject);
 protected:
 public:
 	//for equipment
@@ -100,6 +100,8 @@ public:
 
 	//for trade
 	void Trade(AActor* InActor);
+	UFUNCTION(Reliable, Server)void Server_Sell(AEqquipment* InObject);
+	void Buy(AEqquipment* InObject);
 
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);

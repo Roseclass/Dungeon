@@ -14,6 +14,7 @@
 #include "Widgets/UW_InventoryEquipmentSlot.h"
 #include "Widgets/UW_InventoryItem.h"
 #include "Widgets/UW_InventoryPopup.h"
+#include "Widgets/UW_Trade.h"
 
 bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
@@ -67,4 +68,11 @@ void UUW_Inventory::Init(UInventoryComponent* InComponent)
 	LowerBodySlot->Init(OwnerComponent, Popup, EItemType::LowerBody, FVector2D(2, 2));
 	GlovesSlot->Init(OwnerComponent, Popup, EItemType::Gloves, FVector2D(2, 2));
 	BootsSlot->Init(OwnerComponent, Popup, EItemType::Boots, FVector2D(2, 2));
+	TradeWidget->Init(OwnerComponent, Popup);
+}
+
+void UUW_Inventory::Trade(UInventoryComponent* InComponent)
+{
+	TradeWidget->Trade(InComponent);
+	TradeWidget->SetVisibility(ESlateVisibility::Visible);
 }

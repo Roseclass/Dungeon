@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTT_Trade::ExecuteTask(UBehaviorTreeComponent& OwnerComp, u
 	if (!inv)return EBTNodeResult::Failed;
 	AActor* npc = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("SelfActor"));
 	if(!npc)return EBTNodeResult::Failed;
-	//inv->Trade(npc);
+	inv->Trade(npc);
 
 	return EBTNodeResult::Succeeded;
 }

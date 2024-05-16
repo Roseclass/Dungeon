@@ -13,21 +13,26 @@ void UUW_InventoryPopup::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (IsVisible())
-	{
-		//find cursor loaction
-		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
-		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-		mousePos /= geo.GetLocalSize();
-		UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(this);
-		FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
-		slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
-	}
+	if (bOn)
+		RefreshLocation();
+}
+
+void UUW_InventoryPopup::RefreshLocation()
+{
+	//find cursor loaction
+	FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
+	FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+	mousePos /= geo.GetLocalSize();
+	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(this);
+	FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
+	slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
 }
 
 void UUW_InventoryPopup::On(UItemObject* InObject)
 {
 	const FItemStatusData& data = InObject->GetEqquipment()->GetItemStatus();
+
+	RefreshLocation();
 
 	//set name
 	Name->SetText(FText::FromString(data.GetName()));
@@ -38,6 +43,7 @@ void UUW_InventoryPopup::On(UItemObject* InObject)
 		));
 
 	SetVisibility(ESlateVisibility::HitTestInvisible);
+	bOn = 1;
 }
 
 void UUW_InventoryPopup::Off()
