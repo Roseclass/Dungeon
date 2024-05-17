@@ -13,6 +13,7 @@
 #include "Components/TravelEffectComponent.h"
 
 #include "Objects/Quest.h"
+#include "Objects/StageScriptActor.h"
 
 ALevelStreamingActor::ALevelStreamingActor()
 {
@@ -184,8 +185,16 @@ void ALevelStreamingActor::Multicast_ForwardSequence_Implementation()
 		travel->Play();
 }
 
-void ALevelStreamingActor::Multicast_ReverseSequence_Implementation()
+void ALevelStreamingActor::Multicast_ReverseSequence_Implementation(EStageList InStage)
 {
+	AStageScriptActor* mainStage = Cast<AStageScriptActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AStageScriptActor::StaticClass()));
+	if (mainStage)
+	{
+		if (InStage == EStageList::Main)mainStage->On();
+		else mainStage->Off();
+	}
+	else CLog::Print("ALevelStreamingActor::Multicast_ReverseSequence NO Stage Actor", -1, 10, FColor::Red);
+
 	APawn* pawn = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn();
 
 	UTravelEffectComponent* travel = CHelpers::GetComponent<UTravelEffectComponent>(pawn);
@@ -233,7 +242,7 @@ void ALevelStreamingActor::StartReverseSequence()
 	float WaitTime = 0.5;
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
 	{
-		Multicast_ReverseSequence();
+		Multicast_ReverseSequence(CurrentStage);
 	}), WaitTime, false);
 }
 

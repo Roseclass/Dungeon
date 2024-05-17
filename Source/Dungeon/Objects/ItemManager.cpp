@@ -63,6 +63,10 @@ void AItemManager::Server_AttachItemToComponent_Implementation(AEqquipment* InIt
 	FAttachmentTransformRules rule = { Location ,Rotation ,Scale ,bWeldSimulatedBodies };
 
 	InItem->AttachToComponent(Parent, rule, SocketName);
+
+	AWeapon* weapon = Cast<AWeapon>(InItem);
+	if(weapon)
+		weapon->SetActorRelativeTransform(weapon->GetTransform());
 }
 
 void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, EItemMode NewMode)

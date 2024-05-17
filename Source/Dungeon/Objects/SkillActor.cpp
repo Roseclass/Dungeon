@@ -15,6 +15,7 @@ ASkillActor::ASkillActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = 1;
+	bAlwaysRelevant = 1;
 }
 
 void ASkillActor::BeginPlay()
@@ -67,6 +68,8 @@ void ASkillActor::OnRep_SkillTreeState()
 
 void ASkillActor::Multicast_Use_Implementation()
 {
+	CLog::Print("UseSkill");
+
 	if (Data.Montage)
 		OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
 }

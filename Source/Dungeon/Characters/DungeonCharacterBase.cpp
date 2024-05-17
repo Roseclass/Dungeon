@@ -182,11 +182,9 @@ void ADungeonCharacterBase::ChangeHealthBarRegen(float NewRegen)
 void ADungeonCharacterBase::OnRep_Name()
 {
 	if (!HealthBarWidget)
-	{
-		CLog::Print("OnRep_Name, HealthBarWidget is nullptr", -1, 10, FColor::Red);
-		return;
-	}
-	HealthBarWidget->SetName(Name);
+		HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+	if (HealthBarWidget)
+		HealthBarWidget->SetName(Name);
 }
 
 void ADungeonCharacterBase::Init()

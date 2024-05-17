@@ -56,7 +56,7 @@ FGenericTeamId AEnemy::GetGenericTeamId() const
 
 void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 {
-	CLog::Print("UseSkill " + FString::FromInt(InIndex));
+	//CLog::Print("UseSkill " + FString::FromInt(InIndex));
 	Skill->UseSkill(InIndex);
 }
 
@@ -74,17 +74,11 @@ void AEnemy::Init()
 {
 	Super::Init();
 
-	if (HasAuthority())
-		Skill->SpawnSkillActors();
-
-
-	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
-	if (HealthBarWidget)
-	{
-		HealthBarWidget->Init(Name, Status->GetLevel());
-		HealthBarWidget->SetEliteMonsterType();
-	}
-	else CLog::Print("AEnemy::Init HealthBarWidget cast failed", -1, 10, FColor::Red);
+	//if (HealthBarWidget)
+	//{
+	//	HealthBarWidget->SetEliteMonsterType();
+	//}
+	//else CLog::Print("AEnemy::Init HealthBarWidget cast failed", -1, 10, FColor::Red);
 
 }
 

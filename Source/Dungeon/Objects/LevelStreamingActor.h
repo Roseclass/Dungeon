@@ -80,7 +80,7 @@ private:
 	void LoadLevelStarted();
 	UFUNCTION()void LoadLevelFinished();
 	UFUNCTION(NetMulticast, Reliable)void Multicast_ForwardSequence();
-	UFUNCTION(NetMulticast, Reliable)void Multicast_ReverseSequence();
+	UFUNCTION(NetMulticast, Reliable)void Multicast_ReverseSequence(EStageList InStage);
 	UFUNCTION()void ForwardSequenceFinished(APlayerCharacter* InPlayerCharacter);
 	void StartReverseSequence();
 protected:
