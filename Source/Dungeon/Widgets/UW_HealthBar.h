@@ -24,6 +24,8 @@ protected:
 
 	//property
 private:
+	bool bUpdate = 1;
+
 	float DelayPercent;
 
 	float Max;
@@ -69,4 +71,6 @@ public:
 	void SetOtherPlayerType();
 	void SetMonsterType();
 	void SetEliteMonsterType();
+
+	void Dead();
 };

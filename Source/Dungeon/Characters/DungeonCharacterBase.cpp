@@ -78,6 +78,7 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 
 	// refresh status
 	Status->AdjustCurrentHealth(-DamageAmount);
+	Skill->Abort();
 
 	// set montage datas
 	{
@@ -215,6 +216,17 @@ void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
 	if (NewType == EStateType::Dead)
 	{
 		Montage->PlayDeadMontage();
+
+		if (!HealthBarWidget)
+			HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+		HealthBarWidget->Dead();
+
+		//ignore cursor
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+		//ignore character
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
 	}
 	else if (NewType == EStateType::Hit)
 	{
@@ -324,12 +336,6 @@ void ADungeonCharacterBase::SetKnockDownMode()
 
 void ADungeonCharacterBase::SetDeadMode()
 {
-	//ignore cursor
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	//ignore character
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-
 	State->SetDeadMode();
 	SetStop();
 }

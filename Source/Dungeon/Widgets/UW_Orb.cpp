@@ -8,7 +8,7 @@ void UUW_Orb::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (Max > 0)// and player is alive
+	if (Max > 0 && bUpdate)// and player is alive
 	{
 		float cur = Orb->Percent;
 		cur += InDeltaTime * Regen / Max;
@@ -22,12 +22,18 @@ void UUW_Orb::SetMax(float NewMax)
 	Max = NewMax;
 }
 
-void UUW_Orb::SetCurrent(float NewCurrent)
+void UUW_Orb::SetPercent(float NewPercent)
 {
-	Orb->SetPercent(NewCurrent);
+	Orb->SetPercent(NewPercent);
 }
 
 void UUW_Orb::SetRegen(float NewRegen)
 {
 	Regen = NewRegen;
+}
+
+void UUW_Orb::Dead()
+{
+	bUpdate = 0;
+	SetPercent(0);
 }

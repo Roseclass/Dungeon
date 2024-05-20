@@ -56,6 +56,7 @@ public:
 	//function
 private:
 	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_SpawnDamageText(float InDamage, bool IsCritical);
 	void SequenceStart();
 	UFUNCTION(BlueprintCallable)void SequenceEnd();
 protected:

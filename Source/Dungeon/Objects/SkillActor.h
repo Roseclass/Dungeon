@@ -133,10 +133,10 @@ private:
 	ASkillActor* ParentSkill;
 	TArray<ASkillActor*> ChildrenSkills;
 	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_CoolDown_Server")bool bCoolDown_Server;
-	UPROPERTY(Replicated)float StartServerWorldTime;
+	UPROPERTY(Replicated)float StartServerWorldTime = -10000;
 
 	bool bCoolDown_Client;
-	float StartWorldTime;
+	float StartWorldTime = -10000;
 
 	bool bLoad;
 protected:
@@ -158,7 +158,7 @@ private:
 	UFUNCTION()void OnRep_SkillTreeState();
 protected:
 	UFUNCTION(NetMulticast, Reliable)virtual void Multicast_Use();
-	UFUNCTION(Client, Reliable)virtual void Client_UseAbort();
+	UFUNCTION(Client, Reliable)virtual void Client_UseFailed();
 	UFUNCTION(Reliable, Server)virtual void Server_Use();
 
 	UFUNCTION(BlueprintImplementableEvent)float CalculateDamage(float InCharacterDamage);

@@ -68,13 +68,11 @@ void ASkillActor::OnRep_SkillTreeState()
 
 void ASkillActor::Multicast_Use_Implementation()
 {
-	CLog::Print("UseSkill");
-
 	if (Data.Montage)
 		OwnerCharacter->PlayAnimMontage(Data.Montage, Data.PlayRate, Data.StartSection);
 }
 
-void ASkillActor::Client_UseAbort_Implementation()
+void ASkillActor::Client_UseFailed_Implementation()
 {
 	CheckNull(OwnerCharacter);
 
@@ -89,7 +87,7 @@ void ASkillActor::Server_Use_Implementation()
 	// check owner
 	if (!OwnerCharacter)
 	{
-		Client_UseAbort();
+		Client_UseFailed();
 		CLog::Print("ASkillActor::Server_Use Owner is nullptr", -1, 10, FColor::Red);
 		return;
 	}
@@ -98,7 +96,7 @@ void ASkillActor::Server_Use_Implementation()
 	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
 	if (!status)
 	{
-		Client_UseAbort();
+		Client_UseFailed();
 		CLog::Print("ASkillActor::Server_Use status is nullptr", -1, 10, FColor::Red);
 		return;
 	}
@@ -106,7 +104,7 @@ void ASkillActor::Server_Use_Implementation()
 	// check cost
 	if (status->GetCurrentMana_Server() < Data.ManaCost)
 	{
-		Client_UseAbort();
+		Client_UseFailed();
 		CLog::Print("ASkillActor::Server_Use ManaCost is bigger", 1557, 10, FColor::MakeRandomColor());
 		return;
 	}

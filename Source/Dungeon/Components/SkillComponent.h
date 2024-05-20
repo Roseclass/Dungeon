@@ -56,6 +56,7 @@ public:
 	void SpawnSkillActors();
 	void UseSkill(int32 Idx);
 	void UseQuickSlotSkill(int32 Idx);
+	void Abort();
 	void SpawnProjectile();
 	void SpawnWarningSign(int32 InIndex);
 	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);

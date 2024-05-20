@@ -45,6 +45,7 @@ public:
 
 	void OnChat();
 	void OnMessageUpdated(const FText& Text, const FLinearColor& Color);
+	void OnDead();
 
 	FORCEINLINE UUW_QuickSlot* GetQuickSlot() const { return QuickSlot; }
 	FORCEINLINE UUW_Orb* GetHealthOrb() const { return HealthOrb; }

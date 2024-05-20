@@ -44,7 +44,7 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// hit react by montage component
-	DamageText->SpawnDamageText(GetActorLocation(), DamageAmount, 0);
+	Multicast_SpawnDamageText(DamageAmount, 0);
 
 	return result;
 }
@@ -58,6 +58,11 @@ void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 {
 	//CLog::Print("UseSkill " + FString::FromInt(InIndex));
 	Skill->UseSkill(InIndex);
+}
+
+void AEnemy::Multicast_SpawnDamageText_Implementation(float InDamage, bool IsCritical)
+{
+	DamageText->SpawnDamageText(GetActorLocation(), InDamage, IsCritical);
 }
 
 void AEnemy::SequenceStart()

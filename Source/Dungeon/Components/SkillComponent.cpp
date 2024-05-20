@@ -107,6 +107,13 @@ void USkillComponent::UseQuickSlotSkill(int32 Idx)
 	QuickSlotSkillActors[Idx]->Client_Use();
 }
 
+void USkillComponent::Abort()
+{
+	APlayerCharacter* const owner = Cast<APlayerCharacter>(GetOwner());
+	CheckNull(owner);
+	owner->SetUse();
+}
+
 void USkillComponent::SpawnProjectile()
 {
 	CheckNull(CurrentSkill);

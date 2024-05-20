@@ -143,6 +143,7 @@ void AWeapon::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherAct
 
 void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult)
 {
+	CheckFalse(HasAuthority());
 	ACharacter* ch = Cast<ACharacter>(GetOwner());
 	AController* inst = nullptr;
 	if (ch)inst = ch->GetController();
@@ -156,6 +157,9 @@ void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& S
 void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
 {
 	Super::SetOwnerCharacter(InCharacter);
+	IGenericTeamAgentInterface* id = Cast<IGenericTeamAgentInterface>(InCharacter);
+	CheckNull(id)
+	SetTeamID(id->GetGenericTeamId());
 }
 
 void AWeapon::OnCollision()

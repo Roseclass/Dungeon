@@ -385,16 +385,6 @@ void AEqquipment::DropTickFunction(float Value)
 void AEqquipment::SetOwnerCharacter(ACharacter* InCharacter)
 {
 	OwnerCharacter = InCharacter;
-	//if (OwnerCharacter)
-	//{
-	//	State = CHelpers::GetComponent<UCStateComponent>(OwnerCharacter);
-	//	Status = CHelpers::GetComponent<UCStatusComponent>(OwnerCharacter);
-	//}
-	//else
-	//{
-	//	State = nullptr;
-	//	Status = nullptr;
-	//}
 }
 
 void AEqquipment::FindManager()

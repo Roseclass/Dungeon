@@ -19,11 +19,11 @@ void UUW_Main::Init(APawn* NewPawn)
 		if (status)
 		{
 			status->OnMaxHealthChanged.AddUFunction(HealthOrb, "SetMax");
-			status->OnCurrentHealthChanged.AddUFunction(HealthOrb, "SetCurrent");
+			status->OnCurrentHealthChanged.AddUFunction(HealthOrb, "SetPercent");
 			status->OnHealthRegenChanged.AddUFunction(HealthOrb, "SetRegen");
 
 			status->OnMaxManaChanged.AddUFunction(ManaOrb, "SetMax");
-			status->OnCurrentManaChanged.AddUFunction(ManaOrb, "SetCurrent");
+			status->OnCurrentManaChanged.AddUFunction(ManaOrb, "SetPercent");
 			status->OnManaRegenChanged.AddUFunction(ManaOrb, "SetRegen");
 		}
 	}
@@ -38,4 +38,10 @@ void UUW_Main::OnChat()
 void UUW_Main::OnMessageUpdated(const FText& Text, const FLinearColor& Color)
 {
 	Chat->OnMessageUpdated(Text, Color);
+}
+
+void UUW_Main::OnDead()
+{
+	HealthOrb->Dead();
+	ManaOrb->Dead();
 }

@@ -22,6 +22,7 @@ protected:
 
 	//property
 private:
+	bool bUpdate = 1;
 	float Max;
 	float Regen;
 protected:
@@ -32,8 +33,9 @@ public:
 	//function
 private:
 	UFUNCTION() void SetMax(float NewMax);
-	UFUNCTION() void SetCurrent(float NewCurrent);
+	UFUNCTION() void SetPercent(float NewPercent);
 	UFUNCTION() void SetRegen(float NewRegen);
 protected:
 public:
+	void Dead();
 };

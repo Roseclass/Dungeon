@@ -429,6 +429,10 @@ void ADungeonPlayerController::CreateDeadWidget()
 		DeadWidget->AddToViewport();
 		DeadWidget->On();
 	}
+	if (MainWidget)
+	{
+		MainWidget->OnDead();
+	}
 }
 
 void ADungeonPlayerController::Server_SendChat_Implementation(const FText& InText)

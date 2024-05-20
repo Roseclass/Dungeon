@@ -19,7 +19,7 @@ void UUW_HealthBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (Max > 0)// and player is alive
+	if (Max > 0&& bUpdate)// and player is alive
 	{
 		float cur = HealthBar->Percent;
 		cur += InDeltaTime * Regen / Max;
@@ -111,4 +111,10 @@ void UUW_HealthBar::SetMonsterType()
 void UUW_HealthBar::SetEliteMonsterType()
 {
 	HealthBar->FillColorAndOpacity = FLinearColor::Red;
+}
+
+void UUW_HealthBar::Dead()
+{
+	bUpdate = 0;
+	SetPercent(0);
 }
