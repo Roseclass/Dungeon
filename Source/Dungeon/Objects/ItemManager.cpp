@@ -1,6 +1,7 @@
 #include "Objects/ItemManager.h"
 #include "Global.h"
 #include "Components/CapsuleComponent.h"
+#include "NavigationSystem.h"
 
 #include "DungeonPlayerController.h"
 #include "Characters/Enemy.h"
@@ -86,30 +87,12 @@ void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, E
 
 		// find drop location
 		float halfSize = ch->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-
 		FVector start = ch->GetActorLocation();
+		start.Z -= halfSize;
+		FVector end = UNavigationSystemV1::GetRandomPointInNavigableRadius(GetWorld(), start, 200);
 		start.Z += halfSize;
 
-		FVector end = ch->GetActorLocation();
-
-		TArray<AActor*> arr; FHitResult hit; TArray<TEnumAsByte<EObjectTypeQuery>> types;
-		types.Add(EObjectTypeQuery::ObjectTypeQuery1);//world static
-		types.Add(EObjectTypeQuery::ObjectTypeQuery2);//world dynamic
-
-		if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), start, start + ch->GetActorForwardVector() * 50, types, 0, arr, EDrawDebugTrace::None, hit, 1))
-		{
-			end = hit.Location;
-			if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), end + FVector(0, 0, halfSize * 2 + 20), end - FVector(0, 0,5000), types, 0, arr, EDrawDebugTrace::None, hit, 1))
-				end = hit.Location;
-			else end = ch->GetActorLocation();
-		}
-		else if (UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), start + FVector(0, 0, halfSize * 2 + 20) + ch->GetActorForwardVector() * 50, start + ch->GetActorForwardVector() * 50 - FVector(0, 0, 5000), types, 0, arr, EDrawDebugTrace::None, hit, 1))
-			end = hit.Location;
-		end.Z += 5;
-
 		InItem->SetOwnerCharacter(nullptr);
-
-		CLog::Print(GetOwner()->GetName());
 
 		Multicast_DropSequence(InItem, start, end);
 	}

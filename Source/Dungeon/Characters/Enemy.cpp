@@ -13,6 +13,7 @@
 #include "Components/InventoryComponent.h"
 #include "Components/DamageTextComponent.h"
 #include "Components/LootComponent.h"
+#include "Components/HitEffectComponent.h"
 
 #include "Widgets/UW_HealthBar.h"
 
@@ -21,12 +22,12 @@ AEnemy::AEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 	TeamID = 2;
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);	
 
 	//actor
 	CHelpers::CreateActorComponent<UDamageTextComponent>(this, &DamageText, "DamageText");
 	CHelpers::CreateActorComponent<ULootComponent>(this, &Loot, "Loot");
+	CHelpers::CreateActorComponent<UHitEffectComponent>(this, &HitEffect, "HitEffect");
 }
 
 void AEnemy::BeginPlay()
@@ -44,7 +45,7 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// hit react by montage component
-	Multicast_SpawnDamageText(DamageAmount, 0);
+	Multicast_TakeDamage(DamageAmount, 0);
 
 	return result;
 }
@@ -56,12 +57,12 @@ FGenericTeamId AEnemy::GetGenericTeamId() const
 
 void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
 {
-	//CLog::Print("UseSkill " + FString::FromInt(InIndex));
 	Skill->UseSkill(InIndex);
 }
 
-void AEnemy::Multicast_SpawnDamageText_Implementation(float InDamage, bool IsCritical)
+void AEnemy::Multicast_TakeDamage_Implementation(float InDamage, bool IsCritical)
 {
+	HitEffect->Glow();
 	DamageText->SpawnDamageText(GetActorLocation(), InDamage, IsCritical);
 }
 

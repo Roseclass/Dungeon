@@ -21,10 +21,17 @@ void ADamageDealer::BeginPlay()
 void ADamageDealer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	CLog::Print(FString::Printf(TEXT("%s : %i"), *GetName(), TeamID), -1, 0);
 }
 
 void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	CheckFalse(HasAuthority());
+
+	// already hit?
+	if (GetDamagedActors().Contains(OtherActor))return;
+
 	// overlap with DungeonCharacterBase
 	ADungeonCharacterBase* base = Cast<ADungeonCharacterBase>(OtherActor);
 	if (!base)return;
@@ -40,10 +47,15 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	// set properties
 	OverlappedActors.AddUnique(OtherActor);
 	CurrentOverlappedActor = OtherActor;
+
+	// send Damage
+	SendDamage(Damage, OtherActor, SweepResult);
 }
 
 void ADamageDealer::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	CheckFalse(HasAuthority());
+
 	// set properties
 	OverlappedActors.Remove(OtherActor);
 	if (CurrentOverlappedActor == OtherActor && OverlappedActors.Num())

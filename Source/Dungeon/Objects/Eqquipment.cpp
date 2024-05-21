@@ -398,7 +398,7 @@ void AEqquipment::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitR
 	if (!Manager)FindManager();
 	if (!Manager)
 	{
-		CLog::Print(__FUNCTION__);
+		CLog::Print("AEqquipment::SetItemLocation Manager is nullptr");
 		return;
 	}
 	Manager->SetItemLocation(this, NewLocation, bSweep, OutSweepHitResult, Teleport);
@@ -409,7 +409,7 @@ void AEqquipment::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
 	if (!Manager)FindManager();
 	if (!Manager)
 	{
-		CLog::Print(__FUNCTION__);
+		CLog::Print("AEqquipment::SetItemRotation Manager is nullptr");
 		return;
 	}
 	Manager->SetItemRotation(this, NewRotation, Teleport);
@@ -420,7 +420,7 @@ void AEqquipment::AttachItemToComponent(USceneComponent* Parent, const FAttachme
 	if (!Manager)FindManager();
 	if (!Manager)
 	{
-		CLog::Print(__FUNCTION__);
+		CLog::Print("AEqquipment::AttachItemToComponent Manager is nullptr");
 		return;
 	}
 	Manager->AttachItemToComponent(this, Parent, AttachmentRules, InSocketName);
@@ -432,7 +432,7 @@ void AEqquipment::ChangeVisibility(EItemMode InMode)
 	if (!Manager)FindManager();
 	if (!Manager)
 	{
-		CLog::Print(__FUNCTION__);
+		CLog::Print("AEqquipment::ChangeVisibility Manager is nullptr");
 		return;
 	}
 	

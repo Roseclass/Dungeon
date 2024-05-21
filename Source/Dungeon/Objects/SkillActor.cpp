@@ -200,8 +200,8 @@ void ASkillActor::SpawnProjectile()
 
 	projectile->SetTeamID(OwnerCharacter->GetGenericTeamId());
 	projectile->SetDamage(CalculateDamage(damage));
-	UGameplayStatics::FinishSpawningActor(projectile, trans);
 	projectile->Activate();
+	UGameplayStatics::FinishSpawningActor(projectile, trans);
 }
 
 void ASkillActor::SpawnWarningSign(int32 InIndex)

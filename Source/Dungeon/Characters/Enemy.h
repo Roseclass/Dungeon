@@ -18,11 +18,10 @@ class UStatusComponent;
 class UStateComponent;
 class UInventoryComponent;
 class UDamageTextComponent;
+class UHitEffectComponent;
 class ULootComponent;
 class UItemObject;
 class ASkillActor;
-
-
 
 UCLASS()
 class DUNGEON_API AEnemy : public ADungeonCharacterBase
@@ -40,8 +39,10 @@ public:
 	//property
 private:
 protected:
-
 	//actor
+	UPROPERTY(EditDefaultsOnly)
+		UHitEffectComponent* HitEffect;
+
 	UPROPERTY(EditDefaultsOnly)
 		ULootComponent* Loot;
 
@@ -56,7 +57,7 @@ public:
 	//function
 private:
 	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
-	UFUNCTION(NetMulticast, Reliable)void Multicast_SpawnDamageText(float InDamage, bool IsCritical);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_TakeDamage(float InDamage, bool IsCritical);
 	void SequenceStart();
 	UFUNCTION(BlueprintCallable)void SequenceEnd();
 protected:
