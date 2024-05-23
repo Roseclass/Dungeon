@@ -24,7 +24,8 @@ public class Dungeon : ModuleRules
 			"ProceduralMeshComponent",
 			"Niagara",
 			"OnlineSubsystem",
-			"OnlineSubsystemUtils"
+			"OnlineSubsystemUtils",
+			"MediaAssets"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);

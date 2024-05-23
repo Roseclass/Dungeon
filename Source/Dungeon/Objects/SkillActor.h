@@ -12,7 +12,7 @@ class AProjectile;
 class AWarningSign;
 class ADungeonCharacterBase;
 class ADungeonPlayerController;
-class UImage;
+class UMediaSource;
 
 DECLARE_MULTICAST_DELEGATE(FSkillTreeSkillStateChanged);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSkillUsing, ASkillActor*);
@@ -99,6 +99,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Widget")
 		FVector2D ParentPosition;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		UMediaSource* PreviewSource;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		FText Name;
+
+	UPROPERTY(EditAnywhere, Category = "Widget")
+		FText Description;
 
 	UPROPERTY(EditAnywhere, Category = "CoolDown")
 		float CoolDown = 10.0f;

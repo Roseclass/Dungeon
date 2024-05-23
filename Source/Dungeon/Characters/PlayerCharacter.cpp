@@ -134,8 +134,6 @@ void APlayerCharacter::Init()
 		{
 			mainWidget->GetQuickSlot()->ConnectComponent(Skill);
 		}
-		if (HasAuthority()) // client : initwidget in onrep
-			InitClientWidget();
 	}
 	
 	//Inventory

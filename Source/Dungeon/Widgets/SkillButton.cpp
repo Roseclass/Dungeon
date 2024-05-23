@@ -8,6 +8,16 @@ void USkillButton::OnButtonClicked()
 	OnSkillButtonClicked.ExecuteIfBound(this);
 }
 
+void USkillButton::OnButtonHovered()
+{
+	OnSkillButtonHovered.ExecuteIfBound(this);
+}
+
+void USkillButton::OnButtonUnhovered()
+{
+	OnSkillButtonUnhovered.ExecuteIfBound(this);
+}
+
 void USkillButton::OnButtonLocked()
 {
 	SetIsEnabled(0);
@@ -38,6 +48,8 @@ void USkillButton::Init(ASkillActor* InSkillActor)
 	WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 0.3));
 
 	OnClicked.AddDynamic(this, &USkillButton::OnButtonClicked);
+	OnHovered.AddDynamic(this, &USkillButton::OnButtonHovered);
+	OnUnhovered.AddDynamic(this, &USkillButton::OnButtonUnhovered);
 
 	SkillActor->OnLocked.AddUFunction(this, "OnButtonLocked");
 	SkillActor->OnUnlocked.AddUFunction(this, "OnButtonUnlocked");

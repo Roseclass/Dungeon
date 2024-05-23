@@ -15,8 +15,7 @@ class USkillButton;
 class ASkillActor;
 class USkillTreeComponent;
 class UUW_SkillTreePopup;
-
-
+class UUW_SkillInfo;
 
 UCLASS()
 class DUNGEON_API UUW_SkillTree : public UUserWidget
@@ -41,6 +40,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UUW_SkillTreePopup* Popup;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+		UUW_SkillInfo* Info;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Size")
 		FVector2D BackgroundLeftTopAnchor = FVector2D(0.2, 0.2);
 
@@ -56,6 +58,8 @@ public:
 	//function
 private:
 	UFUNCTION() void OnButtonClicked(USkillButton* InButton);
+	UFUNCTION() void OnButtonHovered(USkillButton* InButton);
+	UFUNCTION() void OnButtonUnhovered(USkillButton* InButton);
 protected:
 public:
 	void Init(const TArray<ASkillActor*>& Array, USkillTreeComponent* InSkillTreeComp, TFunction<void(int32, ASkillActor*)> OnPopupClicked);

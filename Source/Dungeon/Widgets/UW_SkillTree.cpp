@@ -12,6 +12,7 @@
 #include "Objects/SkillActor.h"
 #include "Widgets/SkillButton.h"
 #include "Widgets/UW_SkillTreePopup.h"
+#include "Widgets/UW_SkillInfo.h"
 
 void UUW_SkillTree::NativeOnInitialized()
 {
@@ -95,6 +96,18 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 	}
 }
 
+void UUW_SkillTree::OnButtonHovered(USkillButton* InButton)
+{
+	ASkillActor* skill = InButton->GetSkillActor();
+	CheckNull(skill);
+	Info->On(skill);
+}
+
+void UUW_SkillTree::OnButtonUnhovered(USkillButton* InButton)
+{
+	Info->Off();
+}
+
 void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, USkillTreeComponent* InSkillTreeComp, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
 {
 	OwnerComponent = InSkillTreeComp;
@@ -119,6 +132,8 @@ void UUW_SkillTree::Init(const TArray<ASkillActor*>& Array, USkillTreeComponent*
 		USkillButton* button = NewObject<USkillButton>(GetOwningPlayer(), USkillButton::StaticClass());
 		button->Init(i);
 		button->OnSkillButtonClicked.BindUFunction(this, "OnButtonClicked");
+		button->OnSkillButtonHovered.BindUFunction(this, "OnButtonHovered");
+		button->OnSkillButtonUnhovered.BindUFunction(this, "OnButtonUnhovered");
 
 		UScaleBox* scale = NewObject<UScaleBox>(GetOwningPlayer(), UScaleBox::StaticClass());
 		scale->AddChild(button);

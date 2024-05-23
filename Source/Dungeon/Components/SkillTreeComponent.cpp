@@ -31,7 +31,7 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 			RootActors.Add(i);
 	}
 
-	if (WidgetClass)
+	if (WidgetClass && !Widget)
 	{
 		APlayerCharacter* character = Cast<APlayerCharacter>(GetOwner());
 		CheckNull(character);
@@ -41,6 +41,8 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 		Widget = CreateWidget<UUW_SkillTree, ADungeonPlayerController>(controller, WidgetClass);
 		Widget->AddToViewport();
 		Widget->Init(Array, this, OnPopupClicked);
+
+		CLog::Print("IN");
 	}
 }
 

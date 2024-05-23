@@ -24,9 +24,13 @@ private:
 protected:
 public:
 	FSkillButtonClicked OnSkillButtonClicked;
+	FSkillButtonClicked OnSkillButtonHovered;
+	FSkillButtonClicked OnSkillButtonUnhovered;
 	//function
 private:
 	UFUNCTION()void OnButtonClicked();
+	UFUNCTION()void OnButtonHovered();
+	UFUNCTION()void OnButtonUnhovered();
 	UFUNCTION()void OnButtonLocked();
 	UFUNCTION()void OnButtonUnlocked();
 	UFUNCTION()void OnButtonAcquired();
