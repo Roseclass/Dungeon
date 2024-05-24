@@ -18,11 +18,12 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
 	bool bCanToggle = 1;
-	AQuest* Quest;
+	UPROPERTY(ReplicatedUsing = "OnRep_Quest")AQuest* Quest;
 	UPROPERTY()UUW_Quest* QuestWidget;
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -31,6 +32,7 @@ public:
 
 	//function
 private:
+	UFUNCTION()void OnRep_Quest();
 protected:
 public:
 	UFUNCTION(BlueprintCallable)void SetQuest(AQuest* InQuest);
@@ -44,6 +46,10 @@ public:
 	void SetCanToggle();
 	void SetCannotToggle();
 	void SetPreview(AQuest* InQuest);
+
+	// for AQuest
+	UFUNCTION(Reliable, Server)void CheckCondition(AActor* InObject);
+	void AddToQuestPool(AActor* InObject);
 
 	FORCEINLINE AQuest* GetQuest() const { return Quest; }
 };

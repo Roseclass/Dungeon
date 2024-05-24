@@ -77,7 +77,6 @@ void ALevelStreamingActor::StartInteract(ADungeonPlayerController* InPlayer)
 
 void ALevelStreamingActor::EndInteract(ADungeonPlayerController* InPlayer)
 {
-
 }
 
 void ALevelStreamingActor::StartCursorOver(ADungeonPlayerController* InPlayer)
@@ -95,6 +94,12 @@ void ALevelStreamingActor::EndCursorOver(ADungeonPlayerController* InPlayer)
 bool ALevelStreamingActor::IsInteractable() 
 {
 	return bActive;
+}
+
+void ALevelStreamingActor::CompleteCondition()
+{
+	//TODO:: check condition
+	LinkedComponent;
 }
 
 void ALevelStreamingActor::LoadLevel(FStageData InData)

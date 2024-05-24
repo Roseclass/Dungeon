@@ -15,6 +15,8 @@
 #include "Components/LootComponent.h"
 #include "Components/HitEffectComponent.h"
 
+#include "Objects/Quest.h"
+
 #include "Widgets/UW_HealthBar.h"
 
 AEnemy::AEnemy()
@@ -53,6 +55,12 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 FGenericTeamId AEnemy::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+void AEnemy::CompleteCondition()
+{
+	//TODO:: check condition, Find LinkedQuest
+	LinkedComponent;
 }
 
 void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)

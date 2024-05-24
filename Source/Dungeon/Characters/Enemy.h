@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/DungeonCharacterBase.h"
+#include "Interfaces/IQuestObjective.h"
 #include "Enemy.generated.h"
 
 /**
@@ -24,7 +25,7 @@ class UItemObject;
 class ASkillActor;
 
 UCLASS()
-class DUNGEON_API AEnemy : public ADungeonCharacterBase
+class DUNGEON_API AEnemy : public ADungeonCharacterBase, public IIQuestObjective
 {
 	GENERATED_BODY()
 public:
@@ -35,6 +36,9 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual FGenericTeamId GetGenericTeamId() const;
+
+	//IIQuestObjective
+	virtual void CompleteCondition()override;
 
 	//property
 private:

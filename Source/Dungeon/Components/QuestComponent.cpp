@@ -12,6 +12,7 @@
 UQuestComponent::UQuestComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(1);
 }
 
 void UQuestComponent::BeginPlay()
@@ -36,6 +37,19 @@ void UQuestComponent::BeginPlay()
 void UQuestComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UQuestComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(UQuestComponent, Quest, COND_None);
+}
+
+void UQuestComponent::OnRep_Quest()
+{
+	SetPreview(Quest);
 }
 
 void UQuestComponent::SetQuest(AQuest* InQuest)
@@ -91,4 +105,15 @@ void UQuestComponent::SetPreview(AQuest* InQuest)
 		return;
 	}
 	QuestWidget->SetQuest(InQuest);
+}
+
+void UQuestComponent::CheckCondition_Implementation(AActor* InObject)
+{
+	// this function call when enemy die, interact with object
+	Quest->CheckCondition(InObject);
+}
+
+void UQuestComponent::AddToQuestPool(AActor* InObject)
+{
+	Quest->AddToQuestPool(InObject);
 }

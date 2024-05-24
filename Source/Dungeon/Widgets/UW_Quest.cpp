@@ -32,7 +32,7 @@ void UUW_QuestEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	for (auto i : Objective->GetQuestConditions())
 	{
 		UTextBlock* temp = NewObject<UTextBlock>(UTextBlock::StaticClass());
-		FString txt = i.Summary + "(" + FString::FromInt(i.CurrentCount) + "/" + FString::FromInt(i.TargetCount) + ")";
+		FString txt = i->GetSummary();
 
 		temp->SetText(FText::FromString(txt));
 		Vertical->AddChild(temp);

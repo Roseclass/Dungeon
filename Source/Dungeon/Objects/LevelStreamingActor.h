@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/DataTable.h"
 #include "Interfaces/IInteractable.h"
+#include "Interfaces/IQuestObjective.h"
 #include "LevelStreamingActor.generated.h"
 
 class USceneComponent;
@@ -38,7 +39,7 @@ public:
 };
 
 UCLASS()
-class DUNGEON_API ALevelStreamingActor : public AActor, public IIInteractable
+class DUNGEON_API ALevelStreamingActor : public AActor, public IIInteractable, public IIQuestObjective
 {
 	GENERATED_BODY()
 public:
@@ -48,11 +49,15 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	//IIInteractable
 	virtual void StartInteract(ADungeonPlayerController* InPlayer)override;
 	virtual void EndInteract(ADungeonPlayerController* InPlayer)override;
 	virtual void StartCursorOver(ADungeonPlayerController* InPlayer)override;
 	virtual void EndCursorOver(ADungeonPlayerController* InPlayer)override;
 	virtual bool IsInteractable()override;
+
+	//IIQuestObjective
+	virtual void CompleteCondition()override;
 
 	//property
 private:
