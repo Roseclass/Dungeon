@@ -15,15 +15,31 @@ void AQuest::BeginPlay()
 	Super::BeginPlay();
 	OnDestroyed.AddDynamic(this, &AQuest::OnQuestDestroyed);
 
+	MainCounts.Init(0, MainConditions.Num());
+	MainQuestOjbectivePool.Init(TSet<AActor*>(),MainConditions.Num());
 	MainQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
 	MainQuestOjbective->SetQuestConditions(MainConditions);
+	MainQuestOjbective->SetQuestCounts(MainCounts);
+
+	AdditiveCounts.Init(0, AdditiveConditions.Num());
+	AdditiveQuestOjbectivePool.Init(TSet<AActor*>(), AdditiveConditions.Num());
 	AdditiveQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
 	AdditiveQuestOjbective->SetQuestConditions(AdditiveConditions);
+	AdditiveQuestOjbective->SetQuestCounts(AdditiveCounts);
 }
 
 void AQuest::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AQuest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicated 변수를 여기에 추가
+	DOREPLIFETIME_CONDITION(AQuest, MainCounts, COND_None);
+	DOREPLIFETIME_CONDITION(AQuest, AdditiveCounts, COND_None);
 }
 
 void AQuest::OnQuestDestroyed(AActor* DestroyedActor)
@@ -32,47 +48,88 @@ void AQuest::OnQuestDestroyed(AActor* DestroyedActor)
 	//	OnCompleted.Broadcast(RootNumber, NodeNumber);
 }
 
+void AQuest::OnRep_MainCounts()
+{
+	//TODO::UpdateWidget
+	MainQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
+}
+
+void AQuest::OnRep_AdditiveCounts()
+{
+	//TODO::UpdateWidget
+	AdditiveQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
+}
+
 void AQuest::CheckCondition(AActor* InObject)
 {
-	/*for (auto& i : MainConditions)
+	CheckNull(InObject);
+
+	for (int32 i = 0; i < MainQuestOjbectivePool.Num(); ++i)
 	{
-		EQuestConditionType type = i.GetType();
-		if (type == EQuestConditionType::DestroyingEnemy)
+		if (MainQuestOjbectivePool[i].Find(InObject))
 		{
-			for (auto j : i.GetTargetEnemyClasses())
-				if (InObject->GetClass()->IsChildOf(j))
-					i.IncreaseEnemyCount();
-		}
-		else if (type == EQuestConditionType::Interact)
-		{
-			for (auto j : i.GetTargetInteractClasses())
-				if (InObject->GetClass()->IsChildOf(j))
-					i.IncreaseInteractCount();
+			++MainCounts[i];
+			MainQuestOjbectivePool[i].Remove(InObject);
 		}
 	}
 
-	for (auto& i : AdditiveConditions)
+	for (int32 i = 0; i < AdditiveQuestOjbectivePool.Num(); ++i)
 	{
-		EQuestConditionType type = i.GetType();
-		if (type == EQuestConditionType::DestroyingEnemy)
+		if (AdditiveQuestOjbectivePool[i].Find(InObject))
 		{
-			for (auto j : i.GetTargetEnemyClasses())
-				if (InObject->GetClass()->IsChildOf(j))
-					i.IncreaseEnemyCount();
+			++AdditiveCounts[i];
+			AdditiveQuestOjbectivePool[i].Remove(InObject);
 		}
-		else if (type == EQuestConditionType::Interact)
-		{
-			for (auto j : i.GetTargetInteractClasses())
-				if (InObject->GetClass()->IsChildOf(j))
-					i.IncreaseInteractCount();
-		}
-	}*/
-
-	//TODO:: find object from map increase count
+	}
 }
 
 void AQuest::AddToQuestPool(AActor* InObject)
 {
-	//TODO:: Addtoobjectpool
-	// find class, add to map
+	CheckNull(InObject);
+
+	for (int32 i = 0; i < MainConditions.Num(); ++i)
+	{
+		EQuestConditionType type = MainConditions[i].GetType();
+		if (type == EQuestConditionType::DestroyingEnemy)
+		{
+			for (auto j : MainConditions[i].GetTargetEnemyClasses())
+				if (InObject->GetClass()->IsChildOf(j))
+				{
+					MainQuestOjbectivePool[i].Add(InObject);
+					break;
+				}
+		}
+		else if (type == EQuestConditionType::Interact)
+		{
+			for (auto j : MainConditions[i].GetTargetInteractClasses())
+				if (InObject->GetClass()->IsChildOf(j))
+				{
+					MainQuestOjbectivePool[i].Add(InObject);
+					break;
+				}
+		}
+	}
+	for (int32 i = 0; i < AdditiveConditions.Num(); ++i)
+	{
+		EQuestConditionType type = AdditiveConditions[i].GetType();
+		if (type == EQuestConditionType::DestroyingEnemy)
+		{
+			for (auto j : AdditiveConditions[i].GetTargetEnemyClasses())
+				if (InObject->GetClass()->IsChildOf(j))
+				{
+					AdditiveQuestOjbectivePool[i].Add(InObject);
+					break;
+				}
+		}
+		else if (type == EQuestConditionType::Interact)
+		{
+			for (auto j : AdditiveConditions[i].GetTargetInteractClasses())
+				if (InObject->GetClass()->IsChildOf(j))
+				{
+					AdditiveQuestOjbectivePool[i].Add(InObject);
+					break;
+				}
+		}
+	}
+
 }

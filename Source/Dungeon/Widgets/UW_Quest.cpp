@@ -29,6 +29,8 @@ void UUW_QuestEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	UQuest_Objective* obj = Cast<UQuest_Objective>(ListItemObject);
 	CheckNull(obj);
 	Objective = obj;
+	Objective->OnQuestCountChanged.BindUFunction(this, "UpdateObject");
+
 	for (auto i : Objective->GetQuestConditions())
 	{
 		UTextBlock* temp = NewObject<UTextBlock>(UTextBlock::StaticClass());
@@ -37,11 +39,22 @@ void UUW_QuestEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 		temp->SetText(FText::FromString(txt));
 		Vertical->AddChild(temp);
 	}
+	UpdateObject();
+}
 
+void UUW_QuestEntry::OnExpandButtonClicked()
+{
+	UTreeView* temp = Cast<UTreeView>(GetOwningListView());
+	CheckNull(temp);
+	temp->SetItemExpansion(Objective, !IsListItemExpanded());
+}
+
+void UUW_QuestEntry::UpdateObject()
+{
 	FString str = "";
 
 	switch (Objective->GetState())
-	{		
+	{
 	case EQuestObjectiveState::Main:str = TEXT("목표"); break;
 	case EQuestObjectiveState::Additive:str = TEXT("추가목표"); break;
 	case EQuestObjectiveState::Max:break;
@@ -51,13 +64,6 @@ void UUW_QuestEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	str += "(0/" + FString::FromInt(Objective->GetQuestConditions().Num()) + ")";
 
 	Object->SetText(FText::FromString(str));
-}
-
-void UUW_QuestEntry::OnExpandButtonClicked()
-{
-	UTreeView* temp = Cast<UTreeView>(GetOwningListView());
-	CheckNull(temp);
-	temp->SetItemExpansion(Objective, !IsListItemExpanded());
 }
 
 /////////////////////////

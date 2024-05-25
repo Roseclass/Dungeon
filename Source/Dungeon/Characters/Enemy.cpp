@@ -14,6 +14,7 @@
 #include "Components/DamageTextComponent.h"
 #include "Components/LootComponent.h"
 #include "Components/HitEffectComponent.h"
+#include "Components/QuestComponent.h"
 
 #include "Objects/Quest.h"
 
@@ -35,6 +36,7 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	QuestObjective_Init();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -59,8 +61,7 @@ FGenericTeamId AEnemy::GetGenericTeamId() const
 
 void AEnemy::CompleteCondition()
 {
-	//TODO:: check condition, Find LinkedQuest
-	LinkedComponent;
+	LinkedComponent->CheckCondition(this);
 }
 
 void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
@@ -111,6 +112,7 @@ void AEnemy::UseSkill(int32 Idx)
 void AEnemy::SetDeadMode()
 {
 	Super::SetDeadMode();
+	CompleteCondition();
 
 	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
 	if(controller)controller->StopLogic("");

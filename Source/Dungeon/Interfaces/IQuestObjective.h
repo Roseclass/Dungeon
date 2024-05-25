@@ -22,6 +22,6 @@ class DUNGEON_API IIQuestObjective
 protected:
 	UQuestComponent* LinkedComponent;
 public:
-	virtual void FindAndAddToQuestPool();
+	virtual void QuestObjective_Init(); // must be called from beginplay
 	virtual void CompleteCondition() = 0;
 };

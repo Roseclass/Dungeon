@@ -47,6 +47,7 @@ public:
 	//function
 private:
 	UFUNCTION()void OnExpandButtonClicked();
+	UFUNCTION()void UpdateObject();
 protected:
 public:
 };

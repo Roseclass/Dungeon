@@ -109,7 +109,7 @@ void UQuestComponent::SetPreview(AQuest* InQuest)
 
 void UQuestComponent::CheckCondition_Implementation(AActor* InObject)
 {
-	// this function call when enemy die, interact with object
+	// this function call when enemy die, interact with object...
 	Quest->CheckCondition(InObject);
 }
 

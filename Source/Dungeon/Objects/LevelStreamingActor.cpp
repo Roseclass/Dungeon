@@ -24,6 +24,7 @@ ALevelStreamingActor::ALevelStreamingActor()
 void ALevelStreamingActor::BeginPlay()
 {
 	Super::BeginPlay();
+	QuestObjective_Init();
 
 	if (DataTable)
 	{
@@ -51,6 +52,7 @@ void ALevelStreamingActor::Tick(float DeltaTime)
 void ALevelStreamingActor::StartInteract(ADungeonPlayerController* InPlayer)
 {
 	CheckFalse(bActive);
+	CompleteCondition();
 
 	// if host?
 	if (HasAuthority() && InPlayer->IsLocalController())
@@ -98,8 +100,7 @@ bool ALevelStreamingActor::IsInteractable()
 
 void ALevelStreamingActor::CompleteCondition()
 {
-	//TODO:: check condition
-	LinkedComponent;
+	LinkedComponent->CheckCondition(this);
 }
 
 void ALevelStreamingActor::LoadLevel(FStageData InData)

@@ -5,7 +5,7 @@
 #include "Objects/Quest.h"
 #include "Components/QuestComponent.h"
 
-void IIQuestObjective::FindAndAddToQuestPool()
+void IIQuestObjective::QuestObjective_Init()
 {
 	AActor* actor = Cast<AActor>(_getUObject());
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(actor->GetWorld(), 0));

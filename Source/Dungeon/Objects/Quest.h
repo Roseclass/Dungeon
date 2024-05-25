@@ -5,9 +5,9 @@
 #include "Quest.generated.h"
 
 class AEnemy;
-class IIQuestObjective;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FQuestCompleted, int32, RootNumber, int32, NodeNumber);
+DECLARE_DELEGATE(FQuestCountChanged);
 
 UENUM(BlueprintType)
 enum class EQuestConditionType : uint8
@@ -38,45 +38,39 @@ private:
 		EQuestConditionType Type;
 
 	// EQuestConditionType::DestroyingEnemy
-	int32 CurrentEnemyCount;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::DestroyingEnemy", EditConditionHides))
 		int32 TargetEnemyCount;
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::DestroyingEnemy", EditConditionHides))
-		TArray<TSubclassOf<IIQuestObjective>> TargetEnemyClasses;
+		TArray<TSubclassOf<AActor>> TargetEnemyClasses;
 
 	// EQuestConditionType::Survive
-	int32 SurvivalDuration;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::Survive", EditConditionHides))
 		int32 TargetTimeToSurvive;
 
 	// EQuestConditionType::Interact
-	int32 CurrentInteractCount;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::Interact", EditConditionHides))
 		int32 TargetInteractCount;
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::Interact", EditConditionHides))
-		TArray<TSubclassOf<IIQuestObjective>> TargetInteractClasses;
+		TArray<TSubclassOf<AActor>> TargetInteractClasses;
 public:
 	FString GetSummary()const 
 	{ 
 		FString result = Summary;
 		if (Type == EQuestConditionType::DestroyingEnemy)
-			result += FString::Printf(TEXT("(%i/%i)"), CurrentEnemyCount, TargetEnemyCount);
+			result += FString::Printf(TEXT("(%i/%i)"), TargetEnemyCount);
 		else if(Type == EQuestConditionType::Survive)
 			result += FString::Printf(TEXT("(%i초)"), TargetTimeToSurvive);
 		else if(Type == EQuestConditionType::Interact)
-			result += FString::Printf(TEXT("(%i/%i)"), CurrentInteractCount, TargetInteractCount);
+			result += FString::Printf(TEXT("(%i/%i)"), TargetInteractCount);
 		return result;
 	}
 
 	FORCEINLINE EQuestConditionType GetType() const { return Type; }
 
-	FORCEINLINE const TArray<TSubclassOf<IIQuestObjective>>& GetTargetEnemyClasses() const { return TargetEnemyClasses; }
-	FORCEINLINE const TArray<TSubclassOf<IIQuestObjective>>& GetTargetInteractClasses() const { return TargetInteractClasses; }
-
-	FORCEINLINE void IncreaseEnemyCount() { ++CurrentEnemyCount; }
-	FORCEINLINE void IncreaseInteractCount() { ++CurrentInteractCount; }
+	FORCEINLINE const TArray<TSubclassOf<AActor>>& GetTargetEnemyClasses() const { return TargetEnemyClasses; }
+	FORCEINLINE const TArray<TSubclassOf<AActor>>& GetTargetInteractClasses() const { return TargetInteractClasses; }
 };
 
 UCLASS()
@@ -86,10 +80,11 @@ class UQuest_Objective : public UObject
 	//property
 private:
 	TArray<const FQuestCondition*> QuestConditions;
+	TArray<const int32*> QuestCounts;
 	EQuestObjectiveState State;
 protected:
 public:
-
+	FQuestCountChanged OnQuestCountChanged;
 	//function
 private:
 protected:
@@ -98,6 +93,12 @@ public:
 	{
 		for (int32 i = 0; i < InArray.Num(); ++i)
 			QuestConditions.Add(&InArray[i]);
+	}
+
+	void SetQuestCounts(TArray<int32>& InArray)
+	{
+		for (int32 i = 0; i < InArray.Num(); ++i)
+			QuestCounts.Add(&InArray[i]);
 	}
 
 	FORCEINLINE const TArray<const FQuestCondition*>& GetQuestConditions() const { return QuestConditions; }
@@ -115,11 +116,16 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
 	UPROPERTY()UQuest_Objective* MainQuestOjbective;
 	UPROPERTY()UQuest_Objective* AdditiveQuestOjbective;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_MainCounts")TArray<int32> MainCounts;
+	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_AdditiveCounts")TArray<int32> AdditiveCounts;
+	TArray<TSet<AActor*>> MainQuestOjbectivePool;
+	TArray<TSet<AActor*>> AdditiveQuestOjbectivePool;
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FText Name;
@@ -144,6 +150,8 @@ public:
 	//function
 private:
 	UFUNCTION() void OnQuestDestroyed(AActor* DestroyedActor);
+	UFUNCTION() void OnRep_MainCounts();
+	UFUNCTION() void OnRep_AdditiveCounts();
 protected:
 public:
 	void CheckCondition(AActor* InObject);
