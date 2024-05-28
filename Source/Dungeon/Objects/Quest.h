@@ -55,22 +55,13 @@ private:
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "Type == EQuestConditionType::Interact", EditConditionHides))
 		TArray<TSubclassOf<AActor>> TargetInteractClasses;
 public:
-	FString GetSummary()const 
-	{ 
-		FString result = Summary;
-		if (Type == EQuestConditionType::DestroyingEnemy)
-			result += FString::Printf(TEXT("(%i/%i)"), TargetEnemyCount);
-		else if(Type == EQuestConditionType::Survive)
-			result += FString::Printf(TEXT("(%i초)"), TargetTimeToSurvive);
-		else if(Type == EQuestConditionType::Interact)
-			result += FString::Printf(TEXT("(%i/%i)"), TargetInteractCount);
-		return result;
-	}
-
+	FORCEINLINE FString GetSummary() const { return Summary; }
 	FORCEINLINE EQuestConditionType GetType() const { return Type; }
-
 	FORCEINLINE const TArray<TSubclassOf<AActor>>& GetTargetEnemyClasses() const { return TargetEnemyClasses; }
+	FORCEINLINE int32 GetTargetEnemyCount() const { return TargetEnemyCount; }
+	FORCEINLINE int32 GetTargetTimeToSurvive() const { return TargetTimeToSurvive; }
 	FORCEINLINE const TArray<TSubclassOf<AActor>>& GetTargetInteractClasses() const { return TargetInteractClasses; }
+	FORCEINLINE int32 GetTargetInteractCount() const { return TargetInteractCount; }
 };
 
 UCLASS()
@@ -102,6 +93,7 @@ public:
 	}
 
 	FORCEINLINE const TArray<const FQuestCondition*>& GetQuestConditions() const { return QuestConditions; }
+	FORCEINLINE const TArray<const int32*>& GetQuestCounts() const { return QuestCounts; }
 	FORCEINLINE EQuestObjectiveState GetState() const { return State; }
 };
 

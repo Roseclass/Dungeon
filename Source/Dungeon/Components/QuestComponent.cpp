@@ -49,13 +49,14 @@ void UQuestComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 void UQuestComponent::OnRep_Quest()
 {
+	CheckNull(QuestWidget);
 	SetPreview(Quest);
 }
 
 void UQuestComponent::SetQuest(AQuest* InQuest)
 {
 	Quest = InQuest;
-	QuestWidget->SetQuest(InQuest);
+	if (QuestWidget)QuestWidget->SetQuest(InQuest);
 }
 
 void UQuestComponent::RemoveQuest(AQuest* InQuest)
@@ -99,21 +100,18 @@ void UQuestComponent::SetCannotToggle()
 
 void UQuestComponent::SetPreview(AQuest* InQuest)
 {
-	if (!InQuest)
-	{
-		CLog::Print("nullptr");
-		return;
-	}
 	QuestWidget->SetQuest(InQuest);
 }
 
 void UQuestComponent::CheckCondition_Implementation(AActor* InObject)
 {
-	// this function call when enemy die, interact with object...
+	// this function called when enemy die, interact with object...
+	CheckNull(Quest);
 	Quest->CheckCondition(InObject);
 }
 
 void UQuestComponent::AddToQuestPool(AActor* InObject)
 {
+	CheckNull(Quest);
 	Quest->AddToQuestPool(InObject);
 }

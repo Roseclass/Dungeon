@@ -94,16 +94,29 @@ void AQuestPoster::CreatePopup()
 void AQuestPoster::Confirm()
 {
 	// set Quest to player
-	APawn* pawn = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0)->GetPawn();
-
-	UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(pawn);
-	if (quest)quest->SetQuest(Quest);
+	for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PlayerController = It->Get();
+		if (PlayerController)
+		{
+			APawn* ControlledPawn = PlayerController->GetPawn();
+			if (ControlledPawn)
+			{
+				UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(ControlledPawn);
+				if (quest)quest->SetQuest(Quest);
+				CLog::Print("confirm", -1, 0, FColor::Black);
+			}
+		}
+	}
 
 	// update state
 	Board->SetClicked(0);
 
 	// remove popup
 	if (PopupWidget)PopupWidget->RemoveFromParent();
+
+	// off Glow
+	OffGlow();
 
 	// end quest seqeunce
 	Board->EndSequence();

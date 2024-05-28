@@ -34,9 +34,6 @@ void UUW_QuestEntry::NativeOnListItemObjectSet(UObject* ListItemObject)
 	for (auto i : Objective->GetQuestConditions())
 	{
 		UTextBlock* temp = NewObject<UTextBlock>(UTextBlock::StaticClass());
-		FString txt = i->GetSummary();
-
-		temp->SetText(FText::FromString(txt));
 		Vertical->AddChild(temp);
 	}
 	UpdateObject();
@@ -51,19 +48,48 @@ void UUW_QuestEntry::OnExpandButtonClicked()
 
 void UUW_QuestEntry::UpdateObject()
 {
-	FString str = "";
-
-	switch (Objective->GetState())
+	//update main category
 	{
-	case EQuestObjectiveState::Main:str = TEXT("목표"); break;
-	case EQuestObjectiveState::Additive:str = TEXT("추가목표"); break;
-	case EQuestObjectiveState::Max:break;
-	default:break;
+		FString str = "";
+
+		switch (Objective->GetState())
+		{
+		case EQuestObjectiveState::Main:str = TEXT("목표"); break;
+		case EQuestObjectiveState::Additive:str = TEXT("추가목표"); break;
+		case EQuestObjectiveState::Max:break;
+		default:break;
+		}
+
+		//TODO:: count success
+		int32 success = 0;
+		str += FString::Printf(TEXT("(%i/%i)"), success, Objective->GetQuestConditions().Num());
+		MainCategory->SetText(FText::FromString(str));
 	}
 
-	str += "(0/" + FString::FromInt(Objective->GetQuestConditions().Num()) + ")";
+	//update child
+	int arrIdx = 0;
+	for (int32 i = 0; i < Vertical->GetChildrenCount(); ++i)
+	{
+		UTextBlock* txt = Cast<UTextBlock>(Vertical->GetChildAt(i));
+		if (!txt)continue;
 
-	Object->SetText(FText::FromString(str));
+		if (!Objective->GetQuestCounts().IsValidIndex(arrIdx))continue;
+		const int32* count = Objective->GetQuestCounts()[arrIdx];
+
+		if (!Objective->GetQuestConditions().IsValidIndex(arrIdx))continue;
+		const FQuestCondition* condition = Objective->GetQuestConditions()[arrIdx++];
+		FString result = condition->GetSummary();
+		EQuestConditionType type = condition->GetType();
+
+		if (type == EQuestConditionType::DestroyingEnemy)
+			result += FString::Printf(TEXT("(%i/%i)"), *count, condition->GetTargetEnemyCount());
+		else if (type == EQuestConditionType::Survive)
+			result += FString::Printf(TEXT("(%i초)"), *count);
+		else if (type == EQuestConditionType::Interact)
+			result += FString::Printf(TEXT("(%i/%i)"), *count, condition->GetTargetInteractCount());
+
+		txt->SetText(FText::FromString(result));
+	}
 }
 
 /////////////////////////

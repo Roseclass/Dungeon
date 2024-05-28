@@ -15,13 +15,13 @@ void AQuest::BeginPlay()
 	Super::BeginPlay();
 	OnDestroyed.AddDynamic(this, &AQuest::OnQuestDestroyed);
 
-	MainCounts.Init(0, MainConditions.Num());
+	if(HasAuthority())MainCounts.Init(0, MainConditions.Num());
 	MainQuestOjbectivePool.Init(TSet<AActor*>(),MainConditions.Num());
 	MainQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
 	MainQuestOjbective->SetQuestConditions(MainConditions);
 	MainQuestOjbective->SetQuestCounts(MainCounts);
 
-	AdditiveCounts.Init(0, AdditiveConditions.Num());
+	if (HasAuthority())AdditiveCounts.Init(0, AdditiveConditions.Num());
 	AdditiveQuestOjbectivePool.Init(TSet<AActor*>(), AdditiveConditions.Num());
 	AdditiveQuestOjbective = NewObject<UQuest_Objective>(this, UQuest_Objective::StaticClass());
 	AdditiveQuestOjbective->SetQuestConditions(AdditiveConditions);
@@ -50,14 +50,14 @@ void AQuest::OnQuestDestroyed(AActor* DestroyedActor)
 
 void AQuest::OnRep_MainCounts()
 {
-	//TODO::UpdateWidget
-	MainQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
+	if (MainQuestOjbective)
+		MainQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
 }
 
 void AQuest::OnRep_AdditiveCounts()
 {
-	//TODO::UpdateWidget
-	AdditiveQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
+	if (AdditiveQuestOjbective)
+		AdditiveQuestOjbective->OnQuestCountChanged.ExecuteIfBound();
 }
 
 void AQuest::CheckCondition(AActor* InObject)
@@ -72,6 +72,7 @@ void AQuest::CheckCondition(AActor* InObject)
 			MainQuestOjbectivePool[i].Remove(InObject);
 		}
 	}
+	OnRep_MainCounts();
 
 	for (int32 i = 0; i < AdditiveQuestOjbectivePool.Num(); ++i)
 	{
@@ -81,6 +82,7 @@ void AQuest::CheckCondition(AActor* InObject)
 			AdditiveQuestOjbectivePool[i].Remove(InObject);
 		}
 	}
+	OnRep_AdditiveCounts();
 }
 
 void AQuest::AddToQuestPool(AActor* InObject)

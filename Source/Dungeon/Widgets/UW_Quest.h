@@ -41,7 +41,7 @@ protected:
 		UButton* Expand;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UTextBlock* Object;
+		UTextBlock* MainCategory;
 public:
 
 	//function
