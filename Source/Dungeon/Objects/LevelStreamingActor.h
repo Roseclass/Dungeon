@@ -20,6 +20,14 @@ enum class EStageList : uint8
 	Max
 };
 
+UENUM(BlueprintType)
+enum class EStreamingType : uint8
+{
+	Fixed,
+	Quest,
+	Max
+};
+
 USTRUCT(BlueprintType)
 struct FStageData : public FTableRowBase
 {
@@ -77,9 +85,24 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 		TMap<APlayerCharacter*, bool> SequenceMap;
+
+	UPROPERTY(EditAnywhere, Category = "Unload")
+		EStageList LocatedStage = EStageList::Max;
+
+	UPROPERTY(EditAnywhere, Category = "Type")
+		EStreamingType Type;
+
+	UPROPERTY(EditAnywhere, Category = "Type", meta = (EditCondition = "Type == EStreamingType::Fixed", EditConditionHides))
+		EStageList NextStage;
+
+	UPROPERTY(EditAnywhere, Category = "Type", meta = (EditCondition = "Type == EStreamingType::Fixed", EditConditionHides))
+		FString PopupMessage;
+
 public:
 	//function
 private:
+	void Interact_Fixed(ADungeonPlayerController* InPlayer);
+	void Interact_Quest(ADungeonPlayerController* InPlayer);
 	void LoadLevel(FStageData InData);
 	void LoadLevel(FName InLevelName);
 	void LoadLevelStarted();

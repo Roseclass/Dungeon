@@ -52,27 +52,18 @@ void ALevelStreamingActor::Tick(float DeltaTime)
 void ALevelStreamingActor::StartInteract(ADungeonPlayerController* InPlayer)
 {
 	CheckFalse(bActive);
-	CompleteCondition();
 
 	// if host?
 	if (HasAuthority() && InPlayer->IsLocalController())
 	{
-		// send popup every clients
-		UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(InPlayer);
+		SetOwner(InPlayer);
 
-		TFunction<bool()> func = [InPlayer,this]()->bool
+		switch (Type)
 		{
-			UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
-			if (!quest)return 0;
-			LoadLevel(quest->GetQuest()->GetStreamingLevelName());
-			return 1;
-		};		
-
-		UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
-		if (!quest)return;
-
-		if (confirm)confirm->SendPopupAllPlayers(quest->GetQuest()->GetPopupMessage() , func);
-		else CLog::Print("nullptr");
+		case EStreamingType::Fixed:Interact_Fixed(InPlayer);break;
+		case EStreamingType::Quest:Interact_Quest(InPlayer);break;
+		default:break;
+		}
 	}
 
 }
@@ -101,6 +92,50 @@ bool ALevelStreamingActor::IsInteractable()
 void ALevelStreamingActor::CompleteCondition()
 {
 	LinkedComponent->CheckCondition(this);
+}
+
+void ALevelStreamingActor::Interact_Fixed(ADungeonPlayerController* InPlayer)
+{
+	// send popup every clients
+	UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(InPlayer);
+
+	TFunction<bool()> func = [InPlayer, this]()->bool
+	{
+		UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
+		if (!quest)return 0;
+		CompleteCondition();
+		for (auto i : Datas)
+		{
+			if (NextStage == i.StageList)LoadLevel(i);
+			break;
+		}
+		return 1;
+	};
+
+	if (confirm)confirm->SendPopupAllPlayers(PopupMessage, func);
+	else CLog::Print("nullptr");
+}
+
+void ALevelStreamingActor::Interact_Quest(ADungeonPlayerController* InPlayer)
+{
+	// send popup every clients
+	UConfirmPopupComponent* confirm = CHelpers::GetComponent<UConfirmPopupComponent>(InPlayer);
+
+	TFunction<bool()> func = [InPlayer, this]()->bool
+	{
+		UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
+		if (!quest)return 0;
+		CompleteCondition();
+		LoadLevel(quest->GetQuest()->GetStreamingLevelName());
+		return 1;
+	};
+
+	UQuestComponent* quest = CHelpers::GetComponent<UQuestComponent>(InPlayer->GetPawn());
+	if (!quest)return;
+
+	if (confirm)confirm->SendPopupAllPlayers(quest->GetQuest()->GetPopupMessage(), func);
+	else CLog::Print("nullptr");
+
 }
 
 void ALevelStreamingActor::LoadLevel(FStageData InData)
@@ -137,9 +172,6 @@ void ALevelStreamingActor::LoadLevel(FName InLevelName)
 void ALevelStreamingActor::LoadLevelStarted()
 {
 	// this is server
-
-	// for multicast
-	SetOwner(UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0));
 
 	// get all player characters
 	TArray<AActor*> characters;
@@ -250,11 +282,27 @@ void ALevelStreamingActor::StartReverseSequence()
 	{
 		Multicast_ReverseSequence(CurrentStage);
 	}), WaitTime, false);
+
+	if (CurrentStage == EStageList::Main)
+	{
+		FTimerHandle UnloadHandle;
+		float UnloadTime = 1;
+		GetWorld()->GetTimerManager().SetTimer(UnloadHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			for (auto& i : Datas)
+				if (i.StageList == LocatedStage)
+				{
+					FLatentActionInfo LatentInfo;
+					UGameplayStatics::UnloadStreamLevel(this, i.StageName, LatentInfo, 0);
+					break;
+				}
+		}), UnloadTime, false);
+	}
 }
 
 void ALevelStreamingActor::Activate_Implementation()
 {
-	// execute when accept quest
+	// execute when accept quest or triggered
 	bActive = 1;
 
 	// sequence is implemented in the blueprint
@@ -262,7 +310,7 @@ void ALevelStreamingActor::Activate_Implementation()
 
 void ALevelStreamingActor::Deactivate_Implementation()
 {
-	// execute when quest end
+	// execute when quest end or triggered
 	bActive = 0;
 
 	// sequence is implemented in the blueprint
