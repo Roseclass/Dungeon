@@ -1,7 +1,7 @@
 #include "Widgets/UW_Main.h"
 #include "Global.h"
 
-#include "Components/StatusComponent.h"
+#include "Characters/DungeonCharacterBase.h"
 
 #include "Widgets/UW_Chat.h"
 #include "Widgets/UW_Orb.h"
@@ -13,21 +13,27 @@ void UUW_Main::NativeOnInitialized()
 
 void UUW_Main::Init(APawn* NewPawn)
 {
-	if (NewPawn)
-	{
-		UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(NewPawn);
-		if (status)
-		{
-			status->OnMaxHealthChanged.AddUFunction(HealthOrb, "SetMax");
-			status->OnCurrentHealthChanged.AddUFunction(HealthOrb, "SetPercent");
-			status->OnHealthRegenChanged.AddUFunction(HealthOrb, "SetRegen");
 
-			status->OnMaxManaChanged.AddUFunction(ManaOrb, "SetMax");
-			status->OnCurrentManaChanged.AddUFunction(ManaOrb, "SetPercent");
-			status->OnManaRegenChanged.AddUFunction(ManaOrb, "SetRegen");
-		}
-	}
-	else CLog::Print("UUW_Main::Init NewPawn is nullptr", -1, 10, FColor::Red);
+}
+
+void UUW_Main::HealthChanged(float NewValue)
+{
+	HealthOrb->SetPercent(NewValue);
+}
+
+void UUW_Main::MaxHealthChanged(float NewValue)
+{
+	HealthOrb->SetMax(NewValue);
+}
+
+void UUW_Main::ManaChanged(float NewValue)
+{
+	ManaOrb->SetPercent(NewValue);
+}
+
+void UUW_Main::MaxManaChanged(float NewValue)
+{
+	ManaOrb->SetMax(NewValue);
 }
 
 void UUW_Main::OnChat()

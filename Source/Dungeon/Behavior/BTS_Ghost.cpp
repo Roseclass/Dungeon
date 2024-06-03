@@ -6,7 +6,6 @@
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
 #include "Components/StateComponent.h"
-#include "Components/StatusComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTS_Ghost::UBTS_Ghost()
@@ -29,7 +28,6 @@ void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
-	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(aiPawn);
 
 	CheckTrue(state->IsDeadMode());
 	CheckTrue(state->IsSequenceMode());

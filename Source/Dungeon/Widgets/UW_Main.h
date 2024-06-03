@@ -43,6 +43,11 @@ protected:
 public:	
 	void Init(APawn* NewPawn);
 
+	void HealthChanged(float NewValue);
+	void MaxHealthChanged(float NewValue);
+	void ManaChanged(float NewValue);
+	void MaxManaChanged(float NewValue);
+
 	void OnChat();
 	void OnMessageUpdated(const FText& Text, const FLinearColor& Color);
 	void OnDead();

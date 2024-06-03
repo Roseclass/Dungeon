@@ -6,12 +6,15 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Abilities/GameplayAbility.h"
+#include "AbilitySystemComponent.h"
+#include "Characters/AttributeSetBase.h"
+
 #include "SaveManager.h"
 #include "DungeonPlayerController.h"
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StateComponent.h"
-#include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 
 #include "Objects/CustomDamageType.h"
@@ -26,10 +29,12 @@ ADungeonCharacterBase::ADungeonCharacterBase()
 	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
+	CHelpers::CreateActorComponent<UAbilitySystemComponent>(this, &AbilitySystem, "AbilitySystem");
+	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
+
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
-	CHelpers::CreateActorComponent<UStatusComponent>(this, &Status, "Status");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 }
 
@@ -42,6 +47,10 @@ void ADungeonCharacterBase::ADungeonCharacterBase::BeginPlay()
 void ADungeonCharacterBase::ADungeonCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	TArray<FGameplayAbilitySpecHandle>arr;
+	AbilitySystem->GetAllAbilities(arr);
+	CLog::Print(arr.Num(), -1, 0);
 }
 
 void ADungeonCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -77,7 +86,7 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	if (State->IsDeadMode())return result;
 
 	// refresh status
-	Status->AdjustCurrentHealth(-DamageAmount);
+	//Status->AdjustCurrentHealth(-DamageAmount);
 	Skill->Abort();
 
 	// set montage datas
@@ -92,12 +101,12 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 	}
 
 	// is dead?
-	float hp = Status->GetCurrentHealth_Server();
-	if (hp <= 0)
-	{
-		SetDeadMode();
-		return result;
-	}
+	//float hp = Status->GetCurrentHealth_Server();
+	//if (hp <= 0)
+	//{
+	//	SetDeadMode();
+	//	return result;
+	//}
 
 	// play reaction
 	// None, Normal, KnockBack, KnockDown, Max
@@ -116,6 +125,42 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 FGenericTeamId ADungeonCharacterBase::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+UAbilitySystemComponent* ADungeonCharacterBase::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
+}
+
+void ADungeonCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
+{
+	if (!AttributeSet)
+	{
+		CLog::Print("ADungeonCharacterBase::HealthChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	float maxHealth = AttributeSet->GetMaxHealth();
+
+	if (!HealthBarWidget)
+	{
+		CLog::Print("ADungeonCharacterBase::HealthChanged, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetPercent(Data.NewValue / maxHealth);
+}
+
+void ADungeonCharacterBase::MaxHealthChanged(const FOnAttributeChangeData& Data)
+{
+
+}
+void ADungeonCharacterBase::ManaChanged(const FOnAttributeChangeData& Data)
+{
+
+}
+
+void ADungeonCharacterBase::MaxManaChanged(const FOnAttributeChangeData& Data)
+{
+
 }
 
 void ADungeonCharacterBase::HitReaction_None()
@@ -192,15 +237,31 @@ void ADungeonCharacterBase::Init()
 {
 	HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
 
-	HealthBarWidget->Init(Name,Status->GetLevel());
+	//HealthBarWidget->Init(Name,Status->GetLevel());
 
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
 
-	Status->OnMaxHealthChanged.AddUFunction(this, "ChangeHealthBarMax");
-	Status->OnCurrentHealthChanged.AddUFunction(this, "ChangeHealthBarPercent");
-	Status->OnHealthRegenChanged.AddUFunction(this, "ChangeHealthBarRegen");
 
-	Status->Update();
+	//AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute());
+	AbilitySystem->InitAbilityActorInfo(this, this);
+	if (HasAuthority())
+	{
+		AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
+		FTimerHandle WaitHandle;
+		float WaitTime = 20;
+		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			CLog::Print("PLAY");
+			FGameplayAbilitySpec* handle = AbilitySystem->FindAbilitySpecFromClass(DefaultAbilities[0]);
+			AbilitySystem->TryActivateAbility(handle->Handle);
+		}), WaitTime, false);
+	}
+
+	// Attribute change callbacks
+	HealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::HealthChanged);
+	MaxHealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxHealthChanged);
+	ManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &ADungeonCharacterBase::ManaChanged);
+	MaxManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxManaChanged);
 }
 
 void ADungeonCharacterBase::Server_SetName_Implementation(const FText& NewName)
@@ -254,31 +315,31 @@ void ADungeonCharacterBase::RevealHealthBar()
 
 bool ADungeonCharacterBase::CanUse()
 {
-	return State->IsIdleMode() && Status->CanUse();
+	return State->IsIdleMode() /*&& Status->CanUse()*/;
 }
 bool ADungeonCharacterBase::CanMove()
 {
-	return !State->IsKnockBackMode() && !State->IsKnockDownMode() && Status->CanMove();
+	return !State->IsKnockBackMode() && !State->IsKnockDownMode() /*&& Status->CanMove()*/;
 }
 
 void ADungeonCharacterBase::SetUse()
 {
-	Status->SetUse();
+	//Status->SetUse();
 }
 
 void ADungeonCharacterBase::SetCannotUse()
 {
-	Status->SetCannotUse();
+	//Status->SetCannotUse();
 }
 
 void ADungeonCharacterBase::SetMove()
 {
-	Status->SetMove();
+	//Status->SetMove();
 }
 
 void ADungeonCharacterBase::SetStop()
 {
-	Status->SetStop();
+	//Status->SetStop();
 }
 
 void ADungeonCharacterBase::UnsetSkill()

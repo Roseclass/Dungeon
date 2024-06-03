@@ -2,8 +2,6 @@
 #include "Global.h"
 #include "Components/ProgressBar.h"
 
-#include "Components/StatusComponent.h"
-
 void UUW_Orb::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);

@@ -3,12 +3,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GenericTeamAgentInterface.h"
+#include "AbilitySystemInterface.h"
+#include "GameplayEffectTypes.h"
 #include "DungeonCharacterBase.generated.h"
 
 class UWidgetComponent;
 class USkillComponent;
 class UMontageComponent;
-class UStatusComponent;
 class UStateComponent;
 class UInventoryComponent;
 class UItemObject;
@@ -16,11 +17,15 @@ class ASkillActor;
 class AWeapon;
 class UUW_HealthBar;
 
+class UAbilitySystemComponent;
+class UAttributeSetBase;
+class UGameplayAbility;
+
 enum class EStateType : uint8;
 enum class EReactionType : uint8;
 
 UCLASS()
-class DUNGEON_API ADungeonCharacterBase : public ACharacter, public IGenericTeamAgentInterface
+class DUNGEON_API ADungeonCharacterBase : public ACharacter, public IGenericTeamAgentInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -32,7 +37,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	// for Gameplay Ability System
+protected:
+	FDelegateHandle HealthChangedDelegateHandle;
+	FDelegateHandle MaxHealthChangedDelegateHandle;
+	FDelegateHandle ManaChangedDelegateHandle;
+	FDelegateHandle MaxManaChangedDelegateHandle;
+
+	// Attribute changed callbacks
+	virtual void HealthChanged(const FOnAttributeChangeData& Data);
+	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
+	virtual void ManaChanged(const FOnAttributeChangeData& Data);
+	virtual void MaxManaChanged(const FOnAttributeChangeData& Data);
 
 	//property
 private:
@@ -49,6 +70,15 @@ protected:
 		UWidgetComponent* HealthBar;
 
 	//actor
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+		UAbilitySystemComponent* AbilitySystem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+		UAttributeSetBase* AttributeSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+		TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		USkillComponent* Skill;
 
@@ -57,9 +87,6 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UStateComponent* State;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStatusComponent* Status;
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UInventoryComponent* Inventory;

@@ -1,10 +1,6 @@
 #include "Characters/PlayerCharacter.h"
 #include "Global.h"
 
-#include "Abilities/GameplayAbility.h"
-#include "AbilitySystemComponent.h"
-#include "Characters/AttributeSetBase.h"
-
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -19,6 +15,10 @@
 #include "Engine/World.h"
 #include "Engine/TextureRenderTarget2D.h"
 
+#include "Abilities/GameplayAbility.h"
+#include "AbilitySystemComponent.h"
+#include "Characters/AttributeSetBase.h"
+
 #include "SaveManager.h"
 #include "DungeonPlayerController.h"
 #include "Components/AppearanceComponent.h"
@@ -28,7 +28,6 @@
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StateComponent.h"
-#include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/QuestComponent.h"
 #include "Components/TravelEffectComponent.h"
@@ -76,55 +75,21 @@ APlayerCharacter::APlayerCharacter()
 	MinimapIcon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//actor
-	CHelpers::CreateActorComponent<UAbilitySystemComponent>(this, &AbilitySystem, "AbilitySystem");
 	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
 	CHelpers::CreateActorComponent<UClearViewComponent>(this, &ClearView, "ClearView");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
 	CHelpers::CreateActorComponent<UTravelEffectComponent>(this, &TravelPostProcess, "TravelPostProcess");
-
-	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	//AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute());
-	AbilitySystem->InitAbilityActorInfo(this, this);
-	if (HasAuthority())
-	{
-		AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
-		FTimerHandle WaitHandle;
-		float WaitTime = 20;
-		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
-		{
-			CLog::Print("PLAY");
-			FGameplayAbilitySpec* handle = AbilitySystem->FindAbilitySpecFromClass(DefaultAbilities[0]);
-			AbilitySystem->TryActivateAbility(handle->Handle);
-		}), WaitTime, false);
-	}
-
-	// Attribute change callbacks
-	HealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &APlayerCharacter::HealthChanged);
-	MaxHealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &APlayerCharacter::MaxHealthChanged);
-	ManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &APlayerCharacter::ManaChanged);
-	MaxManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &APlayerCharacter::MaxManaChanged);
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-
-	TArray<FGameplayAbilitySpecHandle>arr;
-	AbilitySystem->GetAllAbilities(arr);
-	CLog::Print(arr.Num(), -1, 0);
-}
-
-float APlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
-{
-	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	return result;
 }
 
 FGenericTeamId APlayerCharacter::GetGenericTeamId() const
@@ -132,13 +97,10 @@ FGenericTeamId APlayerCharacter::GetGenericTeamId() const
 	return TeamID;
 }
 
-UAbilitySystemComponent* APlayerCharacter::GetAbilitySystemComponent() const
-{
-	return AbilitySystem;
-}
-
 void APlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
 {
+	Super::HealthChanged(Data);
+
 	if (!AttributeSet)
 	{
 		CLog::Print("APlayerCharacter::HealthChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
@@ -146,27 +108,71 @@ void APlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
 	}
 	float maxHealth = AttributeSet->GetMaxHealth();
 
-	if (!HealthBarWidget)
+	if (!MainWidget)
 	{
-		CLog::Print("APlayerCharacter::HealthChanged, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		CLog::Print("APlayerCharacter::HealthChanged, MainWidget is nullptr", -1, 10, FColor::Red);
 		return;
 	}
-	HealthBarWidget->SetPercent(Data.NewValue / maxHealth);
-	Status->OnCurrentHealthChanged.Broadcast(Data.NewValue / maxHealth);
+	MainWidget->HealthChanged(Data.NewValue / maxHealth);
 }
 
 void APlayerCharacter::MaxHealthChanged(const FOnAttributeChangeData& Data)
 {
+	Super::MaxHealthChanged(Data);
+
+	if (!AttributeSet)
+	{
+		CLog::Print("APlayerCharacter::MaxHealthChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	float maxHealth = AttributeSet->GetMaxHealth();
+
+	if (!MainWidget)
+	{
+		CLog::Print("APlayerCharacter::MaxHealthChanged, MainWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	//MainWidget->MaxHealthChanged(float NewValue);
 
 }
+
 void APlayerCharacter::ManaChanged(const FOnAttributeChangeData& Data)
 {
+	Super::ManaChanged(Data);
+
+	if (!AttributeSet)
+	{
+		CLog::Print("APlayerCharacter::ManaChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	float maxHealth = AttributeSet->GetMaxMana();
+
+	if (!MainWidget)
+	{
+		CLog::Print("APlayerCharacter::ManaChanged, MainWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	//MainWidget->ManaChanged(float NewValue);
 
 }
 
 void APlayerCharacter::MaxManaChanged(const FOnAttributeChangeData& Data)
 {
+	Super::MaxManaChanged(Data);
 
+	if (!AttributeSet)
+	{
+		CLog::Print("APlayerCharacter::MaxManaChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	float maxHealth = AttributeSet->GetMaxMana();
+
+	if (!MainWidget)
+	{
+		CLog::Print("APlayerCharacter::MaxManaChanged, MainWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	//MainWidget->MaxManaChanged(float NewValue);
 }
 
 void APlayerCharacter::OffAllWidget()
@@ -198,10 +204,10 @@ void APlayerCharacter::Init()
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
 	if (controller)
 	{
-		UUW_Main* mainWidget = controller->GetMainWidget();
-		if (mainWidget)
+		MainWidget = controller->GetMainWidget();
+		if (MainWidget)
 		{
-			mainWidget->GetQuickSlot()->ConnectComponent(Skill);
+			MainWidget->GetQuickSlot()->ConnectComponent(Skill);
 		}
 	}
 	
@@ -290,7 +296,7 @@ void APlayerCharacter::Init()
 
 	if (HealthBarWidget)
 	{
-		HealthBarWidget->Init(Name, Status->GetLevel());
+		//HealthBarWidget->Init(Name, Status->GetLevel());
 		if (controller && controller->IsLocalController())
 			HealthBarWidget->SetPlayerType();
 		else
@@ -315,7 +321,7 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 	}
 	else if (PrevType == EStateType::Skill && NewType == EStateType::Hit)
 	{
-		Status->SetUse();
+		//Status->SetUse();
 	}
 }
 
@@ -355,7 +361,7 @@ void APlayerCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(0));
-	CheckFalse(Skill->GetQuickSlotManaCost(0) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(0) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(0);
@@ -365,7 +371,7 @@ void APlayerCharacter::UseRight()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(1));
-	CheckFalse(Skill->GetQuickSlotManaCost(1) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(1) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(1);
@@ -375,7 +381,7 @@ void APlayerCharacter::UseQ()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(2));
-	CheckFalse(Skill->GetQuickSlotManaCost(2) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(2) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(2);
@@ -385,7 +391,7 @@ void APlayerCharacter::UseW()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(3));
-	CheckFalse(Skill->GetQuickSlotManaCost(3) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(3) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(3);
@@ -395,7 +401,7 @@ void APlayerCharacter::UseE()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(4));
-	CheckFalse(Skill->GetQuickSlotManaCost(4) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(4) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(4);
@@ -405,7 +411,7 @@ void APlayerCharacter::UseR()
 {
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(5));
-	CheckFalse(Skill->GetQuickSlotManaCost(5) <= Status->GetCurrentMana_Client());
+	//CheckFalse(Skill->GetQuickSlotManaCost(5) <= Status->GetCurrentMana_Client());
 	if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
 		GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(5);

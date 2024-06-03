@@ -2,8 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Characters/DungeonCharacterBase.h"
-#include "AbilitySystemInterface.h"
-#include "GameplayEffectTypes.h"
 #include "Interfaces/ISave.h"
 #include "PlayerCharacter.generated.h"
 
@@ -22,10 +20,7 @@ class UClearViewComponent;
 class USkillTreeComponent;
 class UQuestComponent;
 class AEqquipment;
-
-class UAbilitySystemComponent;
-class UAttributeSetBase;
-class UGameplayAbility;
+class UUW_Main;
 
 struct FSkillData;
 
@@ -33,7 +28,7 @@ enum class EItemMode : uint8;
 enum class EAppearancePart : uint8;
 
 UCLASS(Blueprintable)
-class APlayerCharacter : public ADungeonCharacterBase, public IISave, public IAbilitySystemInterface
+class APlayerCharacter : public ADungeonCharacterBase, public IISave
 {
 	GENERATED_BODY()
 
@@ -44,26 +39,20 @@ protected:
 public:
 
 	virtual void Tick(float DeltaSeconds) override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual FGenericTeamId GetGenericTeamId() const override;
-
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	// for Gameplay Ability System
 protected:
-	FDelegateHandle HealthChangedDelegateHandle;
-	FDelegateHandle MaxHealthChangedDelegateHandle;
-	FDelegateHandle ManaChangedDelegateHandle;
-	FDelegateHandle MaxManaChangedDelegateHandle;
-
 	// Attribute changed callbacks
-	virtual void HealthChanged(const FOnAttributeChangeData& Data);
-	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
-	virtual void ManaChanged(const FOnAttributeChangeData& Data);
-	virtual void MaxManaChanged(const FOnAttributeChangeData& Data);
+	virtual void HealthChanged(const FOnAttributeChangeData& Data)override;
+	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data)override;
+	virtual void ManaChanged(const FOnAttributeChangeData& Data)override;
+	virtual void MaxManaChanged(const FOnAttributeChangeData& Data)override;
 
 	//property
 private:
+	UPROPERTY()UUW_Main* MainWidget;
+
 	//scene
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* TopDownCameraComponent;
@@ -78,15 +67,6 @@ private:
 	USceneCaptureComponent2D* MinimapCapture;
 
 	//actor
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
-		UAbilitySystemComponent* AbilitySystem;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
-		UAttributeSetBase* AttributeSet;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
-		TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
-
 	UPROPERTY(VisibleDefaultsOnly)
 		UAppearanceComponent* Appearance;
 
