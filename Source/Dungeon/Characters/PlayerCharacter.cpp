@@ -1,5 +1,10 @@
 #include "Characters/PlayerCharacter.h"
 #include "Global.h"
+
+#include "Abilities/GameplayAbility.h"
+#include "AbilitySystemComponent.h"
+#include "Characters/AttributeSetBase.h"
+
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -71,21 +76,48 @@ APlayerCharacter::APlayerCharacter()
 	MinimapIcon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//actor
+	CHelpers::CreateActorComponent<UAbilitySystemComponent>(this, &AbilitySystem, "AbilitySystem");
 	CHelpers::CreateActorComponent<UAppearanceComponent>(this, &Appearance, "Appearance");
 	CHelpers::CreateActorComponent<UClearViewComponent>(this, &ClearView, "ClearView");
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
 	CHelpers::CreateActorComponent<UTravelEffectComponent>(this, &TravelPostProcess, "TravelPostProcess");
+
+	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute());
+	AbilitySystem->InitAbilityActorInfo(this, this);
+	if (HasAuthority())
+	{
+		AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
+		FTimerHandle WaitHandle;
+		float WaitTime = 20;
+		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			CLog::Print("PLAY");
+			FGameplayAbilitySpec* handle = AbilitySystem->FindAbilitySpecFromClass(DefaultAbilities[0]);
+			AbilitySystem->TryActivateAbility(handle->Handle);
+		}), WaitTime, false);
+	}
+
+	// Attribute change callbacks
+	HealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &APlayerCharacter::HealthChanged);
+	MaxHealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &APlayerCharacter::MaxHealthChanged);
+	ManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &APlayerCharacter::ManaChanged);
+	MaxManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &APlayerCharacter::MaxManaChanged);
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+	TArray<FGameplayAbilitySpecHandle>arr;
+	AbilitySystem->GetAllAbilities(arr);
+	CLog::Print(arr.Num(), -1, 0);
 }
 
 float APlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -98,6 +130,43 @@ float APlayerCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const
 FGenericTeamId APlayerCharacter::GetGenericTeamId() const
 {
 	return TeamID;
+}
+
+UAbilitySystemComponent* APlayerCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystem;
+}
+
+void APlayerCharacter::HealthChanged(const FOnAttributeChangeData& Data)
+{
+	if (!AttributeSet)
+	{
+		CLog::Print("APlayerCharacter::HealthChanged, AttributeSet is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	float maxHealth = AttributeSet->GetMaxHealth();
+
+	if (!HealthBarWidget)
+	{
+		CLog::Print("APlayerCharacter::HealthChanged, HealthBarWidget is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+	HealthBarWidget->SetPercent(Data.NewValue / maxHealth);
+	Status->OnCurrentHealthChanged.Broadcast(Data.NewValue / maxHealth);
+}
+
+void APlayerCharacter::MaxHealthChanged(const FOnAttributeChangeData& Data)
+{
+
+}
+void APlayerCharacter::ManaChanged(const FOnAttributeChangeData& Data)
+{
+
+}
+
+void APlayerCharacter::MaxManaChanged(const FOnAttributeChangeData& Data)
+{
+
 }
 
 void APlayerCharacter::OffAllWidget()

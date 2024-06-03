@@ -11,6 +11,7 @@
 class AController;
 class UCustomDamageType;
 class UShapeComponent;
+class UGameplayEffect;
 
 UENUM(BlueprintType)
 enum class EDamageType : uint8
@@ -43,6 +44,9 @@ protected:
 		TSubclassOf<UCustomDamageType> DamageTypeClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
+		TSubclassOf<UGameplayEffect> GamePlayEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		EDamageType DamageType;
 
 	UPROPERTY(EditAnywhere, Category = "Datas")
@@ -53,6 +57,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FName OverlapComponentTag = FName("OverlapCollision");
+
+
 public:
 
 	//function

@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Characters/DungeonCharacterBase.h"
+#include "AbilitySystemInterface.h"
+#include "GameplayEffectTypes.h"
 #include "Interfaces/ISave.h"
 #include "PlayerCharacter.generated.h"
 
@@ -21,13 +23,17 @@ class USkillTreeComponent;
 class UQuestComponent;
 class AEqquipment;
 
+class UAbilitySystemComponent;
+class UAttributeSetBase;
+class UGameplayAbility;
+
 struct FSkillData;
 
 enum class EItemMode : uint8;
 enum class EAppearancePart : uint8;
 
 UCLASS(Blueprintable)
-class APlayerCharacter : public ADungeonCharacterBase, public IISave
+class APlayerCharacter : public ADungeonCharacterBase, public IISave, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -36,9 +42,25 @@ public:
 protected:
 	virtual void BeginPlay() override;
 public:
+
 	virtual void Tick(float DeltaSeconds) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	virtual FGenericTeamId GetGenericTeamId() const;
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	// for Gameplay Ability System
+protected:
+	FDelegateHandle HealthChangedDelegateHandle;
+	FDelegateHandle MaxHealthChangedDelegateHandle;
+	FDelegateHandle ManaChangedDelegateHandle;
+	FDelegateHandle MaxManaChangedDelegateHandle;
+
+	// Attribute changed callbacks
+	virtual void HealthChanged(const FOnAttributeChangeData& Data);
+	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
+	virtual void ManaChanged(const FOnAttributeChangeData& Data);
+	virtual void MaxManaChanged(const FOnAttributeChangeData& Data);
 
 	//property
 private:
@@ -56,6 +78,15 @@ private:
 	USceneCaptureComponent2D* MinimapCapture;
 
 	//actor
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+		UAbilitySystemComponent* AbilitySystem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+		UAttributeSetBase* AttributeSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+		TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		UAppearanceComponent* Appearance;
 

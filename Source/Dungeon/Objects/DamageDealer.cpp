@@ -7,6 +7,11 @@
 
 #include "Objects/CustomDamageType.h"
 
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayEffect.h"
+#include "Characters/AttributeSetBase.h"
+
 ADamageDealer::ADamageDealer()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,7 +32,35 @@ void ADamageDealer::Tick(float DeltaTime)
 
 void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+
+	if (OtherActor && OtherActor != this)
+    {
+		IAbilitySystemInterface* HitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
+        if (HitCharacter)
+        {
+            UAbilitySystemComponent* AbilitySystemComponent = HitCharacter->GetAbilitySystemComponent();
+            if (AbilitySystemComponent && GamePlayEffectClass)
+            {
+				FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GamePlayEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
+
+				if (SpecHandle.IsValid())
+				{
+					FGameplayEffectSpec* EffectSpec = SpecHandle.Data.Get();
+					if (EffectSpec)
+					{
+						FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage"));
+						float DamageValue = -Damage;
+						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
+						AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+					}
+				}
+            }
+			CLog::Print("ADamageDealer::OnComponentBeginOverlap");
+        }
+    }
+
 	CheckFalse(HasAuthority());
+	return;
 
 	// already hit?
 	if (GetDamagedActors().Contains(OtherActor))return;

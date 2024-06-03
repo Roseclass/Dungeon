@@ -25,6 +25,8 @@ public class Dungeon : ModuleRules
 			"Niagara",
 			"OnlineSubsystem",
 			"OnlineSubsystemUtils",
+			"GameplayAbilities",
+			"GameplayTags",
 			"MediaAssets"
 		});
 
