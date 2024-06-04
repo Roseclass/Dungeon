@@ -25,6 +25,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = MontageAbility)
 		FName	SectionName;
 
-	UFUNCTION(NetMulticast, Reliable)
-		void MulticastPlayMontage();
+	void PlayMontage();
 };

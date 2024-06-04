@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "AbilitySystemComponent.h"
 #include "SkillComponent.generated.h"
 
 /**
- * 정해진 프리셋에 스킬 데이터를 저장해 보관
- * 캐릭터에서 스킬 사용시 필요한 데이터를 받아감
+ * 
  */
 
+class UDataTable;
 class ASkillActor;
 class USaveGameData;
 struct FSkillData;
@@ -17,7 +17,7 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotDataChanged, int32, ASkillActor*)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FQuickSlotCoolDown, int32, float);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class DUNGEON_API USkillComponent : public UActorComponent
+class DUNGEON_API USkillComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
 
@@ -31,26 +31,25 @@ public:
 
 	//property
 private:
-	bool bLoad;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Init", meta = (ToolTip = "If SkillActors using with another comp, control generate order in OwnerActor"))
-		bool bAutoGenerate = 1;
-		
-	UPROPERTY(EditDefaultsOnly, Category = "Init", meta = (ToolTip = "array order : left, right, q, w, e, r....."))
-		TArray<TSubclassOf<ASkillActor>> SkillActorClasses;
-		
-	ASkillActor* CurrentSkill;
-	UPROPERTY(Replicated, ReplicatedUsing = "OnRep_SkillActors")TArray<ASkillActor*> SkillActors;
-	TArray<ASkillActor*> QuickSlotSkillActors;
+	/*
+	* 퀵슬롯 데이터 구분할건지?
+	* give시에 설정한 inputid로 구분
+	* 
+	*/
+	int32 QuickSlotData[EQuickSlotPosition::Max];
 protected:
+	/*
+	* 스킬 데이터 테이블
+	*/
+
+	UPROPERTY(EditDefaultsOnly, Category = "Datas")
+		UDataTable* DataTable;
 public:
 	FQuickSlotDataChanged OnQuickSlotDataChanged;
 	FQuickSlotCoolDown OnQuickSlotCoolDown;
 
 	//function
 private:
-	UFUNCTION() void OnRep_SkillActors();
-	UFUNCTION() void SetCurrent(ASkillActor* NewCurrent);
 protected:
 public:
 	void SpawnSkillActors();
@@ -71,13 +70,14 @@ public:
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
 
-	FORCEINLINE const TArray<ASkillActor*>& GetSkillActors() const { return SkillActors; };
-	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return SkillActors.IsValidIndex(Idx) ? SkillActors[Idx] : nullptr; };
-	FORCEINLINE ASkillActor* GetLeft() const { return QuickSlotSkillActors.IsValidIndex(0) ? QuickSlotSkillActors[0] : nullptr; };
-	FORCEINLINE ASkillActor* GetRight() const { return QuickSlotSkillActors.IsValidIndex(1) ? QuickSlotSkillActors[1] : nullptr; };
-	FORCEINLINE ASkillActor* GetQ() const { return QuickSlotSkillActors.IsValidIndex(2) ? QuickSlotSkillActors[2] : nullptr; };
-	FORCEINLINE ASkillActor* GetW() const { return QuickSlotSkillActors.IsValidIndex(3) ? QuickSlotSkillActors[3] : nullptr; };
-	FORCEINLINE ASkillActor* GetE() const { return QuickSlotSkillActors.IsValidIndex(4) ? QuickSlotSkillActors[4] : nullptr; };
-	FORCEINLINE ASkillActor* GetR() const { return QuickSlotSkillActors.IsValidIndex(5) ? QuickSlotSkillActors[5] : nullptr; };
-	FORCEINLINE ASkillActor* GetCurrentSkill() const { return CurrentSkill; };
+	//TODO:: change to ref
+	FORCEINLINE TArray<ASkillActor*> GetSkillActors() const { return TArray<ASkillActor*>(); };
+	FORCEINLINE ASkillActor* GetSkillActor(int32 Idx) const { return nullptr; };
+	FORCEINLINE ASkillActor* GetLeft() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetRight() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetQ() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetW() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetE() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetR() const { return nullptr; };
+	FORCEINLINE ASkillActor* GetCurrentSkill() const { return nullptr; };
 };

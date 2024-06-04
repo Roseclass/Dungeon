@@ -9,7 +9,6 @@
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
 #include "Components/StateComponent.h"
-#include "Components/StatusComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/DamageTextComponent.h"
 #include "Components/LootComponent.h"

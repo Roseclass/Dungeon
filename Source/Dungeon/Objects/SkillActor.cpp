@@ -6,7 +6,6 @@
 #include "Characters/DungeonCharacterBase.h"
 
 #include "Components/SkillComponent.h"
-#include "Components/StatusComponent.h"
 
 #include "Objects/Projectile.h"
 #include "Objects/WarningSign.h"
@@ -93,24 +92,24 @@ void ASkillActor::Server_Use_Implementation()
 	}
 
 	// check status
-	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
-	if (!status)
-	{
-		Client_UseFailed();
-		CLog::Print("ASkillActor::Server_Use status is nullptr", -1, 10, FColor::Red);
-		return;
-	}
+	//UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
+	//if (!status)
+	//{
+	//	Client_UseFailed();
+	//	CLog::Print("ASkillActor::Server_Use status is nullptr", -1, 10, FColor::Red);
+	//	return;
+	//}
 
 	// check cost
-	if (status->GetCurrentMana_Server() < Data.ManaCost)
-	{
-		Client_UseFailed();
-		CLog::Print("ASkillActor::Server_Use ManaCost is bigger", 1557, 10, FColor::MakeRandomColor());
-		return;
-	}
+	//if (status->GetCurrentMana_Server() < Data.ManaCost)
+	//{
+	//	Client_UseFailed();
+	//	CLog::Print("ASkillActor::Server_Use ManaCost is bigger", 1557, 10, FColor::MakeRandomColor());
+	//	return;
+	//}
 
 	// update current cost
-	status->AdjustCurrentMana(-Data.ManaCost);
+	//status->AdjustCurrentMana(-Data.ManaCost);
 
 	// set cooldown
 	bCoolDown_Server = 1;
@@ -190,11 +189,11 @@ void ASkillActor::SpawnProjectile()
 	float damage = 1;
 
 	// check status
-	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
-	if (status)
-	{
-		damage = status->GetDamage();
-	}
+	//UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(OwnerCharacter);
+	//if (status)
+	//{
+	//	damage = status->GetDamage();
+	//}
 
 	AProjectile* projectile = GetWorld()->SpawnActorDeferred<AProjectile>(Data.ProjectileClass, trans, OwnerCharacter, OwnerCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 

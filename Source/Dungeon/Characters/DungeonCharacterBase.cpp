@@ -47,10 +47,6 @@ void ADungeonCharacterBase::ADungeonCharacterBase::BeginPlay()
 void ADungeonCharacterBase::ADungeonCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	TArray<FGameplayAbilitySpecHandle>arr;
-	AbilitySystem->GetAllAbilities(arr);
-	CLog::Print(arr.Num(), -1, 0);
 }
 
 void ADungeonCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -87,7 +83,7 @@ float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent 
 
 	// refresh status
 	//Status->AdjustCurrentHealth(-DamageAmount);
-	Skill->Abort();
+	//Skill->Abort();
 
 	// set montage datas
 	{
@@ -242,11 +238,19 @@ void ADungeonCharacterBase::Init()
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
 
 
-	//AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute());
 	AbilitySystem->InitAbilityActorInfo(this, this);
 	if (HasAuthority())
 	{
-		AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
+		FTimerHandle WaitHandle;
+		float WaitTime = 10;
+		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			CLog::Print("GiveAbility");
+			AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
+		}), WaitTime, false);
+	}
+	if (HasAuthority())
+	{
 		FTimerHandle WaitHandle;
 		float WaitTime = 20;
 		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
@@ -256,6 +260,15 @@ void ADungeonCharacterBase::Init()
 			AbilitySystem->TryActivateAbility(handle->Handle);
 		}), WaitTime, false);
 	}
+
+	//{
+	//	FTimerHandle WaitHandle;
+	//	float WaitTime = 3;
+	//	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
+	//	{
+	//		AbilitySystem->InitAbilityActorInfo(this, this);
+	//	}), WaitTime, false);
+	//}
 
 	// Attribute change callbacks
 	HealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::HealthChanged);
@@ -349,7 +362,7 @@ void ADungeonCharacterBase::UnsetSkill()
 
 void ADungeonCharacterBase::SpawnProjectile()
 {
-	Skill->SpawnProjectile();
+	//Skill->SpawnProjectile();
 }
 
 void ADungeonCharacterBase::OnCollision()

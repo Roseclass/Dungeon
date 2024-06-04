@@ -2,6 +2,7 @@
 #include "Global.h"
 #include "Animation/AnimInstance.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 
 void UGA_Mage11::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -15,19 +16,15 @@ void UGA_Mage11::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 
 	if (HasAuthority(&ActivationInfo) && MontageToPlay)
 	{
-		MulticastPlayMontage();
+		PlayMontage();
 	}
 }
 
-void UGA_Mage11::MulticastPlayMontage_Implementation()
+void UGA_Mage11::PlayMontage()
 {
-	ACharacter* Character = Cast<ACharacter>(GetOwningActorFromActorInfo());
+	IAbilitySystemInterface* Character = Cast<IAbilitySystemInterface>(GetOwningActorFromActorInfo());
 	if (Character && MontageToPlay)
 	{
-		UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-		if (AnimInstance)
-		{
-			AnimInstance->Montage_Play(MontageToPlay);
-		}
+		Character->GetAbilitySystemComponent()->PlayMontage(this, GetCurrentActivationInfo(), MontageToPlay, PlayRate);
 	}
 }

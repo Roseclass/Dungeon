@@ -6,7 +6,6 @@
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
 #include "Components/StateComponent.h"
-#include "Components/StatusComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTS_OrcElite::UBTS_OrcElite()
@@ -31,7 +30,7 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
-	UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(aiPawn);
+	//UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(aiPawn);
 
 	// print percepted players
 	{
@@ -56,7 +55,8 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	CheckTrue(state->IsSequenceMode());
 
 	int32 prevPhase = BlackboardComp->GetValueAsInt(Phase.SelectedKeyName);
-	int32 phase = CheckPhase(status->GetCurrentHealth() / status->GetMaxHealth(), prevPhase);
+	//int32 phase = CheckPhase(status->GetCurrentHealth() / status->GetMaxHealth(), prevPhase);
+	int32 phase = 0;
 	CLog::Print(phase, 224, 1, FColor::Purple);
 
 	if (phase != prevPhase)
