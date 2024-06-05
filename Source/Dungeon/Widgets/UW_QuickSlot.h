@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/SkillComponent.h"
 #include "UW_QuickSlot.generated.h"
 
 /**
@@ -14,7 +15,6 @@ class UMaterialInstanceDynamic;
 class UTextBlock;
 class USkillButton;
 class USkillComponent;
-class ASkillActor;
 
 UCLASS()
 class DUNGEON_API UUW_QuickSlot : public UUserWidget
@@ -84,7 +84,7 @@ public:
 
 	//function
 private:
-	UFUNCTION()void OnQuickSlotDataChanged(int32 Index, ASkillActor* InSkillActor);
+	UFUNCTION()void OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillData& InSkillData);
 	UFUNCTION()void OnQuickSlotCoolDown(int32 Index, float Time);
 protected:
 public:

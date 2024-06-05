@@ -12,7 +12,6 @@
 class USkeletalMeshComponent;
 class AEqquipment;
 class AWeapon;
-class ASkillActor;
 
 USTRUCT(BlueprintType)
 struct FSaveMetaData
@@ -75,11 +74,11 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int32 SkillPoints;
 
-	UPROPERTY(VisibleAnywhere)
-		TArray<TSubclassOf<ASkillActor>> AcquiredSkills;
+	//UPROPERTY(VisibleAnywhere)
+	//	TArray<TSubclassOf<ASkillActor>> AcquiredSkills;
 
-	UPROPERTY(VisibleAnywhere)
-		TArray<TSubclassOf<ASkillActor>> SlotSkills;
+	//UPROPERTY(VisibleAnywhere)
+	//	TArray<TSubclassOf<ASkillActor>> SlotSkills;
 };
 
 UCLASS()

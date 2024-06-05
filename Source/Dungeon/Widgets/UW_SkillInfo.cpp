@@ -4,7 +4,7 @@
 #include "Components/Image.h"
 #include "MediaPlayer.h"
 
-#include "Objects/SkillActor.h"
+#include "Components/SkillComponent.h"
 
 void UUW_SkillInfo::NativeOnInitialized()
 {
@@ -36,9 +36,11 @@ void UUW_SkillInfo::OnMediaPause()
 	Preview->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UUW_SkillInfo::On(ASkillActor* InSkillActor)
+void UUW_SkillInfo::On(int32 InSkillID)
 {
-	const FSkillData* data = InSkillActor->GetSkillData();
+	CheckNull(OwnerComponent);
+	const FSkillData* data = OwnerComponent->GetSkillData(InSkillID);
+	CheckNull(data);
 	if (MediaPlayer)MediaPlayer->OpenSource(data->PreviewSource);
 	Name->SetText(data->Name);
 	Description->SetText(data->Description);

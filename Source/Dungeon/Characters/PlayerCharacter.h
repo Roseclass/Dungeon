@@ -107,7 +107,7 @@ public:
 	void UseW();
 	void UseE();
 	void UseR();
-	void ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor);
+	void ChangeQuickSlotData(int32 Index, int32 InInputID);
 
 	//Inventory
 	virtual void TryAddItem(AEqquipment* InObject);

@@ -22,5 +22,16 @@ enum class EGameplayAbilityInputID : uint8
 UENUM(BlueprintType)
 enum class EGameplayAbility_Mage : uint8
 {
-	Frostbolt
+	Frostbolt,
+	GlacialSpike,
+	FrostNova,
+	Blizzard,
+	Lightning,
+	ChainLightning,
+	ThunderStorm,
+	FireBolt,
+	Flamestrike,
+	Meteor,
+	Teleport,
+	ManaShield
 };

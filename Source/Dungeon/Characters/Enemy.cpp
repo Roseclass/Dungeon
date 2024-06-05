@@ -127,5 +127,5 @@ void AEnemy::GenerateLootItems()
 
 void AEnemy::SpawnWarningSign(int32 InIndex)
 {
-	Skill->SpawnWarningSign(InIndex);
+
 }

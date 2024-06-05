@@ -11,7 +11,7 @@
 class UTextBlock;
 class UImage;
 class UMediaPlayer;
-class ASkillActor;
+class USkillComponent;
 
 UCLASS()
 class DUNGEON_API UUW_SkillInfo : public UUserWidget
@@ -24,7 +24,7 @@ public:
 
 	//property
 private:
-	//USkillTreeComponent* OwnerComponent;
+	USkillComponent* OwnerComponent;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Name;
@@ -46,7 +46,8 @@ private:
 	UFUNCTION()void OnMediaPause();
 protected:
 public:
-	void On(ASkillActor* InSkillActor);
+	void On(int32 InSkillID);
 	void Off();
 	
+	FORCEINLINE void SetOwnerComponent(USkillComponent* NewOwnerComponent) { OwnerComponent = NewOwnerComponent; }
 };
