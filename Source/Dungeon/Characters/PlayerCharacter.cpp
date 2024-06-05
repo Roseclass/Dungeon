@@ -36,7 +36,6 @@
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
 #include "Widgets/UW_HealthBar.h"
-#include "Objects/SkillActor.h"
 #include "Objects/Weapon.h"
 #include "Objects/ItemObject.h"
 
@@ -200,7 +199,7 @@ void APlayerCharacter::Init()
 	}
 
 	//Skillcomp
-	if (HasAuthority())Skill->SpawnSkillActors();
+	//if (HasAuthority())Skill->SpawnSkillActors();
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
 	if (controller)
 	{
@@ -328,12 +327,12 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 void APlayerCharacter::InitClientWidget()
 {
 	CheckFalse(IsLocallyControlled());
-	TFunction<void(int32, ASkillActor*)> func;
+	/*TFunction<void(int32, ASkillActor*)> func;
 	func = [this](int32 Idx, ASkillActor* Actor)
 	{
 		ChangeQuickSlotData(Idx, Actor);
-	};
-	SkillTree->Init(Skill->GetSkillActors(), func);
+	};*/
+	//SkillTree->Init(Skill->GetSkillActors(), func);
 }
 
 void APlayerCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
@@ -360,30 +359,30 @@ void APlayerCharacter::UseSkill(int32 Idx)
 void APlayerCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(0));
+	//CheckTrue(Skill->IsQuickSlotCoolDown(0));
 	//CheckFalse(Skill->GetQuickSlotManaCost(0) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(0);
 }
 
 void APlayerCharacter::UseRight()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(1));
+	//CheckTrue(Skill->IsQuickSlotCoolDown(1));
 	//CheckFalse(Skill->GetQuickSlotManaCost(1) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(1);
 }
 
 void APlayerCharacter::UseQ()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(2));
+	//CheckTrue(Skill->IsQuickSlotCoolDown(2));
 	//CheckFalse(Skill->GetQuickSlotManaCost(2) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(2);
 }
 
@@ -392,8 +391,8 @@ void APlayerCharacter::UseW()
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(3));
 	//CheckFalse(Skill->GetQuickSlotManaCost(3) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(3);
 }
 
@@ -402,8 +401,8 @@ void APlayerCharacter::UseE()
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(4));
 	//CheckFalse(Skill->GetQuickSlotManaCost(4) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(4);
 }
 
@@ -412,14 +411,14 @@ void APlayerCharacter::UseR()
 	CheckFalse(CanUse());
 	CheckTrue(Skill->IsQuickSlotCoolDown(5));
 	//CheckFalse(Skill->GetQuickSlotManaCost(5) <= Status->GetCurrentMana_Client());
-	if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
-		GetCharacterMovement()->StopMovementImmediately();
+	//if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
+	//	GetCharacterMovement()->StopMovementImmediately();
 	UseSkill(5);
 }
 
-void APlayerCharacter::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
+void APlayerCharacter::ChangeQuickSlotData(int32 Index, int32 InInputID)
 {
-	Skill->ChangeQuickSlotData(Index, InSkillActor);
+	//Skill->ChangeQuickSlotData(Index, InSkillActor);
 }
 
 void APlayerCharacter::TryAddItem(AEqquipment* InObject)

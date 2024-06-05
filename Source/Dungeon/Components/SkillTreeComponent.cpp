@@ -4,7 +4,7 @@
 #include "SaveManager.h"
 #include "Characters/PlayerCharacter.h"
 #include "DungeonPlayerController.h"
-#include "Objects/SkillActor.h"
+#include "Components/SkillComponent.h"
 #include "Widgets/UW_SkillTree.h"
 
 USkillTreeComponent::USkillTreeComponent()
@@ -23,12 +23,12 @@ void USkillTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked)
+void USkillTreeComponent::Init(const TArray<const FSkillData*> Array, TFunction<void(int32, const FSkillData&)> OnPopupClicked)
 {
 	for (auto i : Array)
 	{
-		if (!i->GetParent())
-			RootActors.Add(i);
+		if (i->ParentPosition == FVector2D(-1, -1))
+			RootDatas.Add(i);
 	}
 
 	if (WidgetClass && !Widget)
@@ -40,7 +40,7 @@ void USkillTreeComponent::Init(const TArray<ASkillActor*>& Array, TFunction<void
 
 		Widget = CreateWidget<UUW_SkillTree, ADungeonPlayerController>(controller, WidgetClass);
 		Widget->AddToViewport();
-		Widget->Init(Array, this, OnPopupClicked);
+		//Widget->Init(Array, this, OnPopupClicked);
 
 		CLog::Print("IN");
 	}
@@ -51,12 +51,13 @@ void USkillTreeComponent::AddPoints()
 
 }
 
-void USkillTreeComponent::Acquire(ASkillActor* SkillActor)
-{
-	// TODO::add point condition
-
-	SkillActor->Server_SetAcquired();
-}
+//void USkillTreeComponent::Acquire(ASkillActor* SkillActor)
+//{
+//	// TODO::add point condition
+//	//	태그를 통해 관리
+//
+//	SkillActor->Server_SetAcquired();
+//}
 
 bool USkillTreeComponent::IsWidgetVisible()
 {
@@ -79,60 +80,60 @@ void USkillTreeComponent::OffWidget()
 void USkillTreeComponent::SaveData(USaveGameData* SaveData)
 {
 	// reset Datas
-	SaveData->PlayerData.SkillPoints;
-	SaveData->PlayerData.AcquiredSkills.Empty();
+	//SaveData->PlayerData.SkillPoints;
+	//SaveData->PlayerData.AcquiredSkills.Empty();
 
-	for (auto i : RootActors)
-	{
-		if (i->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
-		SaveData->PlayerData.AcquiredSkills.Add(i->GetClass());
-		TQueue<ASkillActor*> q;
-		q.Enqueue(i);
-		while (!q.IsEmpty())
-		{
-			ASkillActor* cur;q.Dequeue(cur);
-			for (auto s : cur->GetChildren())
-			{
-				if (s->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
-				SaveData->PlayerData.AcquiredSkills.Add(s->GetClass());
-				q.Enqueue(s);
-			}
-		}
-	}
+	//for (auto i : RootActors)
+	//{
+	//	if (i->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
+	//	SaveData->PlayerData.AcquiredSkills.Add(i->GetClass());
+	//	TQueue<ASkillActor*> q;
+	//	q.Enqueue(i);
+	//	while (!q.IsEmpty())
+	//	{
+	//		ASkillActor* cur;q.Dequeue(cur);
+	//		for (auto s : cur->GetChildren())
+	//		{
+	//			if (s->GetSkillTreeState() != ESkillTreeSkillState::Acquired)continue;
+	//			SaveData->PlayerData.AcquiredSkills.Add(s->GetClass());
+	//			q.Enqueue(s);
+	//		}
+	//	}
+	//}
 }
 
 void USkillTreeComponent::LoadData(USaveGameData* const ReadData)
 {
 	ReadData->PlayerData.SkillPoints;
 
-	// refresh widget
-	for (auto i : RootActors)
-	{
-		TQueue<ASkillActor*> q;
-		q.Enqueue(i);
-		while (!q.IsEmpty())
-		{
-			ASkillActor* cur; q.Dequeue(cur);
-			cur->RefreshWidget();
-			for (auto s : cur->GetChildren())
-				q.Enqueue(s);
-		}
-	}
+	//// refresh widget
+	//for (auto i : RootActors)
+	//{
+	//	TQueue<ASkillActor*> q;
+	//	q.Enqueue(i);
+	//	while (!q.IsEmpty())
+	//	{
+	//		ASkillActor* cur; q.Dequeue(cur);
+	//		cur->RefreshWidget();
+	//		for (auto s : cur->GetChildren())
+	//			q.Enqueue(s);
+	//	}
+	//}
 
-	// load state
-	for (auto i : RootActors)
-	{
-		if (ReadData->PlayerData.AcquiredSkills.Find(i->GetClass()) == INDEX_NONE)continue;
-		TQueue<ASkillActor*> q;
-		q.Enqueue(i); i->Server_SetAcquired();
-		while (!q.IsEmpty())
-		{
-			ASkillActor* cur; q.Dequeue(cur);
-			for (auto s : cur->GetChildren())
-			{
-				if (ReadData->PlayerData.AcquiredSkills.Find(s->GetClass()) == INDEX_NONE)continue;
-				q.Enqueue(s); s->Server_SetAcquired();
-			}
-		}
-	}
+	//// load state
+	//for (auto i : RootActors)
+	//{
+	//	if (ReadData->PlayerData.AcquiredSkills.Find(i->GetClass()) == INDEX_NONE)continue;
+	//	TQueue<ASkillActor*> q;
+	//	q.Enqueue(i); i->Server_SetAcquired();
+	//	while (!q.IsEmpty())
+	//	{
+	//		ASkillActor* cur; q.Dequeue(cur);
+	//		for (auto s : cur->GetChildren())
+	//		{
+	//			if (ReadData->PlayerData.AcquiredSkills.Find(s->GetClass()) == INDEX_NONE)continue;
+	//			q.Enqueue(s); s->Server_SetAcquired();
+	//		}
+	//	}
+	//}
 }

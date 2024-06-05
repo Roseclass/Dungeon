@@ -1,7 +1,6 @@
 #include "Widgets/SkillButton.h"
 #include "Global.h"
-
-#include "Objects/SkillActor.h"
+#include "Characters/GABase.h"
 
 void USkillButton::OnButtonClicked()
 {
@@ -35,15 +34,16 @@ void USkillButton::OnButtonAcquired()
 	WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
 }
 
-void USkillButton::Init(ASkillActor* InSkillActor)
+void USkillButton::Init(const FSkillData& InSkillData)
 {
-	SkillActor = InSkillActor;
-	Position = InSkillActor->GetSkillData()->PannelPosition;
+	SkillID = InSkillData.SkillClass.GetDefaultObject()->GetSkillID();
 
-	WidgetStyle.Normal.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-	WidgetStyle.Hovered.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-	WidgetStyle.Pressed.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
-	WidgetStyle.Disabled.SetResourceObject(InSkillActor->GetSkillData()->SkillImage);
+	Position = InSkillData.PannelPosition;
+
+	WidgetStyle.Normal.SetResourceObject(InSkillData.SkillImage);
+	WidgetStyle.Hovered.SetResourceObject(InSkillData.SkillImage);
+	WidgetStyle.Pressed.SetResourceObject(InSkillData.SkillImage);
+	WidgetStyle.Disabled.SetResourceObject(InSkillData.SkillImage);
 	WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
 	WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 0.3));
 
@@ -51,7 +51,8 @@ void USkillButton::Init(ASkillActor* InSkillActor)
 	OnHovered.AddDynamic(this, &USkillButton::OnButtonHovered);
 	OnUnhovered.AddDynamic(this, &USkillButton::OnButtonUnhovered);
 
-	SkillActor->OnLocked.AddUFunction(this, "OnButtonLocked");
-	SkillActor->OnUnlocked.AddUFunction(this, "OnButtonUnlocked");
-	SkillActor->OnAcquired.AddUFunction(this, "OnButtonAcquired");
+	////태그를 추가
+	//SkillActor->OnLocked.AddUFunction(this, "OnButtonLocked");
+	//SkillActor->OnUnlocked.AddUFunction(this, "OnButtonUnlocked");
+	//SkillActor->OnAcquired.AddUFunction(this, "OnButtonAcquired");
 }

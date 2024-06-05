@@ -7,9 +7,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-#include "Components/SkillComponent.h"
 #include "Widgets/SkillButton.h"
-#include "Objects/SkillActor.h"
 
 void UUW_QuickSlot::NativeOnInitialized()
 {
@@ -74,23 +72,23 @@ void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	}
 }
 
-void UUW_QuickSlot::OnQuickSlotDataChanged(int32 Index, ASkillActor* InSkillActor)
+void UUW_QuickSlot::OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillData& InSkillData)
 {
-	CheckFalse(Slots.IsValidIndex(Index));
-	if (InSkillActor)
+	CheckFalse(Slots.IsValidIndex(InQuickSlotIndex));
+	if (InSkillData.SkillImage)
 	{
-		Slots[Index]->SetIsEnabled(1);
-		Slots[Index]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
-		Slots[Index]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
-		UTexture* icon = Cast<UTexture>(InSkillActor->GetSkillData()->SkillImage);
-		Materials[Index]->SetTextureParameterValue("Icon", icon);
+		Slots[InQuickSlotIndex]->SetIsEnabled(1);
+		Slots[InQuickSlotIndex]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
+		Slots[InQuickSlotIndex]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(1, 1, 1, 1));
+		UTexture* icon = Cast<UTexture>(InSkillData.SkillImage);
+		Materials[InQuickSlotIndex]->SetTextureParameterValue("Icon", icon);
 	}
 	else
 	{ 
-		Slots[Index]->SetIsEnabled(0);
-		Slots[Index]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
-		Slots[Index]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
-		Materials[Index]->SetTextureParameterValue("Icon", DefaultIcon);
+		Slots[InQuickSlotIndex]->SetIsEnabled(0);
+		Slots[InQuickSlotIndex]->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+		Slots[InQuickSlotIndex]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
+		Materials[InQuickSlotIndex]->SetTextureParameterValue("Icon", DefaultIcon);
 	}
 }
 

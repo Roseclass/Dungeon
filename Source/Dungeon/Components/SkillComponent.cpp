@@ -3,6 +3,7 @@
 
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
+#include "Characters/GABase.h"
 
 USkillComponent::USkillComponent()
 {
@@ -12,6 +13,7 @@ USkillComponent::USkillComponent()
 void USkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	GiveDefaultAbilities();
 }
 
 void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -24,68 +26,79 @@ void USkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void USkillComponent::SpawnSkillActors()
+void USkillComponent::GiveDefaultAbilities()
 {
-	for(auto i : ActivatableAbilities.Items)
-		i.InputID
+	CheckTrue(GetOwner()->GetLocalRole() != ROLE_Authority);
+
+	CheckNull(DataTable);
+	DataTable->GetAllRows<FSkillData>("", SkillDatas);
+
+	for (auto i : SkillDatas)
+	{
+		if (!i->SkillClass)continue;
+		GiveAbility(FGameplayAbilitySpec(
+			i->SkillClass,
+			GetSkillLevel(i->SkillClass.GetDefaultObject()->GetSkillID()),
+			i->SkillClass.GetDefaultObject()->GetSkillID(),
+			this
+		));
+	}
 }
 
-void USkillComponent::UseSkill(int32 Idx)
+void USkillComponent::UseSkill(int32 InSkillID)
+{
+	AbilityLocalInputPressed(InSkillID);
+}
+
+void USkillComponent::UseQuickSlotSkill(int32 InQuickSlotIndex)
+{
+	CheckFalse(InQuickSlotIndex < int32(EQuickSlotPosition::Max));
+	UseSkill(QuickSlotData[InQuickSlotIndex]);
+}
+
+void USkillComponent::ChangeQuickSlotData(int32 InQuickSlotIndex, int32 InSkillID)
+{
+	CheckFalse(InQuickSlotIndex < int32(EQuickSlotPosition::Max));
+	int32 prevID = QuickSlotData[InQuickSlotIndex];
+	QuickSlotData[InQuickSlotIndex] = InSkillID;
+
+	for (auto i : SkillDatas)
+	{
+		if (!i->SkillClass)continue;
+		if (i->SkillClass.GetDefaultObject()->GetSkillID() == InSkillID)
+		{
+			OnQuickSlotDataChanged.Broadcast(InQuickSlotIndex, *i);
+			break;
+		}
+	}
+}
+
+void USkillComponent::SetCoolDown(int32 InSkillID)
 {
 
 }
 
-void USkillComponent::UseQuickSlotSkill(int32 Idx)
-{
-
-}
-
-void USkillComponent::Abort()
-{
-
-}
-
-void USkillComponent::SpawnProjectile()
-{
-
-}
-
-void USkillComponent::SpawnWarningSign(int32 InIndex)
-{
-
-}
-
-void USkillComponent::ChangeQuickSlotData(int32 Index, ASkillActor* InSkillActor)
-{
-
-}
-
-void USkillComponent::SetCoolDown(ASkillActor* InSkillActor)
-{
-
-}
-
-bool USkillComponent::GetQuickSlotCoolDown(int32 Index,float& Result)
-{
-	return 1;
-}
-
-bool USkillComponent::IsQuickSlotCoolDown(int32 Index)
-{
-	return 1;
-}
-
-float USkillComponent::GetQuickSlotManaCost(int32 Index)
-{
-	return 1;
-}
-
-bool USkillComponent::GetSkillRange(int32 InIndex, float& Range)
+bool USkillComponent::GetQuickSlotCoolDown(int32 InQuickSlotIndex,float& Result)
 {
 	return 1;
 }
 
-bool USkillComponent::GetQuickSlotSkillRange(int32 InIndex, float& Range)
+bool USkillComponent::IsQuickSlotCoolDown(int32 InQuickSlotIndex)
+{
+	return 1;
+}
+
+float USkillComponent::GetQuickSlotManaCost(int32 InQuickSlotIndex)
+{
+	return 1;
+}
+
+bool USkillComponent::GetSkillRange(int32 InSkillID, float& Range)
+{
+	return 1;
+}
+
+bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range)
 {
 	return 1;
 }
@@ -116,4 +129,31 @@ void USkillComponent::LoadData(USaveGameData* const ReadData)
 	//bLoad = 1;
 	
 	//QuickSlotData[EQuickSlotPosition::Max];
+}
+
+int32 USkillComponent::GetSkillLevel(int32 InSkillID) const
+{
+	return 1;
+}
+
+const TArray<const FSkillData*> USkillComponent::GetSkillDatas() const
+{
+	TArray<const FSkillData*> result;
+	for (auto i : SkillDatas)
+	{
+		const FSkillData* temp = i;
+		result.Add(temp);
+	}
+	return result;
+}
+
+const FSkillData* USkillComponent::GetSkillData(int32 InSkillID)const
+{
+	for (auto i : SkillDatas)
+	{
+		if (!i->SkillClass)continue;
+		if (i->SkillClass.GetDefaultObject()->GetSkillID() == InSkillID)
+			return i;
+	}
+	return nullptr;
 }

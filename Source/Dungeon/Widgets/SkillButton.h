@@ -2,13 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/Button.h"
+#include "Components/SkillComponent.h"
 #include "SkillButton.generated.h"
 
 /**
  * 스킬슬롯, 스킬트리 위젯에 사용되는 버튼
  */
-
-class ASkillActor;
 
 DECLARE_DELEGATE_OneParam(FSkillButtonClicked, USkillButton*);
 
@@ -19,7 +18,7 @@ class DUNGEON_API USkillButton : public UButton
 
 	//property
 private:
-	ASkillActor* SkillActor;
+	int32 SkillID;
 	FVector2D Position;
 protected:
 public:
@@ -36,10 +35,8 @@ private:
 	UFUNCTION()void OnButtonAcquired();
 protected:
 public:
-	void Init(ASkillActor* InSkillActor);
+	void Init(const FSkillData& InSkillData);
 
-	FORCEINLINE ASkillActor* GetSkillActor() const { return SkillActor; }
+	FORCEINLINE int32 GetSkillID() const { return SkillID; }
 	FORCEINLINE FVector2D GetPosition() const { return Position; }
-
-	//호버시설명문
 };

@@ -12,10 +12,12 @@ class UCanvasPanel;
 class UBorder;
 class UScaleBox;
 class USkillButton;
-class ASkillActor;
 class USkillTreeComponent;
+class USkillComponent;
 class UUW_SkillTreePopup;
 class UUW_SkillInfo;
+
+struct FSkillData;
 
 UCLASS()
 class DUNGEON_API UUW_SkillTree : public UUserWidget
@@ -62,6 +64,6 @@ private:
 	UFUNCTION() void OnButtonUnhovered(USkillButton* InButton);
 protected:
 public:
-	void Init(const TArray<ASkillActor*>& Array, USkillTreeComponent* InSkillTreeComp, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
+	void Init(const TArray<FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, const FSkillData&)> OnPopupClicked);
 };
 

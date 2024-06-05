@@ -8,9 +8,10 @@
  * 스킬트리를 제어하는 컴포넌트
  */
 
-class ASkillActor;
 class USaveGameData;
 class UUW_SkillTree;
+
+struct FSkillData;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DUNGEON_API USkillTreeComponent : public UActorComponent
@@ -29,7 +30,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<UUW_SkillTree> WidgetClass;
 	
-	TArray<ASkillActor*>RootActors;
+	TArray<const FSkillData*>RootDatas;
 	UPROPERTY()UUW_SkillTree* Widget;
 protected:
 public:
@@ -38,9 +39,9 @@ public:
 private:
 protected:
 public:
-	void Init(const TArray<ASkillActor*>& Array, TFunction<void(int32, ASkillActor*)> OnPopupClicked);
+	void Init(const TArray<const FSkillData*> InDatas, TFunction<void(int32, const FSkillData&)> OnPopupClicked);
 	void AddPoints();
-	void Acquire(ASkillActor* SkillActor);
+	//void Acquire(ASkillActor* SkillActor);
 
 	//Widget
 	bool IsWidgetVisible();
@@ -51,5 +52,5 @@ public:
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
 
-	FORCEINLINE const TArray<ASkillActor*>& GetRootActors() { return RootActors; }
+	FORCEINLINE const TArray<const FSkillData*>& GetRootDatas() { return RootDatas; }
 };
