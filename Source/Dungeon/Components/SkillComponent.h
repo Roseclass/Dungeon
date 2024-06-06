@@ -22,15 +22,15 @@ enum class ESkillTreeSkillState : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FSkillData
+struct FSkillData : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, Category = "Class")
 		TSubclassOf<UGABase> SkillClass;
 
-	UPROPERTY(EditAnywhere, Category = "Widget")
-		UObject* SkillImage;
+	UPROPERTY(EditAnywhere, Category = "Widget", meta = (DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface", DisallowedClasses = "MediaTexture"))
+		TObjectPtr<UObject> SkillImage;
 
 	UPROPERTY(EditAnywhere, Category = "Widget")
 		FVector2D PannelPosition;

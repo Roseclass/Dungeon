@@ -6,13 +6,14 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-#include "Abilities/GameplayAbility.h"
-#include "AbilitySystemComponent.h"
-#include "Characters/AttributeSetBase.h"
 
 #include "SaveManager.h"
 #include "DungeonPlayerController.h"
+
 #include "Components/SkillComponent.h"
+#include "Abilities/GameplayAbility.h"
+#include "Characters/AttributeSetBase.h"
+
 #include "Components/MontageComponent.h"
 #include "Components/StateComponent.h"
 #include "Components/InventoryComponent.h"
@@ -29,10 +30,9 @@ ADungeonCharacterBase::ADungeonCharacterBase()
 	CHelpers::CreateComponent(this, &HealthBar, "HealthBar", HealthBarRoot);
 
 	//actor
-	CHelpers::CreateActorComponent<UAbilitySystemComponent>(this, &AbilitySystem, "AbilitySystem");
+	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
 
-	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
@@ -125,7 +125,7 @@ FGenericTeamId ADungeonCharacterBase::GetGenericTeamId() const
 
 UAbilitySystemComponent* ADungeonCharacterBase::GetAbilitySystemComponent() const
 {
-	return AbilitySystem;
+	return Skill;
 }
 
 void ADungeonCharacterBase::HealthChanged(const FOnAttributeChangeData& Data)
@@ -237,44 +237,13 @@ void ADungeonCharacterBase::Init()
 
 	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
 
-
-	AbilitySystem->InitAbilityActorInfo(this, this);
-	if (HasAuthority())
-	{
-		FTimerHandle WaitHandle;
-		float WaitTime = 10;
-		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
-		{
-			CLog::Print("GiveAbility");
-			AbilitySystem->GiveAbility(FGameplayAbilitySpec(DefaultAbilities[0]));
-		}), WaitTime, false);
-	}
-	if (HasAuthority())
-	{
-		FTimerHandle WaitHandle;
-		float WaitTime = 20;
-		GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
-		{
-			CLog::Print("PLAY");
-			FGameplayAbilitySpec* handle = AbilitySystem->FindAbilitySpecFromClass(DefaultAbilities[0]);
-			AbilitySystem->TryActivateAbility(handle->Handle);
-		}), WaitTime, false);
-	}
-
-	//{
-	//	FTimerHandle WaitHandle;
-	//	float WaitTime = 3;
-	//	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
-	//	{
-	//		AbilitySystem->InitAbilityActorInfo(this, this);
-	//	}), WaitTime, false);
-	//}
+	Skill->InitAbilityActorInfo(this, this);
 
 	// Attribute change callbacks
-	HealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::HealthChanged);
-	MaxHealthChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxHealthChanged);
-	ManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &ADungeonCharacterBase::ManaChanged);
-	MaxManaChangedDelegateHandle = AbilitySystem->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxManaChanged);
+	HealthChangedDelegateHandle = Skill->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::HealthChanged);
+	MaxHealthChangedDelegateHandle = Skill->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxHealthChanged);
+	ManaChangedDelegateHandle = Skill->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &ADungeonCharacterBase::ManaChanged);
+	MaxManaChangedDelegateHandle = Skill->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &ADungeonCharacterBase::MaxManaChanged);
 }
 
 void ADungeonCharacterBase::Server_SetName_Implementation(const FText& NewName)

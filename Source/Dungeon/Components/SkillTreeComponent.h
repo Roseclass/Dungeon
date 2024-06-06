@@ -10,6 +10,7 @@
 
 class USaveGameData;
 class UUW_SkillTree;
+class USkillComponent;
 
 struct FSkillData;
 
@@ -30,7 +31,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<UUW_SkillTree> WidgetClass;
 	
-	TArray<const FSkillData*>RootDatas;
+	TArray<FVector2D>RootDatas;
+	TMap<FVector2D, TArray<FVector2D>>TreeDatas;
 	UPROPERTY()UUW_SkillTree* Widget;
 protected:
 public:
@@ -39,7 +41,7 @@ public:
 private:
 protected:
 public:
-	void Init(const TArray<const FSkillData*> InDatas, TFunction<void(int32, const FSkillData&)> OnPopupClicked);
+	void Init(const TArray<const FSkillData*> InDatas, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked);
 	void AddPoints();
 	//void Acquire(ASkillActor* SkillActor);
 
@@ -52,5 +54,6 @@ public:
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
 
-	FORCEINLINE const TArray<const FSkillData*>& GetRootDatas() { return RootDatas; }
+	FORCEINLINE TArray<FVector2D> GetRootDatas() const { return RootDatas; }
+	FORCEINLINE TMap<FVector2D, TArray<FVector2D>> GetTreeDatas() const { return TreeDatas; }
 };

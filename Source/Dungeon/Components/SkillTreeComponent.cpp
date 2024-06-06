@@ -23,12 +23,16 @@ void USkillTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillTreeComponent::Init(const TArray<const FSkillData*> Array, TFunction<void(int32, const FSkillData&)> OnPopupClicked)
+void USkillTreeComponent::Init(const TArray<const FSkillData*> Array, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked)
 {
 	for (auto i : Array)
 	{
 		if (i->ParentPosition == FVector2D(-1, -1))
-			RootDatas.Add(i);
+		{
+			RootDatas.Add(i->PannelPosition);
+			continue;
+		}
+		TreeDatas.FindOrAdd(i->ParentPosition).Add(i->PannelPosition);
 	}
 
 	if (WidgetClass && !Widget)
@@ -40,9 +44,7 @@ void USkillTreeComponent::Init(const TArray<const FSkillData*> Array, TFunction<
 
 		Widget = CreateWidget<UUW_SkillTree, ADungeonPlayerController>(controller, WidgetClass);
 		Widget->AddToViewport();
-		//Widget->Init(Array, this, OnPopupClicked);
-
-		CLog::Print("IN");
+		Widget->Init(Array, this, InSkillComp, OnPopupClicked);
 	}
 }
 

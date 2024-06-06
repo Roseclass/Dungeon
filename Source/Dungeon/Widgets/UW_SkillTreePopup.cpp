@@ -16,42 +16,42 @@ void UUW_SkillTreePopup::NativeOnInitialized()
 
 void UUW_SkillTreePopup::OnButton0Clicked()
 {
-	OnPopupButtonClicked.Broadcast(0, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(0, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UUW_SkillTreePopup::OnButton1Clicked()
 {
-	OnPopupButtonClicked.Broadcast(1, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(1, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UUW_SkillTreePopup::OnButton2Clicked()
 {
-	OnPopupButtonClicked.Broadcast(2, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(2, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UUW_SkillTreePopup::OnButton3Clicked()
 {
-	OnPopupButtonClicked.Broadcast(3, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(3, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UUW_SkillTreePopup::OnButton4Clicked()
 {
-	OnPopupButtonClicked.Broadcast(4, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(4, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UUW_SkillTreePopup::OnButton5Clicked()
 {
-	OnPopupButtonClicked.Broadcast(5, SkillActor);
-	SkillActor = nullptr;
+	OnPopupButtonClicked.Broadcast(5, SkillID);
+	SkillID = -1;
 	SetVisibility(ESlateVisibility::Hidden);
 }

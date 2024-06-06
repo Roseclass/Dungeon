@@ -11,7 +11,7 @@
 class UButton;
 class ASkillActor;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FPopupButtonClicked, int32, ASkillActor*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FPopupButtonClicked, int32, int32);
 
 UCLASS()
 class DUNGEON_API UUW_SkillTreePopup : public UUserWidget
@@ -23,7 +23,7 @@ public:
 
 	//property
 private:
-	ASkillActor* SkillActor;
+	int32 SkillID;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UButton* Button0;
@@ -57,5 +57,5 @@ private:
 protected:
 public:
 
-	FORCEINLINE void SetSkillActor(ASkillActor* InSkillActor) { SkillActor = InSkillActor; }
+	FORCEINLINE void SetSkillID(int32 InSkillID) { SkillID = InSkillID; }
 };

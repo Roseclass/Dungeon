@@ -24,76 +24,81 @@ int32 UUW_SkillTree::NativePaint(const FPaintArgs& Args, const FGeometry& Allott
 	int32 result = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	FPaintContext context = FPaintContext(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 
-	if (!OwnerComponent)return result;
+	if (!OwnerComponent || !bInit)return result;
 
-	//const TArray<ASkillActor*>& rootActors = OwnerComponent->GetRootActors();
+	TArray<FVector2D> rootDatas = OwnerComponent->GetRootDatas();
+	TMap<FVector2D, TArray<FVector2D>> treeDatas = OwnerComponent->GetTreeDatas();
 
-	////트리구조에 맞게 선그리기
-	//for (auto i : rootActors)
-	//{
-	//	TQueue<ASkillActor*> q;
-	//	q.Enqueue(i);
-	//	while (!q.IsEmpty())
-	//	{
-	//		ASkillActor* parent;
-	//		q.Dequeue(parent);
-	//		for (auto child : parent->GetChildren())
-	//		{
-	//			q.Enqueue(child);
-	//			FVector2D parentPos = parent->GetSkillData()->PannelPosition;
-	//			FVector2D childPos = child->GetSkillData()->PannelPosition;
-	//			UScaleBox* a = Icons[parentPos];
-	//			UScaleBox* b = Icons[childPos];
-	//			//x가 크면 우짝
-	//			if (parentPos.X < childPos.X && parentPos.Y >= childPos.Y)
-	//			{
-	//				parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
-	//				parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X;
-	//				parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y * 0.5;
+	//트리구조에 맞게 선그리기
+	for (auto i : rootDatas)
+	{
+		TQueue<FVector2D> q;
+		q.Enqueue(i);
+		while (!q.IsEmpty())
+		{
+			FVector2D parent;q.Dequeue(parent);
+			if (!treeDatas.Contains(parent))continue;
 
-	//				childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
-	//				childPos.Y += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).Y * 0.5;
-	//			}
-	//			//y가 크면 밑으로
-	//			else if (parentPos.X >= childPos.X && parentPos.Y < childPos.Y)
-	//			{
-	//				parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
-	//				parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X * 0.5;
-	//				parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y;
+			TArray<FVector2D> children = treeDatas[parent];
+			for (auto child : children)
+			{
+				q.Enqueue(child);
+				UScaleBox* a = Icons[parent];
+				UScaleBox* b = Icons[child];
 
-	//				childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
-	//				childPos.X += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).X * 0.5;
-	//			}
-	//			else
-	//				continue;
-	//			UWidgetBlueprintLibrary::DrawLine(context, parentPos, childPos, FLinearColor::White, 1, 3);
-	//		}
-	//	}
-	//}
+				FVector2D parentPos = parent;
+				FVector2D childPos = child;
+				
+				//x가 크면 우짝
+				if (parent.X < child.X && parent.Y >= child.Y)
+				{
+					parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
+					parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X;
+					parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y * 0.5;
+
+					childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
+					childPos.Y += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).Y * 0.5;
+				}
+				//y가 크면 밑으로
+				else if (parent.X >= child.X && parent.Y < child.Y)
+				{
+					parentPos = USlateBlueprintLibrary::GetLocalTopLeft(a->GetPaintSpaceGeometry());
+					parentPos.X += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).X * 0.5;
+					parentPos.Y += USlateBlueprintLibrary::GetLocalSize(a->GetPaintSpaceGeometry()).Y;
+
+					childPos = USlateBlueprintLibrary::GetLocalTopLeft(b->GetPaintSpaceGeometry());
+					childPos.X += USlateBlueprintLibrary::GetLocalSize(b->GetPaintSpaceGeometry()).X * 0.5;
+				}
+				else
+					continue;
+				UWidgetBlueprintLibrary::DrawLine(context, parentPos, childPos, FLinearColor::White, 1, 3);
+			}
+		}
+	}
 
 	return result;
 }
 
 void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 {
-	//ASkillActor* skill = InButton->GetSkillActor();
-	//CheckNull(skill);
+	int32 skillID = InButton->GetSkillID();
+	CheckFalse(skillID > -1);
 	//if (skill->GetSkillTreeState() == ESkillTreeSkillState::Unlocked)
 	//{
 	//	//조건이 더 필요함 ex)스킬포인트..
 	//	OwnerComponent->Acquire(skill);
 	//}
 	//else if (skill->GetSkillTreeState() == ESkillTreeSkillState::Acquired)
-	//{
-	//	FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
-	//	FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-	//	mousePos /= geo.GetLocalSize();
-	//	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Popup);
-	//	FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
-	//	slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
-	//	Popup->SetSkillActor(skill);
-	//	Popup->SetVisibility(ESlateVisibility::Visible);
-	//}
+	{
+		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
+		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+		mousePos /= geo.GetLocalSize();
+		UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Popup);
+		FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
+		slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
+		Popup->SetSkillID(skillID);
+		Popup->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 void UUW_SkillTree::OnButtonHovered(USkillButton* InButton)
@@ -107,7 +112,7 @@ void UUW_SkillTree::OnButtonUnhovered(USkillButton* InButton)
 	Info->Off();
 }
 
-void UUW_SkillTree::Init(const TArray<FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, const FSkillData&)> OnPopupClicked)
+void UUW_SkillTree::Init(const TArray<const FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked)
 {
 	OwnerComponent = InSkillTreeComp;
 	Info->SetOwnerComponent(InSkillComp);
@@ -155,6 +160,8 @@ void UUW_SkillTree::Init(const TArray<FSkillData*>& Array, USkillTreeComponent* 
 		Icons.Add(i->PannelPosition, scale);
 	}
 
-	////팝업 버튼 클릭 함수 바인딩
-	//Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
+	//팝업 버튼 클릭 함수 바인딩
+	Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
+
+	bInit = 1;
 }

@@ -32,6 +32,7 @@ public:
 	//property
 private:
 	USkillTreeComponent* OwnerComponent;
+	bool bInit;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCanvasPanel* BaseCanvasPanel;
@@ -64,6 +65,6 @@ private:
 	UFUNCTION() void OnButtonUnhovered(USkillButton* InButton);
 protected:
 public:
-	void Init(const TArray<FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, const FSkillData&)> OnPopupClicked);
+	void Init(const TArray<const FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked);
 };
 

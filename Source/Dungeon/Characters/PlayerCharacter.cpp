@@ -32,6 +32,7 @@
 #include "Components/QuestComponent.h"
 #include "Components/TravelEffectComponent.h"
 #include "Objects/Projectile.h"
+#include "Characters/GABase.h"
 
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
@@ -199,7 +200,6 @@ void APlayerCharacter::Init()
 	}
 
 	//Skillcomp
-	//if (HasAuthority())Skill->SpawnSkillActors();
 	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
 	if (controller)
 	{
@@ -207,6 +207,7 @@ void APlayerCharacter::Init()
 		if (MainWidget)
 		{
 			MainWidget->GetQuickSlot()->ConnectComponent(Skill);
+			InitClientWidget();
 		}
 	}
 	
@@ -327,12 +328,12 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 void APlayerCharacter::InitClientWidget()
 {
 	CheckFalse(IsLocallyControlled());
-	/*TFunction<void(int32, ASkillActor*)> func;
-	func = [this](int32 Idx, ASkillActor* Actor)
+	TFunction<void(int32, int32)> func;
+	func = [this](int32 Idx, int32 SkillID)
 	{
-		ChangeQuickSlotData(Idx, Actor);
-	};*/
-	//SkillTree->Init(Skill->GetSkillActors(), func);
+		ChangeQuickSlotData(Idx, SkillID);
+	};
+	SkillTree->Init(Skill->GetSkillDatas(), Skill, func);
 }
 
 void APlayerCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)
@@ -418,7 +419,7 @@ void APlayerCharacter::UseR()
 
 void APlayerCharacter::ChangeQuickSlotData(int32 Index, int32 InInputID)
 {
-	//Skill->ChangeQuickSlotData(Index, InSkillActor);
+	Skill->ChangeQuickSlotData(Index, InInputID);
 }
 
 void APlayerCharacter::TryAddItem(AEqquipment* InObject)

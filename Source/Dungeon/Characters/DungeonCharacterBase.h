@@ -70,17 +70,11 @@ protected:
 		UWidgetComponent* HealthBar;
 
 	//actor
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
-		UAbilitySystemComponent* AbilitySystem;
+	UPROPERTY(VisibleDefaultsOnly)
+		USkillComponent* Skill;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
 		UAttributeSetBase* AttributeSet;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-		TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		USkillComponent* Skill;
 
 	UPROPERTY(VisibleDefaultsOnly)
 		UMontageComponent* Montage;

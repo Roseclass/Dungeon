@@ -43,6 +43,10 @@ void USkillComponent::GiveDefaultAbilities()
 			this
 		));
 	}
+
+	for (int32 i = 0; i < int32(EQuickSlotPosition::Max); ++i)
+		QuickSlotData[i] = -1;
+
 }
 
 void USkillComponent::UseSkill(int32 InSkillID)
@@ -69,6 +73,16 @@ void USkillComponent::ChangeQuickSlotData(int32 InQuickSlotIndex, int32 InSkillI
 		{
 			OnQuickSlotDataChanged.Broadcast(InQuickSlotIndex, *i);
 			break;
+		}
+	}
+
+	for (int32 i = 0; i < int32(EQuickSlotPosition::Max); ++i)
+	{
+		if (i == InQuickSlotIndex)continue;
+		if (QuickSlotData[i] == InSkillID)
+		{
+			OnQuickSlotDataChanged.Broadcast(i, FSkillData());
+			QuickSlotData[i] = -1;
 		}
 	}
 }
