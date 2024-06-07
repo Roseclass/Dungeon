@@ -66,6 +66,7 @@ public:
 
 	//property
 private:
+	bool bLoad;
 	int32 QuickSlotData[EQuickSlotPosition::Max];
 	TArray<FSkillData*> SkillDatas;
 protected:

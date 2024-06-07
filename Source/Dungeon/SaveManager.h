@@ -77,8 +77,8 @@ public:
 	//UPROPERTY(VisibleAnywhere)
 	//	TArray<TSubclassOf<ASkillActor>> AcquiredSkills;
 
-	//UPROPERTY(VisibleAnywhere)
-	//	TArray<TSubclassOf<ASkillActor>> SlotSkills;
+	UPROPERTY(VisibleAnywhere)
+		TArray<int32> SlotSkills;
 };
 
 UCLASS()

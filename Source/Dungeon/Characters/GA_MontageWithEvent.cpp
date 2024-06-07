@@ -16,9 +16,7 @@ void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-	}
 
 	// Play fire montage and wait for event telling us to spawn the projectile
 	UAT_MontageNotifyEvent* Task = UAT_MontageNotifyEvent::CreateMontageNotifyEvent(this, NAME_None, Montage, FGameplayTagContainer(), 1.0f, NAME_None, false, 1.0f);
@@ -53,27 +51,21 @@ void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventDa
 
 	// Only spawn projectiles on the Server.
 	// Predicting projectiles is an advanced topic not covered in this example.
-	//if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.Montage.SpawnProjectile")))
 	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && DealerClassMap.Contains(EventTag))
 	{
 		ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
 		if (!ch)
-		{
 			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-		}
 
-		//FVector Start = ch->GetGunComponent()->GetSocketLocation(FName("Muzzle"));
-		//FVector End = Hero->GetCameraBoom()->GetComponentLocation() + Hero->GetFollowCamera()->GetForwardVector() * Range;
-		//FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
 
+		// TODO:: 여기서 데미지 이펙트 만들어서 적용하기
+		// 데미지 이펙트 클래스는 디폴트오브젝트에서 받아오기
 		//FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
 
 		//// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
 		//DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), Damage);
 
-		//FTransform transform = Hero->GetGunComponent()->GetSocketTransform(FName("Muzzle"));
-		//transform.SetRotation(Rotation.Quaternion());
-		FTransform transform = ch->GetActorTransform();
+		FTransform transform = ch->GetMesh()->GetSocketTransform(FName("Muzzle"));
 		transform.SetScale3D(FVector(1.0f));
 
 		FActorSpawnParameters SpawnParameters;

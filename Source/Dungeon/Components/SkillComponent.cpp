@@ -69,8 +69,14 @@ void USkillComponent::UseQuickSlotSkill(int32 InQuickSlotIndex)
 void USkillComponent::ChangeQuickSlotData(int32 InQuickSlotIndex, int32 InSkillID)
 {
 	CheckFalse(InQuickSlotIndex < int32(EQuickSlotPosition::Max));
-	int32 prevID = QuickSlotData[InQuickSlotIndex];
 	QuickSlotData[InQuickSlotIndex] = InSkillID;
+
+	// Is Empty
+	if (QuickSlotData[InQuickSlotIndex]<0)
+	{
+		OnQuickSlotDataChanged.Broadcast(InQuickSlotIndex, FSkillData());
+		return;
+	}
 
 	for (auto i : SkillDatas)
 	{
@@ -86,10 +92,7 @@ void USkillComponent::ChangeQuickSlotData(int32 InQuickSlotIndex, int32 InSkillI
 	{
 		if (i == InQuickSlotIndex)continue;
 		if (QuickSlotData[i] == InSkillID)
-		{
-			OnQuickSlotDataChanged.Broadcast(i, FSkillData());
-			QuickSlotData[i] = -1;
-		}
+			ChangeQuickSlotData(i, -1);
 	}
 }
 
@@ -126,29 +129,20 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Rang
 void USkillComponent::SaveData(USaveGameData* SaveData)
 {
 	// reset Datas
-	//SaveData->PlayerData.SlotSkills.Empty();
+	SaveData->PlayerData.SlotSkills.Empty();
 
-	//for (auto i : QuickSlotSkillActors)
-	//	if (i)SaveData->PlayerData.SlotSkills.Add(i->GetClass());
-	//	else SaveData->PlayerData.SlotSkills.Add(nullptr);
-
-
-
-	//QuickSlotData[EQuickSlotPosition::Max];
+	// save Datas
+	for (int32 i : QuickSlotData)
+		SaveData->PlayerData.SlotSkills.Add(i);
 }
 
 void USkillComponent::LoadData(USaveGameData* const ReadData)
 {
-	//for (int32 i = 0; i < ReadData->PlayerData.SlotSkills.Num(); ++i)
-	//{
-	//	for(auto skill : SkillActors)
-	//		if(skill->GetClass() == ReadData->PlayerData.SlotSkills[i])
-	//			ChangeQuickSlotData(i, skill);
-	//}
+	// load Datas
+	for (int32 i = 0; i < ReadData->PlayerData.SlotSkills.Num(); ++i)
+		ChangeQuickSlotData(i, ReadData->PlayerData.SlotSkills[i]);
 
-	//bLoad = 1;
-	
-	//QuickSlotData[EQuickSlotPosition::Max];
+	bLoad = 1;
 }
 
 int32 USkillComponent::GetSkillLevel(int32 InSkillID) const
