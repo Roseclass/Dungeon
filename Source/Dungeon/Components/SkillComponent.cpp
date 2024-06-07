@@ -51,7 +51,13 @@ void USkillComponent::GiveDefaultAbilities()
 
 void USkillComponent::UseSkill(int32 InSkillID)
 {
-	AbilityLocalInputPressed(InSkillID);
+	for (auto& i : ActivatableAbilities.Items)
+		if (i.InputID == InSkillID)
+		{
+			//UEnum* temp = FindObject<UEnum>(ANY_PACKAGE, TEXT("EGameplayAbility_Mage"), true);
+			//if (temp)CLog::Print(temp->GetNameStringByIndex(InSkillID));
+			TryActivateAbility(i.Handle);
+		}
 }
 
 void USkillComponent::UseQuickSlotSkill(int32 InQuickSlotIndex)
