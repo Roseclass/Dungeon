@@ -205,11 +205,19 @@ void APlayerCharacter::Init()
 	{
 		MainWidget = controller->GetMainWidget();
 		if (MainWidget)
-		{
 			MainWidget->GetQuickSlot()->ConnectComponent(Skill);
-			InitClientWidget();
-		}
 	}
+
+	//SkilltreeComp
+	{
+		TFunction<void(int32, int32)> func;
+		func = [this](int32 Idx, int32 SkillID)
+		{
+			ChangeQuickSlotData(Idx, SkillID);
+		};
+		SkillTree->Init(Skill->GetSkillDatas(), Skill, func);	
+	}
+
 	
 	//Inventory
 	Inventory->OnInventoryEquippedChanged.AddDynamic(this, &APlayerCharacter::ChangeAppearance);
@@ -327,13 +335,6 @@ void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
 
 void APlayerCharacter::InitClientWidget()
 {
-	CheckFalse(IsLocallyControlled());
-	TFunction<void(int32, int32)> func;
-	func = [this](int32 Idx, int32 SkillID)
-	{
-		ChangeQuickSlotData(Idx, SkillID);
-	};
-	SkillTree->Init(Skill->GetSkillDatas(), Skill, func);
 }
 
 void APlayerCharacter::ChangeAppearance(EAppearancePart InMeshPart, int32 InIndex)

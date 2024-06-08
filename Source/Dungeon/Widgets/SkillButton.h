@@ -9,12 +9,16 @@
  * 스킬슬롯, 스킬트리 위젯에 사용되는 버튼
  */
 
+enum class ESkillTreeSkillState : uint8;
+
 DECLARE_DELEGATE_OneParam(FSkillButtonClicked, USkillButton*);
 
 UCLASS()
 class DUNGEON_API USkillButton : public UButton
 {
 	GENERATED_BODY()
+public:
+	USkillButton();
 
 	//property
 private:
@@ -30,12 +34,13 @@ private:
 	UFUNCTION()void OnButtonClicked();
 	UFUNCTION()void OnButtonHovered();
 	UFUNCTION()void OnButtonUnhovered();
-	UFUNCTION()void OnButtonLocked();
-	UFUNCTION()void OnButtonUnlocked();
-	UFUNCTION()void OnButtonAcquired();
+	void OnButtonLocked();
+	void OnButtonUnlocked();
+	void OnButtonAcquired();
 protected:
 public:
 	void Init(const FSkillData& InSkillData);
+	void Update(ESkillTreeSkillState NewState);
 
 	FORCEINLINE int32 GetSkillID() const { return SkillID; }
 	FORCEINLINE FVector2D GetPosition() const { return Position; }

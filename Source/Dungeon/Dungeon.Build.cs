@@ -27,7 +27,8 @@ public class Dungeon : ModuleRules
 			"OnlineSubsystemUtils",
 			"GameplayAbilities",
 			"GameplayTags",
-			"MediaAssets"
+			"MediaAssets",
+			"NetCore"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);

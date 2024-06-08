@@ -4,6 +4,7 @@
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Characters/GABase.h"
+#include "Components/SkillTreeComponent.h"
 
 USkillComponent::USkillComponent()
 {
@@ -28,10 +29,12 @@ void USkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 void USkillComponent::GiveDefaultAbilities()
 {
-	CheckTrue(GetOwner()->GetLocalRole() != ROLE_Authority);
-
 	CheckNull(DataTable);
 	DataTable->GetAllRows<FSkillData>("", SkillDatas);
+	for (int32 i = 0; i < int32(EQuickSlotPosition::Max); ++i)
+		QuickSlotData[i] = -1;
+
+	CheckTrue(GetOwner()->GetLocalRole() != ROLE_Authority);
 
 	for (auto i : SkillDatas)
 	{
@@ -43,10 +46,6 @@ void USkillComponent::GiveDefaultAbilities()
 			this
 		));
 	}
-
-	for (int32 i = 0; i < int32(EQuickSlotPosition::Max); ++i)
-		QuickSlotData[i] = -1;
-
 }
 
 void USkillComponent::UseSkill(int32 InSkillID)
@@ -126,9 +125,11 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Rang
 	return 1;
 }
 
+
 void USkillComponent::SaveData(USaveGameData* SaveData)
 {
 	// reset Datas
+	//SaveData->PlayerData.SkillPoints;
 	SaveData->PlayerData.SlotSkills.Empty();
 
 	// save Datas
@@ -147,6 +148,8 @@ void USkillComponent::LoadData(USaveGameData* const ReadData)
 
 int32 USkillComponent::GetSkillLevel(int32 InSkillID) const
 {
+	//if(!SkillState.Items.IsValidIndex(InSkillID))return 0;
+	//return (int32)SkillState.Items[InSkillID].SkillState - (int32)ESkillTreeSkillState::Unlocked;
 	return 1;
 }
 

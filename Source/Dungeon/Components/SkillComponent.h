@@ -15,11 +15,7 @@ class UMediaSource;
 class UGABase;
 class USaveGameData;
 
-UENUM(BlueprintType)
-enum class ESkillTreeSkillState : uint8
-{
-	Locked, Unlocked, Acquired
-};
+enum class ESkillTreeSkillState : uint8;
 
 USTRUCT(BlueprintType)
 struct FSkillData : public FTableRowBase
@@ -28,6 +24,9 @@ struct FSkillData : public FTableRowBase
 public:
 	UPROPERTY(EditAnywhere, Category = "Class")
 		TSubclassOf<UGABase> SkillClass;
+
+	UPROPERTY(EditAnywhere, Category = "Class")
+		ESkillTreeSkillState BaseState;
 
 	UPROPERTY(EditAnywhere, Category = "Widget", meta = (DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface", DisallowedClasses = "MediaTexture"))
 		TObjectPtr<UObject> SkillImage;
@@ -91,6 +90,7 @@ public:
 	float GetQuickSlotManaCost(int32 InQuickSlotIndex);
 	bool GetSkillRange(int32 InSkillID, float& Range);
 	bool GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range);
+
 
 	// save
 	void SaveData(USaveGameData* SaveData);

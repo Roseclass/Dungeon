@@ -2,6 +2,13 @@
 #include "Global.h"
 #include "Characters/GABase.h"
 
+#include "Components/SkillTreeComponent.h"
+
+USkillButton::USkillButton()
+{
+	SetIsEnabled(0);
+}
+
 void USkillButton::OnButtonClicked()
 {
 	OnSkillButtonClicked.ExecuteIfBound(this);
@@ -50,9 +57,11 @@ void USkillButton::Init(const FSkillData& InSkillData)
 	OnClicked.AddDynamic(this, &USkillButton::OnButtonClicked);
 	OnHovered.AddDynamic(this, &USkillButton::OnButtonHovered);
 	OnUnhovered.AddDynamic(this, &USkillButton::OnButtonUnhovered);
+}
 
-	////태그를 추가
-	//SkillActor->OnLocked.AddUFunction(this, "OnButtonLocked");
-	//SkillActor->OnUnlocked.AddUFunction(this, "OnButtonUnlocked");
-	//SkillActor->OnAcquired.AddUFunction(this, "OnButtonAcquired");
+void USkillButton::Update(ESkillTreeSkillState NewState)
+{
+	if (NewState == ESkillTreeSkillState::Locked)OnButtonLocked();
+	else if (NewState == ESkillTreeSkillState::Unlocked)OnButtonUnlocked();
+	else OnButtonAcquired();
 }

@@ -18,6 +18,7 @@ class UUW_SkillTreePopup;
 class UUW_SkillInfo;
 
 struct FSkillData;
+enum class ESkillTreeSkillState : uint8;
 
 UCLASS()
 class DUNGEON_API UUW_SkillTree : public UUserWidget
@@ -56,6 +57,7 @@ protected:
 		float IconSize = 0.05;
 
 	TMap<FVector2D,UScaleBox*> Icons;
+	TMap<FVector2D, USkillButton*> Buttons;
 public:
 
 	//function
@@ -66,5 +68,6 @@ private:
 protected:
 public:
 	void Init(const TArray<const FSkillData*>& Array, USkillTreeComponent* InSkillTreeComp, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked);
+	void UpdateButtonState(int32 InSkillID, ESkillTreeSkillState NewState);
 };
 

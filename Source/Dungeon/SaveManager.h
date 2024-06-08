@@ -13,6 +13,8 @@ class USkeletalMeshComponent;
 class AEqquipment;
 class AWeapon;
 
+enum class ESkillTreeSkillState : uint8;
+
 USTRUCT(BlueprintType)
 struct FSaveMetaData
 {
@@ -74,8 +76,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		int32 SkillPoints;
 
-	//UPROPERTY(VisibleAnywhere)
-	//	TArray<TSubclassOf<ASkillActor>> AcquiredSkills;
+	UPROPERTY(VisibleAnywhere)
+		TArray<ESkillTreeSkillState> SkillState;
 
 	UPROPERTY(VisibleAnywhere)
 		TArray<int32> SlotSkills;

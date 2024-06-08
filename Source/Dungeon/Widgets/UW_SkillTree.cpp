@@ -83,12 +83,10 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 {
 	int32 skillID = InButton->GetSkillID();
 	CheckFalse(skillID > -1);
-	//if (skill->GetSkillTreeState() == ESkillTreeSkillState::Unlocked)
-	//{
-	//	//조건이 더 필요함 ex)스킬포인트..
-	//	OwnerComponent->Acquire(skill);
-	//}
-	//else if (skill->GetSkillTreeState() == ESkillTreeSkillState::Acquired)
+	//TODO::How to level up
+	//if (OwnerComponent)
+	//	OwnerComponent->LevelUp(skillID);
+	//else if (OwnerComponent)
 	{
 		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
 		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
@@ -158,10 +156,18 @@ void UUW_SkillTree::Init(const TArray<const FSkillData*>& Array, USkillTreeCompo
 		slot->SetOffsets(FMargin(0));
 
 		Icons.Add(i->PannelPosition, scale);
+		Buttons.Add(i->PannelPosition, button);
 	}
 
 	//팝업 버튼 클릭 함수 바인딩
 	Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
 
 	bInit = 1;
+}
+
+void UUW_SkillTree::UpdateButtonState(int32 InSkillID, ESkillTreeSkillState NewState)
+{
+	for (auto i : Buttons)
+		if (i.Value && i.Value->GetSkillID() == InSkillID)
+			i.Value->Update(NewState);
 }
