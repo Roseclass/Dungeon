@@ -44,6 +44,8 @@ public:
 protected:
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const;
+	virtual const FGameplayTagContainer* GetCooldownTags() const;
 
 	//property
 private:
@@ -95,7 +97,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TArray<FWaringSignData> WarningSignDatas;
+
+	UPROPERTY(Transient)
+		FGameplayTagContainer TempCooldownTags;
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Tags, meta = (Categories = "AbilityTagCategory"))
+		FGameplayTagContainer CooldownTags;
 
 	//function
 private:

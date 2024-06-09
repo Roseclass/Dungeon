@@ -9,13 +9,13 @@
 
 UGA_MontageWithEvent::UGA_MontageWithEvent()
 {
-
+	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
 }
 void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	if (!CommitCheck(Handle, ActorInfo, ActivationInfo))
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 
 	// Play fire montage and wait for event telling us to spawn the projectile
@@ -27,6 +27,31 @@ void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Task->EventReceived.AddDynamic(this, &UGA_MontageWithEvent::EventReceived);
 	// ReadyForActivation() is how you activate the AbilityTask in C++. Blueprint has magic from K2Node_LatentGameplayTaskCall that will automatically call ReadyForActivation().
 	Task->ReadyForActivation();
+}
+
+void UGA_MontageWithEvent::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (CooldownGE)
+	{
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")), GetSkillCooldown());
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+	}
+}
+
+const FGameplayTagContainer* UGA_MontageWithEvent::GetCooldownTags() const
+{
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);
+	MutableTags->Reset(); // MutableTags writes to the TempCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
+	const FGameplayTagContainer* ParentTags = Super::GetCooldownTags();
+	if (ParentTags)
+	{
+		MutableTags->AppendTags(*ParentTags);
+	}
+	MutableTags->AppendTags(CooldownTags);
+	return ParentTags;
 }
 
 void UGA_MontageWithEvent::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
@@ -65,7 +90,7 @@ void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventDa
 		//// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
 		//DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), Damage);
 
-		FTransform transform = ch->GetMesh()->GetSocketTransform(FName("Muzzle"));
+		FTransform transform = ch->GetMesh()->GetSocketTransform(SocketName);
 		transform.SetScale3D(FVector(1.0f));
 
 		FActorSpawnParameters SpawnParameters;

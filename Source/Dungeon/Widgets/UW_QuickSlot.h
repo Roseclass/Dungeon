@@ -33,6 +33,7 @@ private:
 	USkillComponent* OwnerComponent;
 	FDelegateHandle OnQuickSlotDataChangedHandle;
 	FDelegateHandle OnQuickSlotCoolDownHandle;
+	FDelegateHandle OnOnCooldownTagAddedDownHandle;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		USkillButton* Slot0;
@@ -80,12 +81,16 @@ protected:
 	TArray<UTextBlock*> Timers;
 	TArray<UMaterialInstanceDynamic*> Materials;
 	TArray<float> RemainingCoolDowns;
+	TArray<float> CoolDownDurations;
+	TArray<FGameplayTagContainer> CooldownTags;
 public:
 
 	//function
 private:
 	UFUNCTION()void OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillData& InSkillData);
 	UFUNCTION()void OnQuickSlotCoolDown(int32 Index, float Time);
+	UFUNCTION()void OnCooldownTagAdded(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle);
+	void GetCooldownTimeRemainingAndDuration(int32 InQuickSlotIndex,float& Remaining, float& Duration);
 protected:
 public:
 	void ConnectComponent(USkillComponent* InSkillComponent);

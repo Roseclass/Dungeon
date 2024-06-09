@@ -24,8 +24,10 @@ protected:
 public:
 
 	//function
-private:
+private: 
 protected:
 public:
+	UFUNCTION(BlueprintImplementableEvent)float GetSkillCooldown()const;
+	UFUNCTION(BlueprintImplementableEvent)FGameplayTagContainer GetSkillCooldownTags()const;
 	UFUNCTION(BlueprintImplementableEvent)int32 GetSkillID()const;
 };

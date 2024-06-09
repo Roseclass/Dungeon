@@ -190,7 +190,8 @@ void UAT_MontageNotifyEvent::OnMontageEnded(UAnimMontage* Montage, bool bInterru
 
 void UAT_MontageNotifyEvent::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload)
 {
-	if (ShouldBroadcastAbilityTaskDelegates())
+	//TODO:: if cooldown returns fail
+	//if (ShouldBroadcastAbilityTaskDelegates())
 	{
 		FGameplayEventData TempData = *Payload;
 		TempData.EventTag = EventTag;

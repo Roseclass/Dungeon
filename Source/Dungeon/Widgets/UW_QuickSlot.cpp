@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 
 #include "Widgets/SkillButton.h"
+#include "Characters/GABase.h"
 
 void UUW_QuickSlot::NativeOnInitialized()
 {
@@ -18,7 +19,6 @@ void UUW_QuickSlot::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	RemainingCoolDowns.Init(0, 6);
 	Slots.Add(Slot0);Slots.Add(Slot1);Slots.Add(Slot2);
 	Slots.Add(Slot3);Slots.Add(Slot4);Slots.Add(Slot5);
 	Timers.Add(Timer0); Timers.Add(Timer1); Timers.Add(Timer2);
@@ -36,6 +36,9 @@ void UUW_QuickSlot::NativeConstruct()
 		i->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
 		i->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
 	}
+	RemainingCoolDowns.Init(0, 6);
+	CoolDownDurations.Init(-1, 6);
+	CooldownTags.Init(FGameplayTagContainer(), 6);
 }
 
 void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -50,11 +53,10 @@ void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			RemainingCoolDowns[i] -= InDeltaTime;
 			if (RemainingCoolDowns[i] < 0)RemainingCoolDowns[i] = 0;
 
-			float cur = RemainingCoolDowns[i], max = 0;
-			bool flag = OwnerComponent->GetQuickSlotCoolDown(i, max);
+			float cur = RemainingCoolDowns[i], max = CoolDownDurations[i];
 			cur = max - cur;
 
-			if (max <= 0 || !flag || RemainingCoolDowns[i] <= 0)
+			if (max <= 0 || RemainingCoolDowns[i] <= 0)
 			{
 				Materials[i]->SetScalarParameterValue("Progress", 0);
 				Timers[i]->SetText(FText());
@@ -90,6 +92,17 @@ void UUW_QuickSlot::OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillD
 		Slots[InQuickSlotIndex]->WidgetStyle.Disabled.TintColor = FSlateColor(FLinearColor(0, 0, 0, 0.8));
 		Materials[InQuickSlotIndex]->SetTextureParameterValue("Icon", DefaultIcon);
 	}
+	
+	if (InSkillData.SkillClass)
+	{
+		CooldownTags[InQuickSlotIndex] = InSkillData.SkillClass.GetDefaultObject()->GetSkillCooldownTags();
+		GetCooldownTimeRemainingAndDuration(InQuickSlotIndex, RemainingCoolDowns[InQuickSlotIndex], CoolDownDurations[InQuickSlotIndex]);
+	}
+	else
+	{
+		RemainingCoolDowns[InQuickSlotIndex] = 0;
+		CoolDownDurations[InQuickSlotIndex] = -1;
+	}
 }
 
 void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
@@ -98,15 +111,35 @@ void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
 	RemainingCoolDowns[Index] = Time;
 }
 
+void UUW_QuickSlot::OnCooldownTagAdded(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle)
+{
+	CLog::Print("IN");
+	for (int32 i = 0; i < CooldownTags.Num(); ++i)
+		GetCooldownTimeRemainingAndDuration(i, RemainingCoolDowns[i], CoolDownDurations[i]);
+}
+
+void UUW_QuickSlot::GetCooldownTimeRemainingAndDuration(int32 InQuickSlotIndex, float& Remaining, float& Duration)
+{
+	FGameplayEffectQuery const Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(CooldownTags[InQuickSlotIndex]);
+	TArray< TPair<float, float> > DurationAndTimeRemaining = OwnerComponent->GetActiveEffectsTimeRemainingAndDuration(Query);
+	if (DurationAndTimeRemaining.Num())
+	{
+		Remaining = DurationAndTimeRemaining[0].Key;
+		Duration = DurationAndTimeRemaining[0].Value;
+	}
+}
+
 void UUW_QuickSlot::ConnectComponent(USkillComponent* InSkillComponent)
 {
 	if (OwnerComponent)
 	{
 		OwnerComponent->OnQuickSlotDataChanged.Remove(OnQuickSlotDataChangedHandle);
 		OwnerComponent->OnQuickSlotCoolDown.Remove(OnQuickSlotCoolDownHandle);
+		OwnerComponent->OnActiveGameplayEffectAddedDelegateToSelf.Remove(OnOnCooldownTagAddedDownHandle);
 	}
 
 	OwnerComponent = InSkillComponent;
 	OnQuickSlotDataChangedHandle = OwnerComponent->OnQuickSlotDataChanged.AddUFunction(this, "OnQuickSlotDataChanged");
 	OnQuickSlotCoolDownHandle = OwnerComponent->OnQuickSlotCoolDown.AddUFunction(this, "OnQuickSlotCoolDown");
+	OnOnCooldownTagAddedDownHandle = OwnerComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUFunction(this, "OnCooldownTagAdded");
 }
