@@ -44,8 +44,10 @@ public:
 protected:
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const;
-	virtual const FGameplayTagContainer* GetCooldownTags() const;
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+	virtual const FGameplayTagContainer* GetCooldownTags() const override;
+	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	virtual void ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 
 	//property
 private:
@@ -86,14 +88,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float AdditiveDamageRate = 1;
 
-	UPROPERTY(EditAnywhere, Category = "CoolDown")
+	UPROPERTY(EditAnywhere, Category = "Condition|CoolDown")
 		float CoolDown = 10.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Range")
+	UPROPERTY(EditAnywhere, Category = "Condition|Range")
 		float Range = 500.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Condition")
-		float ManaCost = 10.0f;
+	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
+		FScalableFloat ManaCost_Base;
+	float ManaCost_Additive;
+	float ManaCost_Multiplicitive;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TArray<FWaringSignData> WarningSignDatas;

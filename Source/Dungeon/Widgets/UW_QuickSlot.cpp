@@ -113,7 +113,6 @@ void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
 
 void UUW_QuickSlot::OnCooldownTagAdded(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle)
 {
-	CLog::Print("IN");
 	for (int32 i = 0; i < CooldownTags.Num(); ++i)
 		GetCooldownTimeRemainingAndDuration(i, RemainingCoolDowns[i], CoolDownDurations[i]);
 }

@@ -90,6 +90,11 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+	FGameplayTagContainer OwnedTags;
+	Skill->GetOwnedGameplayTags(OwnedTags);
+	for (const FGameplayTag& Tag : OwnedTags)
+		CLog::Print(Tag.ToString(), -1, 0, FColor::Black);
 }
 
 FGenericTeamId APlayerCharacter::GetGenericTeamId() const

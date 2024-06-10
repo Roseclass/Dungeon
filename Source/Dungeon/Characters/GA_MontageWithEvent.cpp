@@ -1,6 +1,7 @@
 #include "Characters/GA_MontageWithEvent.h"
 #include "Global.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystemGlobals.h"
 
 #include "Components/SkillComponent.h"
 #include "Characters/DungeonCharacterBase.h"
@@ -10,6 +11,10 @@
 UGA_MontageWithEvent::UGA_MontageWithEvent()
 {
 	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
+
+	ManaCost_Additive = 0;
+	ManaCost_Multiplicitive = 1;
+
 }
 void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -35,7 +40,6 @@ void UGA_MontageWithEvent::ApplyCooldown(const FGameplayAbilitySpecHandle Handle
 	if (CooldownGE)
 	{
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
-		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")), GetSkillCooldown());
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
@@ -51,8 +55,51 @@ const FGameplayTagContainer* UGA_MontageWithEvent::GetCooldownTags() const
 		MutableTags->AppendTags(*ParentTags);
 	}
 	MutableTags->AppendTags(CooldownTags);
-	return ParentTags;
+	return MutableTags;
 }
+
+bool UGA_MontageWithEvent::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags) const
+{
+	UGameplayEffect* CostGE = GetCostGameplayEffect();
+	if (CostGE)
+	{
+		int32 lv = GetAbilityLevel();
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CostGE->GetClass(), lv);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Base")), ManaCost_Base.GetValueAtLevel(lv));
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Additive")), ManaCost_Additive);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Multiplicitive")), ManaCost_Multiplicitive);
+
+		UAbilitySystemComponent* const AbilitySystemComponent = ActorInfo->AbilitySystemComponent.Get();
+		check(AbilitySystemComponent != nullptr);
+		if (!AbilitySystemComponent->CanApplyAttributeModifiers(SpecHandle.Data.Get()->Def, GetAbilityLevel(Handle, ActorInfo), MakeEffectContext(Handle, ActorInfo)))
+		{
+			const FGameplayTag& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
+
+			if (OptionalRelevantTags && CostTag.IsValid())
+			{
+				OptionalRelevantTags->AddTag(CostTag);
+			}
+			return false;
+		}
+	}
+	return true;
+}
+
+void UGA_MontageWithEvent::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CostGE = GetCostGameplayEffect();
+	if (CostGE)
+	{
+		int32 lv = GetAbilityLevel();
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CostGE->GetClass(), lv);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Base")), ManaCost_Base.GetValueAtLevel(lv));
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Additive")), ManaCost_Additive);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Skill.Cost.Multiplicitive")), ManaCost_Multiplicitive);
+
+		ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CostGE, GetAbilityLevel(Handle, ActorInfo));
+	}
+}
+
 
 void UGA_MontageWithEvent::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
 {
