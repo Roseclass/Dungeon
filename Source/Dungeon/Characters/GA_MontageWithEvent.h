@@ -35,6 +35,26 @@ public:
 		float ExtraDuration;
 };
 
+USTRUCT(BlueprintType)
+struct FMMCData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag BaseTag;
+
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag AdditiveTag;
+
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag MultiplicitiveTag;
+
+	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
+		FScalableFloat Base;
+	float Additive;
+	float Multiplicitive;
+};
+
 UCLASS()
 class DUNGEON_API UGA_MontageWithEvent : public UGABase
 {
@@ -44,6 +64,7 @@ public:
 protected:
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	virtual const FGameplayTagContainer* GetCooldownTags() const override;
 	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
@@ -88,16 +109,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float AdditiveDamageRate = 1;
 
-	UPROPERTY(EditAnywhere, Category = "Condition|CoolDown")
-		float CoolDown = 10.0f;
-
 	UPROPERTY(EditAnywhere, Category = "Condition|Range")
 		float Range = 500.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
-		FScalableFloat ManaCost_Base;
-	float ManaCost_Additive;
-	float ManaCost_Multiplicitive;
+		FMMCData ManaCost;
+
+	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
+		FMMCData Cooldown;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TArray<FWaringSignData> WarningSignDatas;
@@ -114,5 +133,6 @@ protected:
 	UFUNCTION()virtual void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
 	UFUNCTION()virtual void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
 	UFUNCTION()virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
+	UFUNCTION()virtual void OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData);
 public:
 };

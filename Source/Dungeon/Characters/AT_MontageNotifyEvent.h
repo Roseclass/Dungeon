@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "Characters/AbilityTaskTypes.h"
 #include "AT_MontageNotifyEvent.generated.h"
 
 /**
@@ -12,7 +13,6 @@ class UAnimMontage;
 class UGameplayAbility;
 class USkillComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMontageNotifyEventDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
 
 UCLASS()
 class DUNGEON_API UAT_MontageNotifyEvent : public UAbilityTask
@@ -43,11 +43,11 @@ private:
 	FDelegateHandle EventHandle;
 protected:
 public:
-	FMontageNotifyEventDelegate OnCompleted;	//The montage completely finished playing
-	FMontageNotifyEventDelegate OnBlendOut;	//The montage started blending out
-	FMontageNotifyEventDelegate OnInterrupted;//The montage was interrupted
-	FMontageNotifyEventDelegate OnCancelled;	//The ability task was explicitly cancelled by another ability
-	FMontageNotifyEventDelegate EventReceived;//One of the triggering gameplay events happened
+	FAbilityTaskEventDelegate OnCompleted;	//The montage completely finished playing
+	FAbilityTaskEventDelegate OnBlendOut;	//The montage started blending out
+	FAbilityTaskEventDelegate OnInterrupted;//The montage was interrupted
+	FAbilityTaskEventDelegate OnCancelled;	//The ability task was explicitly cancelled by another ability
+	FAbilityTaskEventDelegate EventReceived;//One of the triggering gameplay events happened
 
 	//function
 private:
