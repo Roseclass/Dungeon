@@ -91,7 +91,6 @@ public:
 	bool GetSkillRange(int32 InSkillID, float& Range);
 	bool GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range);
 
-
 	// save
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);

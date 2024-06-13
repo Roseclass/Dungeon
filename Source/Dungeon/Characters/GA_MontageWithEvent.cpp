@@ -4,6 +4,7 @@
 #include "AbilitySystemGlobals.h"
 
 #include "Components/SkillComponent.h"
+#include "Characters/AttributeSetBase.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Characters/AbilityTaskTypes.h"
 #include "Characters/AT_MontageNotifyEvent.h"
@@ -14,6 +15,12 @@ UGA_MontageWithEvent::UGA_MontageWithEvent()
 {
 	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
 }
+
+void UGA_MontageWithEvent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
 void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -47,11 +54,8 @@ void UGA_MontageWithEvent::ApplyCooldown(const FGameplayAbilitySpecHandle Handle
 	if (CooldownGE)
 	{
 		int32 lv = GetAbilityLevel();
-		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), lv);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(Cooldown.BaseTag, Cooldown.Base.GetValueAtLevel(lv));
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(Cooldown.AdditiveTag, Cooldown.Additive);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(Cooldown.MultiplicitiveTag, Cooldown.Multiplicitive);
-
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), 1);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(Cooldown.Tag, GetCooldown());
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
 }
@@ -74,15 +78,13 @@ bool UGA_MontageWithEvent::CheckCost(const FGameplayAbilitySpecHandle Handle, co
 	UGameplayEffect* CostGE = GetCostGameplayEffect();
 	if (CostGE)
 	{
-		int32 lv = GetAbilityLevel();
-		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CostGE->GetClass(), lv);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.BaseTag, ManaCost.Base.GetValueAtLevel(lv));
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.AdditiveTag, ManaCost.Additive);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.MultiplicitiveTag, ManaCost.Multiplicitive);
+		USkillComponent* skillComp = Cast<USkillComponent>(ActorInfo->AbilitySystemComponent.Get());
+		check(skillComp != nullptr);
+		
+		float RequiredMana = GetCost();
+		float CurrentMana = skillComp->GetNumericAttribute(UAttributeSetBase::GetManaAttribute());
 
-		UAbilitySystemComponent* const AbilitySystemComponent = ActorInfo->AbilitySystemComponent.Get();
-		check(AbilitySystemComponent != nullptr);
-		if (!AbilitySystemComponent->CanApplyAttributeModifiers(SpecHandle.Data.Get()->Def, GetAbilityLevel(Handle, ActorInfo), MakeEffectContext(Handle, ActorInfo)))
+		if (RequiredMana > CurrentMana)
 		{
 			const FGameplayTag& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
 
@@ -103,14 +105,10 @@ void UGA_MontageWithEvent::ApplyCost(const FGameplayAbilitySpecHandle Handle, co
 	{
 		int32 lv = GetAbilityLevel();
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CostGE->GetClass(), lv);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.BaseTag, ManaCost.Base.GetValueAtLevel(lv));
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.AdditiveTag, ManaCost.Additive);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(ManaCost.MultiplicitiveTag, ManaCost.Multiplicitive);
-
-		ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CostGE, GetAbilityLevel(Handle, ActorInfo));
+		SpecHandle.Data->SetSetByCallerMagnitude(ManaCost.Tag, GetCost());
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
 }
-
 
 void UGA_MontageWithEvent::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
 {
@@ -164,6 +162,7 @@ void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventDa
 
 void UGA_MontageWithEvent::OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData)
 {
+	CheckFalse(GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority);
 	const UPersistentTaskData* data = Cast<UPersistentTaskData>(EventData.OptionalObject);
 	if (data)
 	{
@@ -175,4 +174,30 @@ void UGA_MontageWithEvent::OnEnhanced(FGameplayTag EventTag, FGameplayEventData 
 			if (Cooldown.MultiplicitiveTag == i.Key)Cooldown.Multiplicitive -= i.Value;
 		}
 	}
+}
+
+float UGA_MontageWithEvent::GetCooldown() const
+{
+	int32 lv = GetAbilityLevel();
+	float base = Cooldown.Base.GetValueAtLevel(lv);
+	float addtive = Cooldown.Additive;
+	float multiplicitive = Cooldown.Multiplicitive;
+	float result = (base - addtive) * multiplicitive;
+
+	if (result < base * 0.3)result = base * 0.3;
+
+	return result;
+}
+
+float UGA_MontageWithEvent::GetCost() const
+{
+	int32 lv = GetAbilityLevel();
+	float base = ManaCost.Base.GetValueAtLevel(lv);
+	float addtive = ManaCost.Additive;
+	float multiplicitive = ManaCost.Multiplicitive;
+	float result = (base - addtive) * multiplicitive;
+
+	if (result < 0)result = 0;
+
+	return -result;
 }

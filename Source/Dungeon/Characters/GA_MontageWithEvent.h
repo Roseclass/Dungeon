@@ -41,6 +41,9 @@ struct FMMCData
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag Tag;
+
+	UPROPERTY(EditDefaultsOnly)
 		FGameplayTag BaseTag;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -52,7 +55,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
 		FScalableFloat Base;
 	float Additive;
-	float Multiplicitive;
+	float Multiplicitive = 1;
 };
 
 UCLASS()
@@ -63,6 +66,8 @@ public:
 	UGA_MontageWithEvent();
 protected:
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
@@ -134,5 +139,8 @@ protected:
 	UFUNCTION()virtual void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
 	UFUNCTION()virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
 	UFUNCTION()virtual void OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData);
+
+	virtual float GetCooldown()const;
+	virtual float GetCost()const;
 public:
 };
