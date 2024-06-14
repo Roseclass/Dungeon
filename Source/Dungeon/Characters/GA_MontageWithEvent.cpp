@@ -43,7 +43,9 @@ void UGA_MontageWithEvent::OnGiveAbility(const FGameplayAbilityActorInfo* ActorI
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, FGameplayTagContainer());
+	FGameplayTagContainer enhancement;
+	enhancement.AddTag(EnhancementTag);
+	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, enhancement);
 	Task->EventReceived.AddDynamic(this, &UGA_MontageWithEvent::OnEnhanced);
 	Task->ReadyForActivation();
 }
@@ -181,7 +183,7 @@ float UGA_MontageWithEvent::GetCooldown() const
 	int32 lv = GetAbilityLevel();
 	float base = Cooldown.Base.GetValueAtLevel(lv);
 	float addtive = Cooldown.Additive;
-	float multiplicitive = Cooldown.Multiplicitive;
+	float multiplicitive = (Cooldown.Multiplicitive) * 0.01;
 	float result = (base - addtive) * multiplicitive;
 
 	if (result < base * 0.3)result = base * 0.3;
@@ -194,7 +196,7 @@ float UGA_MontageWithEvent::GetCost() const
 	int32 lv = GetAbilityLevel();
 	float base = ManaCost.Base.GetValueAtLevel(lv);
 	float addtive = ManaCost.Additive;
-	float multiplicitive = ManaCost.Multiplicitive;
+	float multiplicitive = (ManaCost.Multiplicitive) * 0.01;
 	float result = (base - addtive) * multiplicitive;
 
 	if (result < 0)result = 0;

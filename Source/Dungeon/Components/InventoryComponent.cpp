@@ -11,6 +11,11 @@
 #include "Widgets/UW_Inventory.h"
 #include "Widgets/UW_Trade.h"
 
+#include "GameplayTagContainer.h"
+#include "Components/SkillComponent.h"
+#include "Characters/AbilityTaskTypes.h"
+
+
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -502,6 +507,32 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 	if (!CanTakeOffEquipment(idx))return;
 	if (EquippedItems[idx] && !IsRoomAvailable(EquippedItems[idx]))return;
 	if (IsRoomAvailable(EquippedItems[idx]))Server_TryAddItem(EquippedItems[idx]);
+
+	//TODO::Check
+	{
+		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
+		if (enhancementDatas.Num())
+		{
+			USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
+			CheckNull(skill);
+			TMap<FGameplayTag, UPersistentTaskData*> enhancementMap;
+
+			for (auto i : enhancementDatas)
+			{
+				UPersistentTaskData*& ptd = enhancementMap.FindOrAdd(i.EnhanceEventTag);
+				if (!ptd)ptd = NewObject<UPersistentTaskData>(UPersistentTaskData::StaticClass());
+				ptd->Datas.Add({ i.EnhanceStatusTag, -i.EnhanceStatus });
+			}
+
+			for (auto i : enhancementMap)
+			{
+				FGameplayEventData data;
+				data.OptionalObject = i.Value;
+				skill->HandleGameplayEvent(i.Key, &data);
+			}
+		}
+	}
+
 	EquippedItems[idx] = InData;
 	EquippedItems[idx]->SetOwner(owner);
 	EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
@@ -531,6 +562,31 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 		OnInventoryEquippedItemsChanged.Broadcast();
 
 	OnRep_EquippedItems();
+
+	//TODO::Check
+	{
+		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
+		if (enhancementDatas.Num())
+		{
+			USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
+			CheckNull(skill);
+			TMap<FGameplayTag, UPersistentTaskData*> enhancementMap;
+
+			for (auto i : enhancementDatas)
+			{
+				UPersistentTaskData*& ptd = enhancementMap.FindOrAdd(i.EnhanceEventTag);
+				if (!ptd)ptd = NewObject<UPersistentTaskData>(UPersistentTaskData::StaticClass());
+				ptd->Datas.Add({ i.EnhanceStatusTag,i.EnhanceStatus });
+			}
+
+			for (auto i : enhancementMap)
+			{
+				FGameplayEventData data;
+				data.OptionalObject = i.Value;
+				skill->HandleGameplayEvent(i.Key, &data);
+			}
+		}
+	}
 }
 
 void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)

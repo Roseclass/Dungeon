@@ -80,6 +80,19 @@ void AEqquipment::BeginPlay()
 		ItemStatus.FinalHealthRegen = ItemStatus.BaseHealthRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
 		ItemStatus.FinalMaxMana = ItemStatus.BaseMaxMana * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
 		ItemStatus.FinalManaRegen = ItemStatus.BaseManaRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+
+		//TODO::Check
+		if (EnhancementDataTable)
+		{
+			TArray<FSkillEnhancement*> enhancementDatas;
+			EnhancementDataTable->GetAllRows<FSkillEnhancement>("", enhancementDatas);
+			for (auto i : enhancementDatas)
+			{
+				i->EnhanceStatus = i->EnhanceStatus * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+				ItemStatus.EnhancementDatas.Add(*i);
+			}
+		}
+
 		ItemStatus.bRandomize = 1;
 	}
 

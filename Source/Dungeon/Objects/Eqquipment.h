@@ -5,6 +5,7 @@
 #include "Engine/EngineTypes.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Characters/CharcterAppearanceData.h"
+#include "Characters/AbilityTaskTypes.h"
 #include "Components/TimeLineComponent.h"
 #include "Interfaces/IInteractable.h"
 #include "Eqquipment.generated.h"
@@ -98,6 +99,9 @@ private:
 	UPROPERTY()
 		bool bRandomize;
 
+	UPROPERTY()
+		TArray<FSkillEnhancement> EnhancementDatas;
+
 public:
 	FORCEINLINE FString GetName()const { return Name; }
 	FORCEINLINE float GetFinalDamage()const { return FinalDamage; }
@@ -105,6 +109,7 @@ public:
 	FORCEINLINE float GetFinalHealthRegen()const { return FinalHealthRegen; }
 	FORCEINLINE float GetFinalMaxMana()const { return FinalMaxMana; }
 	FORCEINLINE float GetFinalManaRegen()const { return FinalManaRegen; }
+	FORCEINLINE const TArray<FSkillEnhancement>& GetEnhancementDatas()const { return EnhancementDatas; }
 };
 
 UCLASS()
@@ -193,6 +198,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data", ReplicatedUsing = "OnRep_Status")
 		FItemStatusData ItemStatus;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		UDataTable* EnhancementDataTable;
 
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Helms", EditConditionHides,DisplayName = "Datas"))
 		TArray<FItemAppearanceData> HelmsAppearanceDatas;

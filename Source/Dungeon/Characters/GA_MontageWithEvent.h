@@ -55,7 +55,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
 		FScalableFloat Base;
 	float Additive;
-	float Multiplicitive = 1;
+	float Multiplicitive = 100;
 };
 
 UCLASS()
@@ -131,6 +131,9 @@ protected:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Tags, meta = (Categories = "AbilityTagCategory"))
 		FGameplayTagContainer CooldownTags;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Tags, meta = (Categories = "AbilityTagCategory"))
+		FGameplayTag EnhancementTag;
 
 	//function
 private:
