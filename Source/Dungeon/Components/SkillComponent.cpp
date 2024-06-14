@@ -125,6 +125,15 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Rang
 	return 1;
 }
 
+bool USkillComponent::CanUse() const
+{
+	return HasAnyMatchingGameplayTags(BlockUseTags);
+}
+
+bool USkillComponent::CanMove() const
+{
+	return HasAnyMatchingGameplayTags(BlockMoveTags);
+}
 
 void USkillComponent::SaveData(USaveGameData* SaveData)
 {

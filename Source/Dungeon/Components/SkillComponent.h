@@ -69,8 +69,14 @@ private:
 	int32 QuickSlotData[EQuickSlotPosition::Max];
 	TArray<FSkillData*> SkillDatas;
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Skill|Datas")
+	UPROPERTY(EditDefaultsOnly, Category = "Skills|Datas")
 		UDataTable* DataTable;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
+		FGameplayTagContainer BlockUseTags;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tatas")
+		FGameplayTagContainer BlockMoveTags;
 
 public:
 	FQuickSlotDataChanged OnQuickSlotDataChanged;
@@ -90,6 +96,8 @@ public:
 	float GetQuickSlotManaCost(int32 InQuickSlotIndex);
 	bool GetSkillRange(int32 InSkillID, float& Range);
 	bool GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range);
+	bool CanUse()const;
+	bool CanMove()const;
 
 	// save
 	void SaveData(USaveGameData* SaveData);

@@ -297,11 +297,11 @@ void ADungeonCharacterBase::RevealHealthBar()
 
 bool ADungeonCharacterBase::CanUse()
 {
-	return State->IsIdleMode() /*&& Status->CanUse()*/;
+	return Skill->CanUse();
 }
 bool ADungeonCharacterBase::CanMove()
 {
-	return !State->IsKnockBackMode() && !State->IsKnockDownMode() /*&& Status->CanMove()*/;
+	return Skill->CanMove();
 }
 
 void ADungeonCharacterBase::SetUse()

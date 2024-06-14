@@ -126,11 +126,11 @@ void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventDa
 {
 	// Montage told us to end the ability before the montage finished playing.
 	// Montage was set to continue playing animation even after ability ends so this is okay.
-	/*if (EventTag == FGameplayTag::RequestGameplayTag(FName("Event.Montage.EndAbility")))
+	if (EventTag == FGameplayTag::RequestGameplayTag(FName("Event.SkillEnd")))
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 		return;
-	}*/
+	}
 
 	// Only spawn projectiles on the Server.
 	// Predicting projectiles is an advanced topic not covered in this example.
