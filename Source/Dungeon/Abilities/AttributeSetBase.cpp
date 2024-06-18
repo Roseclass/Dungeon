@@ -39,6 +39,13 @@ void UAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
     if (Data.EvaluatedData.Attribute == GetHealthAttribute())
     {
+        if (GetHealth() <= 0)
+        {
+            UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
+            FGameplayTagContainer tags;
+            tags.AddTag(FGameplayTag::RequestGameplayTag("Ability.Dead"));
+            AbilityComp->TryActivateAbilitiesByTag(tags);
+        }
         SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
     }
     else if (Data.EvaluatedData.Attribute == GetManaAttribute())

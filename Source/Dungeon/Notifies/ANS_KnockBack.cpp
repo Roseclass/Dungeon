@@ -2,7 +2,6 @@
 #include "Global.h"
 #include "GameFramework/Character.h"
 
-#include "Components/MontageComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 FString UANS_KnockBack::GetNotifyName_Implementation() const
@@ -14,16 +13,16 @@ void UANS_KnockBack::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 
-	// for editor preview
-	CheckNull(MeshComp);
-	CheckNull(MeshComp->GetOwner());
-	ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner());
-	CheckNull(owner);
+	//// for editor preview
+	//CheckNull(MeshComp);
+	//CheckNull(MeshComp->GetOwner());
+	//ACharacter* owner = Cast<ACharacter>(MeshComp->GetOwner());
+	//CheckNull(owner);
 
-	//server only
-	CheckFalse(owner->HasAuthority());
+	////server only
+	//CheckFalse(owner->HasAuthority());
 
-	UMontageComponent* montage = CHelpers::GetComponent<UMontageComponent>(owner);
-	CheckNull(montage);
-	owner->GetCharacterMovement()->AddForce(montage->GetForce());
+	//UMontageComponent* montage = CHelpers::GetComponent<UMontageComponent>(owner);
+	//CheckNull(montage);
+	//owner->GetCharacterMovement()->AddForce(montage->GetForce());
 }

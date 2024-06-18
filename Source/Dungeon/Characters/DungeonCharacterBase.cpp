@@ -14,7 +14,6 @@
 #include "Abilities/GameplayAbility.h"
 #include "Abilities/AttributeSetBase.h"
 
-#include "Components/MontageComponent.h"
 #include "Components/InventoryComponent.h"
 
 #include "Objects/CustomDamageType.h"
@@ -32,7 +31,6 @@ ADungeonCharacterBase::ADungeonCharacterBase()
 	CHelpers::CreateActorComponent<USkillComponent>(this, &Skill, "Skill");
 	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
 
-	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 }
 

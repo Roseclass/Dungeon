@@ -75,9 +75,6 @@ protected:
 		UAttributeSetBase* AttributeSet;
 
 	UPROPERTY(VisibleDefaultsOnly)
-		UMontageComponent* Montage;
-
-	UPROPERTY(VisibleDefaultsOnly)
 		UInventoryComponent* Inventory;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))

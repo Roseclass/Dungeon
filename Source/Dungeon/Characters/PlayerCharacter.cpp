@@ -27,7 +27,6 @@
 #include "Components/ClearViewComponent.h"
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
-#include "Components/MontageComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/QuestComponent.h"
 #include "Components/TravelEffectComponent.h"
@@ -156,7 +155,7 @@ void APlayerCharacter::ManaChanged(const FOnAttributeChangeData& Data)
 		CLog::Print("APlayerCharacter::ManaChanged, MainWidget is nullptr", -1, 10, FColor::Red);
 		return;
 	}
-	//MainWidget->ManaChanged(float NewValue);
+	MainWidget->ManaChanged(Data.NewValue / maxHealth);
 
 }
 

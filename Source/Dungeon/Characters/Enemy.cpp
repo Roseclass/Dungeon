@@ -7,7 +7,6 @@
 #include "Characters/EnemyAIController.h"
 
 #include "Components/SkillComponent.h"
-#include "Components/MontageComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/DamageTextComponent.h"
 #include "Components/LootComponent.h"
