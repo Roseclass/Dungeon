@@ -5,7 +5,7 @@
 #include "Engine/EngineTypes.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Characters/CharcterAppearanceData.h"
-#include "Characters/AbilityTaskTypes.h"
+#include "Abilities/AbilityTaskTypes.h"
 #include "Components/TimeLineComponent.h"
 #include "Interfaces/IInteractable.h"
 #include "Eqquipment.generated.h"

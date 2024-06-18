@@ -10,7 +10,7 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
 
 ADamageDealer::ADamageDealer()
 {
@@ -26,13 +26,32 @@ void ADamageDealer::BeginPlay()
 void ADamageDealer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	CLog::Print(FString::Printf(TEXT("%s : %i"), *GetName(), TeamID), -1, 0);
 }
 
 void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	CheckFalse(HasAuthority());
 
+	// already hit?
+	if (GetDamagedActors().Contains(OtherActor))return;
+
+	// overlap with DungeonCharacterBase
+	ADungeonCharacterBase* base = Cast<ADungeonCharacterBase>(OtherActor);
+	if (!base)return;
+
+	// is deadmode?
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OtherActor);
+	if (!skill)return;
+	if (skill->IsDead())return;
+
+	// ignore alliance
+	CheckTrue(base->GetGenericTeamId() == TeamID);
+
+	// set properties
+	OverlappedActors.AddUnique(OtherActor);
+	CurrentOverlappedActor = OtherActor;
+
+	// send Damage
 	if (OtherActor && OtherActor != this)
     {
 		IAbilitySystemInterface* HitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
@@ -52,37 +71,13 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 						float DamageValue = -Damage;
 						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
 						AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+						FGameplayTagContainer tags;tags.AddTag(ReactionTag);
+						AbilitySystemComponent->TryActivateAbilitiesByTag(tags);
 					}
 				}
             }
-			CLog::Print("ADamageDealer::OnComponentBeginOverlap");
         }
     }
-
-	CheckFalse(HasAuthority());
-	return;
-
-	// already hit?
-	if (GetDamagedActors().Contains(OtherActor))return;
-
-	// overlap with DungeonCharacterBase
-	ADungeonCharacterBase* base = Cast<ADungeonCharacterBase>(OtherActor);
-	if (!base)return;
-
-	// is deadmode?
-	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OtherActor);
-	if (!skill)return;
-	if (skill ->IsDead())return;
-
-	// ignore alliance
-	CheckTrue(base->GetGenericTeamId() == TeamID);
-
-	// set properties
-	OverlappedActors.AddUnique(OtherActor);
-	CurrentOverlappedActor = OtherActor;
-
-	// send Damage
-	SendDamage(Damage, OtherActor, SweepResult);
 }
 
 void ADamageDealer::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -123,46 +118,4 @@ void ADamageDealer::FindCollision()
 		component->OnComponentBeginOverlap.AddDynamic(this, &ADamageDealer::OnComponentBeginOverlap);
 		component->OnComponentEndOverlap.AddDynamic(this, &ADamageDealer::OnComponentEndOverlap);
 	}
-}
-
-void ADamageDealer::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult)
-{
-	CheckFalse(HasAuthority());
-
-	ACharacter* ch = Cast<ACharacter>(GetOwner());
-	AController* inst = nullptr;
-	if (ch)inst = ch->GetController();
-
-	switch (DamageType)
-	{
-	case EDamageType::Normal:SendNormalDamage(InDamage, OtherActor, SweepResult, inst); break;
-	case EDamageType::Point:SendPointDamage(InDamage, OtherActor, SweepResult, inst);break;
-	case EDamageType::Radial:SendRadialDamage(InDamage, OtherActor, SweepResult, inst); break;
-	case EDamageType::Radial_Falloff:SendRadial_FalloffDamage(InDamage, OtherActor, SweepResult, inst); break;
-	case EDamageType::Max:break;
-	default:break;
-	}
-
-	DamagedActors.AddUnique(OtherActor);
-}
-
-void ADamageDealer::SendNormalDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)
-{
-	FDamageEvent damageEvent;
-	damageEvent.DamageTypeClass = DamageTypeClass;
-	OtherActor->TakeDamage(InDamage, damageEvent, EventInstigator, this);
-}
-
-void ADamageDealer::SendPointDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)
-{
-	
-}
-
-void ADamageDealer::SendRadialDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)
-{
-}
-
-void ADamageDealer::SendRadial_FalloffDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator)
-{
-
 }

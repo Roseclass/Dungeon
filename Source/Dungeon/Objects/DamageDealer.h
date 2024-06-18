@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
 #include "DamageDealer.generated.h"
 
 /**
@@ -12,12 +13,6 @@ class AController;
 class UCustomDamageType;
 class UShapeComponent;
 class UGameplayEffect;
-
-UENUM(BlueprintType)
-enum class EDamageType : uint8
-{
-	Normal, Point, Radial, Radial_Falloff, Max
-};
 
 UCLASS()
 class DUNGEON_API ADamageDealer : public AActor
@@ -46,9 +41,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		TSubclassOf<UGameplayEffect> GamePlayEffectClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Datas")
-		EDamageType DamageType;
-
 	UPROPERTY(EditAnywhere, Category = "Datas")
 		float Damage;
 
@@ -58,6 +50,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FName OverlapComponentTag = FName("OverlapCollision");
 
+	UPROPERTY(EditDefaultsOnly, Category = "Datas")
+		FGameplayTag ReactionTag;
 
 public:
 
@@ -68,12 +62,6 @@ protected:
 	UFUNCTION()virtual void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	virtual void ResetDamagedActors();
 	virtual void FindCollision();
-
-	void SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult);
-	virtual void SendNormalDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator);
-	virtual void SendPointDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator);
-	virtual void SendRadialDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator);
-	virtual void SendRadial_FalloffDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult, AController* EventInstigator);
 
 	FORCEINLINE const TArray<AActor*>& GetOverlappedActors()const { return OverlappedActors; }
 	FORCEINLINE const AActor* GetCurrentOverlappedActor()const { return CurrentOverlappedActor; }

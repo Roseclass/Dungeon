@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "Characters/AbilityTaskTypes.h"
+#include "Abilities/AbilityTaskTypes.h"
 #include "AT_PersistentTask.generated.h"
 
 /**

@@ -35,8 +35,8 @@ void AProjectile_Mage21::Activate()
 {
 	Super::Activate();
 
-	for (auto i : GetOverlappedActors())
-		SendDamage(Damage, i, FHitResult());
+	//for (auto i : GetOverlappedActors())
+	//	SendDamage(Damage, i, FHitResult());
 
 	FTimerHandle WaitHandle;
 	float WaitTime = 2.0f;

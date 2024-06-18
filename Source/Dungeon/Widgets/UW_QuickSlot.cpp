@@ -8,7 +8,7 @@
 #include "Components/TextBlock.h"
 
 #include "Widgets/SkillButton.h"
-#include "Characters/GABase.h"
+#include "Abilities/GABase.h"
 
 void UUW_QuickSlot::NativeOnInitialized()
 {

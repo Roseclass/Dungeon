@@ -1,6 +1,6 @@
-#include "Characters/GE_InstantDamage.h"
+#include "Abilities/GE_InstantDamage.h"
 #include "Global.h"
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
 
 UGE_InstantDamage::UGE_InstantDamage()
 {

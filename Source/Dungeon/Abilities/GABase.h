@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "Characters/GamePlayEnums.h"
+#include "Abilities/GamePlayEnums.h"
 #include "GABase.generated.h"
 
 /**

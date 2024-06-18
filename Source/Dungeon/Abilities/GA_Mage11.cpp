@@ -1,4 +1,4 @@
-#include "Characters/GA_Mage11.h"
+#include "Abilities/GA_Mage11.h"
 #include "Global.h"
 #include "Animation/AnimInstance.h"
 #include "AbilitySystemComponent.h"

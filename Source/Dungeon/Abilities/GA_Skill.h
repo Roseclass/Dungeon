@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Characters/GABase.h"
-#include "GA_MontageWithEvent.generated.h"
+#include "Abilities/GA_MontageWithEvent.h"
+#include "GA_Skill.generated.h"
 
 /**
- * 
+ *
  */
 
 class UAnimMontage;
@@ -60,16 +60,15 @@ public:
 };
 
 UCLASS()
-class DUNGEON_API UGA_MontageWithEvent : public UGABase
+class DUNGEON_API UGA_Skill : public UGA_MontageWithEvent
 {
 	GENERATED_BODY()
 public:
-	UGA_MontageWithEvent();
+	UGA_Skill();
 protected:
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	virtual const FGameplayTagContainer* GetCooldownTags() const override;
@@ -79,18 +78,6 @@ public:
 	//property
 private:
 protected:
-	UPROPERTY(EditAnywhere, Category = "Montage")
-		UAnimMontage* Montage;
-
-	UPROPERTY(EditAnywhere, Category = "Montage")
-		float PlayRate = 1.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Montage")
-		FName StartSection;
-
-	UPROPERTY(EditAnywhere, Category = "Montage")
-		FName RepeatSection;
-
 	UPROPERTY(EditAnywhere, Category = "Dealer")
 		TMap<FGameplayTag, TSubclassOf<ADamageDealer>> DealerClassMap;
 
@@ -139,10 +126,8 @@ public:
 	//function
 private:
 protected:
-	UFUNCTION()virtual void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
-	UFUNCTION()virtual void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
-	UFUNCTION()virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
-	UFUNCTION()virtual void OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData);
+	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)override;
+	virtual void OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData);
 
 	virtual float GetCooldown()const;
 	virtual float GetCost()const;

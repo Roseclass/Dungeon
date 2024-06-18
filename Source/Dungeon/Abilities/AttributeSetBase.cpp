@@ -1,4 +1,4 @@
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
 #include "Global.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectExtension.h"

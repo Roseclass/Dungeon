@@ -1,54 +1,38 @@
-#include "Characters/GA_MontageWithEvent.h"
+#include "Abilities/GA_Skill.h"
 #include "Global.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystemGlobals.h"
 
 #include "Components/SkillComponent.h"
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
 #include "Characters/DungeonCharacterBase.h"
-#include "Characters/AbilityTaskTypes.h"
-#include "Characters/AT_MontageNotifyEvent.h"
-#include "Characters/AT_PersistentTask.h"
+#include "Abilities/AbilityTaskTypes.h"
+#include "Abilities/AT_MontageNotifyEvent.h"
+#include "Abilities/AT_PersistentTask.h"
 #include "Objects/DamageDealer.h"
 
-UGA_MontageWithEvent::UGA_MontageWithEvent()
+UGA_Skill::UGA_Skill()
 {
 	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
 }
 
-void UGA_MontageWithEvent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UGA_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void UGA_MontageWithEvent::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
-{
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	// Play fire montage and wait for event telling us to spawn the projectile
-	UAT_MontageNotifyEvent* Task = UAT_MontageNotifyEvent::CreateMontageNotifyEvent(this, NAME_None, Montage, FGameplayTagContainer(), 1.0f, NAME_None, false, 1.0f);
-	Task->OnBlendOut.AddDynamic(this, &UGA_MontageWithEvent::OnCompleted);
-	Task->OnCompleted.AddDynamic(this, &UGA_MontageWithEvent::OnCompleted);
-	Task->OnInterrupted.AddDynamic(this, &UGA_MontageWithEvent::OnCancelled);
-	Task->OnCancelled.AddDynamic(this, &UGA_MontageWithEvent::OnCancelled);
-	Task->EventReceived.AddDynamic(this, &UGA_MontageWithEvent::EventReceived);
-	// ReadyForActivation() is how you activate the AbilityTask in C++. Blueprint has magic from K2Node_LatentGameplayTaskCall that will automatically call ReadyForActivation().
-	Task->ReadyForActivation();
-
-}
-
-void UGA_MontageWithEvent::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UGA_Skill::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
 	FGameplayTagContainer enhancement;
 	enhancement.AddTag(EnhancementTag);
 	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, enhancement);
-	Task->EventReceived.AddDynamic(this, &UGA_MontageWithEvent::OnEnhanced);
+	Task->EventReceived.AddDynamic(this, &UGA_Skill::OnEnhanced);
 	Task->ReadyForActivation();
 }
 
-void UGA_MontageWithEvent::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+void UGA_Skill::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
 	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
 	if (CooldownGE)
@@ -60,7 +44,7 @@ void UGA_MontageWithEvent::ApplyCooldown(const FGameplayAbilitySpecHandle Handle
 	}
 }
 
-const FGameplayTagContainer* UGA_MontageWithEvent::GetCooldownTags() const
+const FGameplayTagContainer* UGA_Skill::GetCooldownTags() const
 {
 	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);
 	MutableTags->Reset(); // MutableTags writes to the TempCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
@@ -73,14 +57,14 @@ const FGameplayTagContainer* UGA_MontageWithEvent::GetCooldownTags() const
 	return MutableTags;
 }
 
-bool UGA_MontageWithEvent::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags) const
+bool UGA_Skill::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags) const
 {
 	UGameplayEffect* CostGE = GetCostGameplayEffect();
 	if (CostGE)
 	{
 		USkillComponent* skillComp = Cast<USkillComponent>(ActorInfo->AbilitySystemComponent.Get());
 		check(skillComp != nullptr);
-		
+
 		float RequiredMana = GetCost();
 		float CurrentMana = skillComp->GetNumericAttribute(UAttributeSetBase::GetManaAttribute());
 
@@ -98,7 +82,7 @@ bool UGA_MontageWithEvent::CheckCost(const FGameplayAbilitySpecHandle Handle, co
 	return true;
 }
 
-void UGA_MontageWithEvent::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+void UGA_Skill::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
 	UGameplayEffect* CostGE = GetCostGameplayEffect();
 	if (CostGE)
@@ -110,21 +94,11 @@ void UGA_MontageWithEvent::ApplyCost(const FGameplayAbilitySpecHandle Handle, co
 	}
 }
 
-void UGA_MontageWithEvent::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
-{
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-}
-
-void UGA_MontageWithEvent::OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData)
-{
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-}
-
-void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
+void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
 {
 	// Montage told us to end the ability before the montage finished playing.
 	// Montage was set to continue playing animation even after ability ends so this is okay.
-	if (EventTag == FGameplayTag::RequestGameplayTag(FName("Event.SkillEnd")))
+	if (EventTag == EndTag)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 		return;
@@ -160,7 +134,7 @@ void UGA_MontageWithEvent::EventReceived(FGameplayTag EventTag, FGameplayEventDa
 	}
 }
 
-void UGA_MontageWithEvent::OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData)
+void UGA_Skill::OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData)
 {
 	CheckFalse(GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority);
 	const UPersistentTaskData* data = Cast<UPersistentTaskData>(EventData.OptionalObject);
@@ -176,7 +150,7 @@ void UGA_MontageWithEvent::OnEnhanced(FGameplayTag EventTag, FGameplayEventData 
 	}
 }
 
-float UGA_MontageWithEvent::GetCooldown() const
+float UGA_Skill::GetCooldown() const
 {
 	int32 lv = GetAbilityLevel();
 	float base = Cooldown.Base.GetValueAtLevel(lv);
@@ -189,7 +163,7 @@ float UGA_MontageWithEvent::GetCooldown() const
 	return result;
 }
 
-float UGA_MontageWithEvent::GetCost() const
+float UGA_Skill::GetCost() const
 {
 	int32 lv = GetAbilityLevel();
 	float base = ManaCost.Base.GetValueAtLevel(lv);

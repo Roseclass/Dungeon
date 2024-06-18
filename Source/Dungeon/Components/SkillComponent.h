@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "Engine/DataTable.h"
-#include "Characters/GameplayEnums.h"
+#include "Abilities/GameplayEnums.h"
 #include "SkillComponent.generated.h"
 
 /**
@@ -71,6 +71,9 @@ private:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Skills|Datas")
 		UDataTable* DataTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Skills|Datas")
+		TArray<TSubclassOf<UGABase>> DefaultGAs;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
 		FGameplayTagContainer BlockUseTags;

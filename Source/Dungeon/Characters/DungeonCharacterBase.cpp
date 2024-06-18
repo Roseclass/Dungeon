@@ -12,7 +12,7 @@
 
 #include "Components/SkillComponent.h"
 #include "Abilities/GameplayAbility.h"
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
 
 #include "Components/MontageComponent.h"
 #include "Components/InventoryComponent.h"

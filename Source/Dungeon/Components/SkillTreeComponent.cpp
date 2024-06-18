@@ -6,7 +6,7 @@
 #include "DungeonPlayerController.h"
 #include "Components/SkillComponent.h"
 #include "Widgets/UW_SkillTree.h"
-#include "Characters/GABase.h"
+#include "Abilities/GABase.h"
 
 USkillTreeComponent::USkillTreeComponent()
 {

@@ -13,7 +13,7 @@
 
 #include "GameplayTagContainer.h"
 #include "Components/SkillComponent.h"
-#include "Characters/AbilityTaskTypes.h"
+#include "Abilities/AbilityTaskTypes.h"
 
 
 UInventoryComponent::UInventoryComponent()

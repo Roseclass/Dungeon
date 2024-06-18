@@ -1,4 +1,4 @@
-#include "Characters/GABase.h"
+#include "Abilities/GABase.h"
 #include "Global.h"
 #include "GameplayTagContainer.h"
 

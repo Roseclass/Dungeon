@@ -1,6 +1,6 @@
 #include "Widgets/SkillButton.h"
 #include "Global.h"
-#include "Characters/GABase.h"
+#include "Abilities/GABase.h"
 
 #include "Components/SkillTreeComponent.h"
 

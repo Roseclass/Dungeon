@@ -1,4 +1,8 @@
 ---,Tag,DevComment
+Ability_Dead,"Ability.Dead","Play Dead Montage"
+Ability_Hit,"Ability.Hit","Play Hit Montage"
+Ability_Knockback,"Ability.Knockback","Play Knockback Montage"
+Ability_Knockdown,"Ability.Knockdown","Play Knockdown Montage"
 Damage,"Effect.Damage","for applying damage effects in gameplay"
 Projectile,"Projectile.FrostBolt",""
 Skill_Cost_Base,"Skill.Cost.Base","Base of Cost"
@@ -15,3 +19,4 @@ State_Knockback,"State.Knockback","Active During Knockback Montage"
 State_Knockdown,"State.Knockdown","Active During Knockdown Montage"
 State_CannotMove,"State.CannotMove","Active During Cannot Move"
 Event_SkillEnd,"Event.SkillEnd","For When Skill End"
+Event_HitEnd,"Event.HitEnd","For When Hit End"

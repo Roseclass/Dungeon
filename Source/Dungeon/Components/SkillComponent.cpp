@@ -3,7 +3,7 @@
 
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
-#include "Characters/GABase.h"
+#include "Abilities/GABase.h"
 #include "Components/SkillTreeComponent.h"
 
 USkillComponent::USkillComponent()
@@ -41,6 +41,17 @@ void USkillComponent::GiveDefaultAbilities()
 		QuickSlotData[i] = -1;
 
 	CheckTrue(GetOwner()->GetLocalRole() != ROLE_Authority);
+
+	for (auto i : DefaultGAs)
+	{
+		if (!i)continue;
+		GiveAbility(FGameplayAbilitySpec(
+			i,
+			GetSkillLevel(i.GetDefaultObject()->GetSkillID()),
+			i.GetDefaultObject()->GetSkillID(),
+			this
+		));
+	}
 
 	for (auto i : SkillDatas)
 	{

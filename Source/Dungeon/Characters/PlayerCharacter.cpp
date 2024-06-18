@@ -17,7 +17,8 @@
 
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystemComponent.h"
-#include "Characters/AttributeSetBase.h"
+#include "Abilities/AttributeSetBase.h"
+#include "Abilities/GABase.h"
 
 #include "SaveManager.h"
 #include "DungeonPlayerController.h"
@@ -31,7 +32,6 @@
 #include "Components/QuestComponent.h"
 #include "Components/TravelEffectComponent.h"
 #include "Objects/Projectile.h"
-#include "Characters/GABase.h"
 
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_QuickSlot.h"
