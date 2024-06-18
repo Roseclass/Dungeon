@@ -8,6 +8,8 @@
  * use skill by index
  */
 
+struct FGameplayTagContainer;
+
 UCLASS()
 class DUNGEON_API UBTT_Skill : public UBTTaskNode
 {
@@ -23,6 +25,9 @@ private:
 protected:
 	UPROPERTY(EditAnywhere)
 		int32 SkillIndex;
+
+	UPROPERTY(EditAnywhere)
+		FGameplayTagContainer SkillTags;
 public:
 
 	//function

@@ -10,7 +10,6 @@
 class UWidgetComponent;
 class USkillComponent;
 class UMontageComponent;
-class UStateComponent;
 class UInventoryComponent;
 class UItemObject;
 class ASkillActor;
@@ -36,7 +35,6 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
@@ -80,9 +78,6 @@ protected:
 		UMontageComponent* Montage;
 
 	UPROPERTY(VisibleDefaultsOnly)
-		UStateComponent* State;
-
-	UPROPERTY(VisibleDefaultsOnly)
 		UInventoryComponent* Inventory;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
@@ -105,9 +100,6 @@ protected:
 	virtual void Init();
 	
 	UFUNCTION(Reliable, Server)void Server_SetName(const FText& NewName);
-
-	//State
-	UFUNCTION()virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:
 	//HealthBar
 	virtual void HideHealthBar();
@@ -124,19 +116,7 @@ public:
 	virtual bool CanMove();
 
 	//for notify
-	UFUNCTION(BlueprintCallable)virtual void SetUse();
-	UFUNCTION(BlueprintCallable)virtual void SetCannotUse();
-	UFUNCTION(BlueprintCallable)virtual void SetMove();
-	UFUNCTION(BlueprintCallable)virtual void SetStop();
-	UFUNCTION(BlueprintCallable)virtual void UnsetSkill();
-	UFUNCTION(BlueprintCallable)virtual void SpawnProjectile();
 	UFUNCTION(BlueprintCallable)virtual void OnCollision();
 	UFUNCTION(BlueprintCallable)virtual void OffCollision();
 	UFUNCTION(BlueprintCallable)virtual void ResetHitActors();
-	UFUNCTION(BlueprintCallable)virtual void SetIdleMode();
-	UFUNCTION(BlueprintCallable)virtual void SetSkillMode();
-	UFUNCTION(BlueprintCallable)virtual void SetHitMode();
-	UFUNCTION(BlueprintCallable)virtual void SetKnockBackMode();
-	UFUNCTION(BlueprintCallable)virtual void SetKnockDownMode();
-	UFUNCTION(BlueprintCallable)virtual void SetDeadMode();
 };

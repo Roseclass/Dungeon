@@ -8,7 +8,6 @@
  * 
  */
 
-
 UCLASS()
 class DUNGEON_API UBTS_Ghost : public UBTService
 {
@@ -26,6 +25,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		FBlackboardKeySelector Target;
+
 public:
 
 	//function

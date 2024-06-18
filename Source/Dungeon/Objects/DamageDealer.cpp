@@ -3,7 +3,7 @@
 #include "Components/ShapeComponent.h"
 
 #include "Characters/DungeonCharacterBase.h"
-#include "Components/StateComponent.h"
+#include "Components/SkillComponent.h"
 
 #include "Objects/CustomDamageType.h"
 
@@ -70,9 +70,9 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	if (!base)return;
 
 	// is deadmode?
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(OtherActor);
-	if (!state)return;
-	if (state->IsDeadMode())return;
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OtherActor);
+	if (!skill)return;
+	if (skill ->IsDead())return;
 
 	// ignore alliance
 	CheckTrue(base->GetGenericTeamId() == TeamID);

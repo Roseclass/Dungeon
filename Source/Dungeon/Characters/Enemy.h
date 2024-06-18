@@ -34,7 +34,6 @@ protected:
 	virtual void BeginPlay() override;
 public:
 	virtual void Tick(float DeltaSeconds) override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual FGenericTeamId GetGenericTeamId() const;
 
 	//IIQuestObjective
@@ -60,10 +59,6 @@ public:
 
 	//function
 private:
-	UFUNCTION(NetMulticast, Reliable)void Multicast_UseSkill(int32 InIndex);
-	UFUNCTION(NetMulticast, Reliable)void Multicast_TakeDamage(float InDamage, bool IsCritical);
-	void SequenceStart();
-	UFUNCTION(BlueprintCallable)void SequenceEnd();
 protected:
 	virtual void Init()override;
 public:	
@@ -74,9 +69,6 @@ public:
 
 	//Skill
 	virtual void UseSkill(int32 Idx)override;
-
-	//state
-	virtual void SetDeadMode()override;
 
 	//Loot
 	void GenerateLootItems();

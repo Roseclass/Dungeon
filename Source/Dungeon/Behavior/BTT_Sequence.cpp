@@ -5,7 +5,7 @@
 #include "Characters/EnemyAIController.h"
 #include "Characters/Enemy.h"
 #include "Components/BehaviorComponent.h"
-#include "Components/StateComponent.h"
+#include "Components/SkillComponent.h"
 
 UBTT_Sequence::UBTT_Sequence()
 {
@@ -45,13 +45,13 @@ void UBTT_Sequence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	AAIController* controller = Cast<AAIController>(OwnerComp.GetOwner());
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(aiPawn);
 
-	if (state->IsIdleMode())
-	{
-		int32 sequence = BlackboardComp->GetValueAsInt(Sequence.SelectedKeyName);
-		BlackboardComp->SetValueAsInt(Sequence.SelectedKeyName,++sequence);
-		BlackboardComp->SetValueAsEnum(Behavior.SelectedKeyName, uint8(EBehaviorType::Wait));
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	}
+	//if (skill->IsIdleMode())
+	//{
+	//	int32 sequence = BlackboardComp->GetValueAsInt(Sequence.SelectedKeyName);
+	//	BlackboardComp->SetValueAsInt(Sequence.SelectedKeyName,++sequence);
+	//	BlackboardComp->SetValueAsEnum(Behavior.SelectedKeyName, uint8(EBehaviorType::Wait));
+	//	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	//}
 }

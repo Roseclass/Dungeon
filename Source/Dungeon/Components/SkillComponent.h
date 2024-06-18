@@ -75,8 +75,14 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
 		FGameplayTagContainer BlockUseTags;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tatas")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
 		FGameplayTagContainer BlockMoveTags;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
+		FGameplayTagContainer DeadTags;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
+		FGameplayTagContainer HitTags;
 
 public:
 	FQuickSlotDataChanged OnQuickSlotDataChanged;
@@ -96,8 +102,12 @@ public:
 	float GetQuickSlotManaCost(int32 InQuickSlotIndex);
 	bool GetSkillRange(int32 InSkillID, float& Range);
 	bool GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range);
+	
+	//state
 	bool CanUse()const;
 	bool CanMove()const;
+	bool IsDead()const;
+	bool IsHit()const;
 
 	// save
 	void SaveData(USaveGameData* SaveData);

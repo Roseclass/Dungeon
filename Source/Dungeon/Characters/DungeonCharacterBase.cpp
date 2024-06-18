@@ -15,7 +15,6 @@
 #include "Characters/AttributeSetBase.h"
 
 #include "Components/MontageComponent.h"
-#include "Components/StateComponent.h"
 #include "Components/InventoryComponent.h"
 
 #include "Objects/CustomDamageType.h"
@@ -34,7 +33,6 @@ ADungeonCharacterBase::ADungeonCharacterBase()
 	AttributeSet = CreateDefaultSubobject<UAttributeSetBase>(TEXT("AttributeSet"));
 
 	CHelpers::CreateActorComponent<UMontageComponent>(this, &Montage, "Montage");
-	CHelpers::CreateActorComponent<UStateComponent>(this, &State, "State");
 	CHelpers::CreateActorComponent<UInventoryComponent>(this, &Inventory, "Inventory");
 }
 
@@ -55,67 +53,6 @@ void ADungeonCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	// Replicated 변수를 여기에 추가
 	DOREPLIFETIME_CONDITION(ADungeonCharacterBase, Name, COND_None);
-}
-
-float ADungeonCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
-{
-	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	if (!DamageEvent.DamageTypeClass->IsChildOf(UCustomDamageType::StaticClass()))
-	{
-		FString name = "";
-		if (DamageCauser)name = DamageCauser->GetName();
-		CLog::Print(name + "'s DamageTypeClass is no custom", -1, 10, FColor::Red);
-		return result;
-	}
-
-	UCustomDamageType* damageType = Cast<UCustomDamageType>(NewObject<UDamageType>(this, DamageEvent.DamageTypeClass));
-	if (!damageType)
-	{
-		FString name = "";
-		if (DamageCauser)name = DamageCauser->GetName();
-		CLog::Print(name + "'s damageType is nullptr", -1, 10, FColor::Red);
-		return result;
-	}
-
-	// is already dead?
-	if (State->IsDeadMode())return result;
-
-	// refresh status
-	//Status->AdjustCurrentHealth(-DamageAmount);
-	//Skill->Abort();
-
-	// set montage datas
-	{
-		Montage->SetDamageCauser(DamageCauser);
-
-		FVector force = GetActorLocation() - DamageCauser->GetActorLocation();
-		force.Z = 0;
-		force.Normalize(); 
-
-		Montage->SetForce(damageType->DamageImpulse * force);
-	}
-
-	// is dead?
-	//float hp = Status->GetCurrentHealth_Server();
-	//if (hp <= 0)
-	//{
-	//	SetDeadMode();
-	//	return result;
-	//}
-
-	// play reaction
-	// None, Normal, KnockBack, KnockDown, Max
-	switch (damageType->ReactionType)
-	{
-	case EReactionType::None:HitReaction_None(); break;
-	case EReactionType::Normal:SetHitMode(); break;
-	case EReactionType::KnockBack:SetKnockBackMode(); break;
-	case EReactionType::KnockDown:SetKnockDownMode(); break;
-	default:break;
-	}
-
-	return result;
 }
 
 FGenericTeamId ADungeonCharacterBase::GetGenericTeamId() const
@@ -174,8 +111,8 @@ void ADungeonCharacterBase::HitReaction_KnockBack()
 	// stop 
 	GetCharacterMovement()->StopMovementImmediately();
 
-	// set move for addforce
-	SetMove();
+	//// set move for addforce
+	//SetMove();
 
 	// restore state(bp notify)
 }
@@ -185,8 +122,8 @@ void ADungeonCharacterBase::HitReaction_KnockDown()
 	// stop 
 	GetCharacterMovement()->StopMovementImmediately();
 
-	// set move for addforce
-	SetMove();
+	//// set move for addforce
+	//SetMove();
 
 	// restore state(bp notify)
 }
@@ -235,8 +172,6 @@ void ADungeonCharacterBase::Init()
 
 	//HealthBarWidget->Init(Name,Status->GetLevel());
 
-	State->OnStateTypeChanged.AddUFunction(this, "ChangeState");
-
 	Skill->InitAbilityActorInfo(this, this);
 
 	// Attribute change callbacks
@@ -252,38 +187,38 @@ void ADungeonCharacterBase::Server_SetName_Implementation(const FText& NewName)
 	OnRep_Name();
 }
 
-void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
-{
-	CheckTrue(PrevType == NewType);
-
-	if (NewType == EStateType::Dead)
-	{
-		Montage->PlayDeadMontage();
-
-		if (!HealthBarWidget)
-			HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
-		HealthBarWidget->Dead();
-
-		//ignore cursor
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-		//ignore character
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-
-	}
-	else if (NewType == EStateType::Hit)
-	{
-		Montage->PlayHitMontage();
-	}
-	else if (NewType == EStateType::KnockBack)
-	{
-		//playmontage
-	}
-	else if (NewType == EStateType::KnockDown)
-	{
-		Montage->PlayKnockDownMontage();
-	}
-}
+//void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
+//{
+//	CheckTrue(PrevType == NewType);
+//
+//	if (NewType == EStateType::Dead)
+//	{
+//		Montage->PlayDeadMontage();
+//
+//		if (!HealthBarWidget)
+//			HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+//		HealthBarWidget->Dead();
+//
+//		//ignore cursor
+//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+//		//ignore character
+//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+//
+//	}
+//	else if (NewType == EStateType::Hit)
+//	{
+//		Montage->PlayHitMontage();
+//	}
+//	else if (NewType == EStateType::KnockBack)
+//	{
+//		//playmontage
+//	}
+//	else if (NewType == EStateType::KnockDown)
+//	{
+//		Montage->PlayKnockDownMontage();
+//	}
+//}
 
 void ADungeonCharacterBase::HideHealthBar()
 {
@@ -304,36 +239,6 @@ bool ADungeonCharacterBase::CanMove()
 	return Skill->CanMove();
 }
 
-void ADungeonCharacterBase::SetUse()
-{
-	//Status->SetUse();
-}
-
-void ADungeonCharacterBase::SetCannotUse()
-{
-	//Status->SetCannotUse();
-}
-
-void ADungeonCharacterBase::SetMove()
-{
-	//Status->SetMove();
-}
-
-void ADungeonCharacterBase::SetStop()
-{
-	//Status->SetStop();
-}
-
-void ADungeonCharacterBase::UnsetSkill()
-{
-
-}
-
-void ADungeonCharacterBase::SpawnProjectile()
-{
-	//Skill->SpawnProjectile();
-}
-
 void ADungeonCharacterBase::OnCollision()
 {
 	Inventory->OnCollision();
@@ -347,38 +252,4 @@ void ADungeonCharacterBase::OffCollision()
 void ADungeonCharacterBase::ResetHitActors()
 {
 	Inventory->ResetHitActors();
-}
-
-void ADungeonCharacterBase::SetIdleMode()
-{
-	State->SetIdleMode();
-}
-
-void ADungeonCharacterBase::SetSkillMode()
-{
-	State->SetSkillMode();
-}
-
-void ADungeonCharacterBase::SetHitMode()
-{
-	State->SetHitMode();
-	HitReaction_Normal();
-}
-
-void ADungeonCharacterBase::SetKnockBackMode()
-{
-	State->SetKnockBackMode();
-	HitReaction_KnockBack();
-}
-
-void ADungeonCharacterBase::SetKnockDownMode()
-{
-	State->SetKnockDownMode();
-	HitReaction_KnockDown();
-}
-
-void ADungeonCharacterBase::SetDeadMode()
-{
-	State->SetDeadMode();
-	SetStop();
 }

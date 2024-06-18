@@ -3,7 +3,7 @@
 #include "Components/ShapeComponent.h"
 
 #include "Characters/DungeonCharacterBase.h"
-#include "Components/StateComponent.h"
+#include "Components/SkillComponent.h"
 
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
@@ -125,9 +125,9 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
 	if (!other && !otherCh)	return;
 
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(OtherActor);
-	if (!state)return;
-	if (state->IsDeadMode())return;
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OtherActor);
+	if (!skill)return;
+	if (skill->IsDead())return;
 
 
 	//ignore alliance

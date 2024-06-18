@@ -5,7 +5,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
-#include "Components/StateComponent.h"
+#include "Components/SkillComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTS_OrcElite::UBTS_OrcElite()
@@ -29,7 +29,7 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(aiPawn);
 	//UStatusComponent* status = CHelpers::GetComponent<UStatusComponent>(aiPawn);
 
 	// print percepted players
@@ -51,8 +51,8 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		else CLog::Print("target on", 222, 1, FColor::Black);
 	}
 
-	CheckTrue(state->IsDeadMode());	
-	CheckTrue(state->IsSequenceMode());
+	CheckTrue(skill->IsDead());
+	//CheckTrue(state->IsSequenceMode());
 
 	int32 prevPhase = BlackboardComp->GetValueAsInt(Phase.SelectedKeyName);
 	//int32 phase = CheckPhase(status->GetCurrentHealth() / status->GetMaxHealth(), prevPhase);
@@ -65,7 +65,7 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 		return;
 	}
 
-	if (state->IsHitMode())		
+	if (skill->IsHit())
 	{
 		behavior->SetHitMode();	
 		return;
@@ -80,8 +80,8 @@ void UBTS_OrcElite::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemor
 	}
 	else
 	{
-		UStateComponent* targetState = CHelpers::GetComponent<UStateComponent>(target);
-		if (targetState->IsDeadMode())
+		USkillComponent* targetSkill = CHelpers::GetComponent<USkillComponent>(target);
+		if (targetSkill->IsDead())
 		{
 			behavior->SetWaitMode();
 			return;

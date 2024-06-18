@@ -27,7 +27,6 @@
 #include "Components/SkillComponent.h"
 #include "Components/SkillTreeComponent.h"
 #include "Components/MontageComponent.h"
-#include "Components/StateComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/QuestComponent.h"
 #include "Components/TravelEffectComponent.h"
@@ -319,24 +318,24 @@ void APlayerCharacter::Init()
 
 }
 
-void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
-{
-	Super::ChangeState(PrevType, NewType);
-
-	if (NewType == EStateType::Dead)
-	{
-		TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
-		TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
-
-		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
-		if (controller && controller->IsLocalController())
-			controller->CreateDeadWidget();
-	}
-	else if (PrevType == EStateType::Skill && NewType == EStateType::Hit)
-	{
-		//Status->SetUse();
-	}
-}
+//void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
+//{
+//	Super::ChangeState(PrevType, NewType);
+//
+//	if (NewType == EStateType::Dead)
+//	{
+//		TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
+//		TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
+//
+//		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
+//		if (controller && controller->IsLocalController())
+//			controller->CreateDeadWidget();
+//	}
+//	else if (PrevType == EStateType::Skill && NewType == EStateType::Hit)
+//	{
+//		//Status->SetUse();
+//	}
+//}
 
 void APlayerCharacter::InitClientWidget()
 {

@@ -8,7 +8,6 @@
 
 #include "Components/SkillComponent.h"
 #include "Components/MontageComponent.h"
-#include "Components/StateComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/DamageTextComponent.h"
 #include "Components/LootComponent.h"
@@ -43,16 +42,6 @@ void AEnemy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
-{
-	float result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	// hit react by montage component
-	Multicast_TakeDamage(DamageAmount, 0);
-
-	return result;
-}
-
 FGenericTeamId AEnemy::GetGenericTeamId() const
 {
 	return TeamID;
@@ -63,26 +52,11 @@ void AEnemy::CompleteCondition()
 	LinkedComponent->CheckCondition(this);
 }
 
-void AEnemy::Multicast_UseSkill_Implementation(int32 InIndex)
-{
-	Skill->UseSkill(InIndex);
-}
-
-void AEnemy::Multicast_TakeDamage_Implementation(float InDamage, bool IsCritical)
-{
-	HitEffect->Glow();
-	DamageText->SpawnDamageText(GetActorLocation(), InDamage, IsCritical);
-}
-
-void AEnemy::SequenceStart()
-{
-	State->SetSequenceMode();
-}
-
-void AEnemy::SequenceEnd()
-{
-	State->SetIdleMode();
-}
+//void AEnemy::Multicast_TakeDamage_Implementation(float InDamage, bool IsCritical)
+//{
+//	HitEffect->Glow();
+//	DamageText->SpawnDamageText(GetActorLocation(), InDamage, IsCritical);
+//}
 
 void AEnemy::Init()
 {
@@ -98,27 +72,26 @@ void AEnemy::Init()
 
 void AEnemy::PlaySequence_Implementation(int32 InIndex)
 {
-	SequenceStart();
+	//SequenceStart();
 }
 
 void AEnemy::UseSkill(int32 Idx)
 {
 	Super::UseSkill(Idx);
-	State->SetSkillMode();
-	Multicast_UseSkill(Idx);
+	//Multicast_UseSkill(Idx);
 }
 
-void AEnemy::SetDeadMode()
-{
-	Super::SetDeadMode();
-	CompleteCondition();
-
-	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
-	if(controller)controller->StopLogic("");
-
-	// Drop Items
-	Loot->DropItems();
-}
+//void AEnemy::SetDeadMode()
+//{
+//	Super::SetDeadMode();
+//	CompleteCondition();
+//
+//	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
+//	if(controller)controller->StopLogic("");
+//
+//	// Drop Items
+//	Loot->DropItems();
+//}
 
 void AEnemy::GenerateLootItems()
 {

@@ -9,6 +9,12 @@
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	HitTags.AddTag(FGameplayTag::RequestGameplayTag("State.Hit"));
+	HitTags.AddTag(FGameplayTag::RequestGameplayTag("State.Knockback"));
+	HitTags.AddTag(FGameplayTag::RequestGameplayTag("State.Knockdown"));
+
+	DeadTags.AddTag(FGameplayTag::RequestGameplayTag("State.Dead"));
 }
 
 void USkillComponent::BeginPlay()
@@ -127,12 +133,22 @@ bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Rang
 
 bool USkillComponent::CanUse() const
 {
-	return HasAnyMatchingGameplayTags(BlockUseTags);
+	return !HasAnyMatchingGameplayTags(BlockUseTags);
 }
 
 bool USkillComponent::CanMove() const
 {
-	return HasAnyMatchingGameplayTags(BlockMoveTags);
+	return !HasAnyMatchingGameplayTags(BlockMoveTags);
+}
+
+bool USkillComponent::IsDead()const
+{
+	return HasAnyMatchingGameplayTags(DeadTags);
+}
+
+bool USkillComponent::IsHit()const
+{
+	return HasAnyMatchingGameplayTags(HitTags);
 }
 
 void USkillComponent::SaveData(USaveGameData* SaveData)

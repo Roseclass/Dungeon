@@ -1,14 +1,17 @@
 #include "Behavior/BTT_Skill.h"
 #include "Global.h"
+#include "GameplayTagContainer.h"
+
 #include "Characters/EnemyAIController.h"
 #include "Characters/Enemy.h"
 #include "Components/SkillComponent.h"
-#include "Components/StateComponent.h"
 
 UBTT_Skill::UBTT_Skill()
 {
 	NodeName = "Skill";
 	bNotifyTick = true;
+
+	SkillTags.AddTag(FGameplayTag::RequestGameplayTag("State.Skill"));
 }
 
 EBTNodeResult::Type UBTT_Skill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -33,8 +36,8 @@ void UBTT_Skill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	AAIController* controller = Cast<AAIController>(OwnerComp.GetOwner());
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
 
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(aiPawn);
 
-	if (state->IsIdleMode())
+	if (!skill->HasAnyMatchingGameplayTags(SkillTags))
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }

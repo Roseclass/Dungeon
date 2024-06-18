@@ -5,8 +5,8 @@
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
-#include "Components/StateComponent.h"
 #include "Components/BehaviorComponent.h"
+#include "Components/SkillComponent.h"
 
 UBTS_Footman::UBTS_Footman()
 {
@@ -27,12 +27,12 @@ void UBTS_Footman::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(aiPawn);
 
-	CheckTrue(state->IsDeadMode());
-	CheckTrue(state->IsSequenceMode());
+	CheckTrue(skill->IsDead());
+	//CheckTrue(skill->IsSequenceMode());
 
-	if (state->IsHitMode())
+	if (skill->IsHit())
 	{
 		behavior->SetHitMode();
 		return;
@@ -47,8 +47,8 @@ void UBTS_Footman::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	}
 	else
 	{
-		UStateComponent* targetState = CHelpers::GetComponent<UStateComponent>(target);
-		if (targetState->IsDeadMode())
+		USkillComponent* targetSkill = CHelpers::GetComponent<USkillComponent>(target);
+		if (targetSkill->IsDead())
 		{
 			behavior->SetWaitMode();
 			return;

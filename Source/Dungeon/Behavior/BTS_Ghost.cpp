@@ -5,7 +5,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "Characters/EnemyAIController.h"
-#include "Components/StateComponent.h"
+#include "Components/SkillComponent.h"
 #include "Components/BehaviorComponent.h"
 
 UBTS_Ghost::UBTS_Ghost()
@@ -27,10 +27,10 @@ void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	UBehaviorComponent* behavior = CHelpers::GetComponent<UBehaviorComponent>(controller);
 
 	AEnemy* aiPawn = Cast<AEnemy>(controller->GetPawn());
-	UStateComponent* state = CHelpers::GetComponent<UStateComponent>(aiPawn);
+	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(aiPawn);
 
-	CheckTrue(state->IsDeadMode());
-	CheckTrue(state->IsSequenceMode());
+	CheckTrue(skill->IsDead());
+	//CheckTrue(state->IsSequenceMode());
 
 	{
 		UBlackBoardPlayerArrayObject* obj = Cast<UBlackBoardPlayerArrayObject>(BlackboardComp->GetValueAsObject(PerceptedPlayerObject.SelectedKeyName));
@@ -49,7 +49,7 @@ void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 		}
 	}
 
-	if (state->IsHitMode())
+	if (skill->IsHit())
 	{
 		behavior->SetHitMode();
 		return;
@@ -64,8 +64,8 @@ void UBTS_Ghost::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, 
 	}
 	else
 	{
-		UStateComponent* targetState = CHelpers::GetComponent<UStateComponent>(target);
-		if (targetState->IsDeadMode())
+		USkillComponent* targetSkill = CHelpers::GetComponent<USkillComponent>(target);
+		if (targetSkill->IsDead())
 		{
 			behavior->SetWaitMode();
 			return;

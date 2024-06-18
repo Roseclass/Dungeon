@@ -7,6 +7,7 @@
 /**
  * 
  */
+
 UCLASS()
 class DUNGEON_API UBTS_Footman : public UBTService
 {
