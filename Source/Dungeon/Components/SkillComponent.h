@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "Engine/DataTable.h"
 #include "Abilities/GameplayEnums.h"
+#include "Abilities/AbilityTaskTypes.h"
 #include "SkillComponent.generated.h"
 
 /**
@@ -106,6 +106,9 @@ public:
 	bool GetSkillRange(int32 InSkillID, float& Range);
 	bool GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range);
 	
+	// ability
+	void EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, float Rate = 1.0f);
+
 	//state
 	bool CanUse()const;
 	bool CanMove()const;

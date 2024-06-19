@@ -104,6 +104,7 @@ public:
 
 	//Skill
 	virtual void UseSkill(int32 Idx) {};
+	virtual void Dead();
 
 	//Inventory
 	virtual void TryAddItem(AWeapon* InObject) {};

@@ -508,29 +508,11 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 	if (EquippedItems[idx] && !IsRoomAvailable(EquippedItems[idx]))return;
 	if (IsRoomAvailable(EquippedItems[idx]))Server_TryAddItem(EquippedItems[idx]);
 
-	//TODO::Check
+	if(EquippedItems[idx])
 	{
 		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
-		if (enhancementDatas.Num())
-		{
-			USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
-			CheckNull(skill);
-			TMap<FGameplayTag, UPersistentTaskData*> enhancementMap;
-
-			for (auto i : enhancementDatas)
-			{
-				UPersistentTaskData*& ptd = enhancementMap.FindOrAdd(i.EnhanceEventTag);
-				if (!ptd)ptd = NewObject<UPersistentTaskData>(UPersistentTaskData::StaticClass());
-				ptd->Datas.Add({ i.EnhanceStatusTag, -i.EnhanceStatus });
-			}
-
-			for (auto i : enhancementMap)
-			{
-				FGameplayEventData data;
-				data.OptionalObject = i.Value;
-				skill->HandleGameplayEvent(i.Key, &data);
-			}
-		}
+		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
+		if (skill)skill->EnhanceAbility(enhancementDatas, -1);
 	}
 
 	EquippedItems[idx] = InData;
@@ -563,35 +545,25 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 
 	OnRep_EquippedItems();
 
-	//TODO::Check
 	{
 		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
-		if (enhancementDatas.Num())
-		{
-			USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
-			CheckNull(skill);
-			TMap<FGameplayTag, UPersistentTaskData*> enhancementMap;
-
-			for (auto i : enhancementDatas)
-			{
-				UPersistentTaskData*& ptd = enhancementMap.FindOrAdd(i.EnhanceEventTag);
-				if (!ptd)ptd = NewObject<UPersistentTaskData>(UPersistentTaskData::StaticClass());
-				ptd->Datas.Add({ i.EnhanceStatusTag,i.EnhanceStatus });
-			}
-
-			for (auto i : enhancementMap)
-			{
-				FGameplayEventData data;
-				data.OptionalObject = i.Value;
-				skill->HandleGameplayEvent(i.Key, &data);
-			}
-		}
+		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
+		if (skill)skill->EnhanceAbility(enhancementDatas);
 	}
 }
 
 void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 {
 	if (!EquippedItems.IsValidIndex(InIdx))return;
+
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+
+	if (EquippedItems[InIdx])
+	{
+		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[InIdx]->GetItemStatus().GetEnhancementDatas();
+		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
+		if (skill)skill->EnhanceAbility(enhancementDatas, -1);
+	}
 
 	// reset to default
 	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[InIdx]->GetType() != EItemType::Weapon)

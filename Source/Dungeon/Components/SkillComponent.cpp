@@ -3,7 +3,7 @@
 
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
-#include "Abilities/GABase.h"
+#include "Abilities/GA_Skill.h"
 #include "Components/SkillTreeComponent.h"
 
 USkillComponent::USkillComponent()
@@ -140,6 +140,24 @@ bool USkillComponent::GetSkillRange(int32 InSkillID, float& Range)
 bool USkillComponent::GetQuickSlotSkillRange(int32 InQuickSlotIndex, float& Range)
 {
 	return 1;
+}
+
+void USkillComponent::EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, float Rate)
+{
+	for (auto i : InDatas)
+	{
+		FGameplayTagContainer tags;
+		tags.AddTag(i.SkillTag);
+		TArray<FGameplayAbilitySpec*> arr;
+		GetActivatableGameplayAbilitySpecsByAllMatchingTags(tags, arr);
+		for (auto spec : arr)
+			for (auto ability : spec->ReplicatedInstances)
+			{
+				UGA_Skill* skill = Cast<UGA_Skill>(ability);
+				if (!skill)continue;
+				skill->Enhance(i.EnhanceStatusTag, i.EnhanceStatus * Rate);
+			}
+	}
 }
 
 bool USkillComponent::CanUse() const

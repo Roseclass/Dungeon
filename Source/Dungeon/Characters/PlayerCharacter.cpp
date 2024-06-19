@@ -317,24 +317,6 @@ void APlayerCharacter::Init()
 
 }
 
-//void APlayerCharacter::ChangeState(EStateType PrevType, EStateType NewType)
-//{
-//	Super::ChangeState(PrevType, NewType);
-//
-//	if (NewType == EStateType::Dead)
-//	{
-//		TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
-//		TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
-//
-//		ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
-//		if (controller && controller->IsLocalController())
-//			controller->CreateDeadWidget();
-//	}
-//	else if (PrevType == EStateType::Skill && NewType == EStateType::Hit)
-//	{
-//		//Status->SetUse();
-//	}
-//}
 
 void APlayerCharacter::InitClientWidget()
 {
@@ -359,6 +341,18 @@ void APlayerCharacter::UseSkill(int32 Idx)
 {
 	Super::UseSkill(Idx);
 	Skill->UseQuickSlotSkill(Idx);
+}
+
+void APlayerCharacter::Dead()
+{
+	Super::Dead();
+
+	TopDownCameraComponent->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
+	TopDownCameraComponent->PostProcessSettings.bOverride_ColorSaturation = 1;
+
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(this->GetController());
+	if (controller && controller->IsLocalController())
+		controller->CreateDeadWidget();
 }
 
 void APlayerCharacter::UseLeft()

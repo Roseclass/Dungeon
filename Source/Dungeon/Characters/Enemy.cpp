@@ -80,17 +80,17 @@ void AEnemy::UseSkill(int32 Idx)
 	//Multicast_UseSkill(Idx);
 }
 
-//void AEnemy::SetDeadMode()
-//{
-//	Super::SetDeadMode();
-//	CompleteCondition();
-//
-//	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
-//	if(controller)controller->StopLogic("");
-//
-//	// Drop Items
-//	Loot->DropItems();
-//}
+void AEnemy::Dead()
+{
+	Super::Dead();
+	CompleteCondition();
+	
+	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
+	if(controller)controller->StopLogic("");
+	
+	// Drop Items
+	Loot->DropItems();
+}
 
 void AEnemy::GenerateLootItems()
 {

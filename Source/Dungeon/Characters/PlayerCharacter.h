@@ -101,6 +101,7 @@ public:
 
 	//Skill
 	virtual void UseSkill(int32 Idx)override;
+	virtual void Dead()override;
 	void UseLeft();
 	void UseRight();
 	void UseQ();

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GA_MontageWithEvent.h"
+#include "Engine/NetSerialization.h"
 #include "GA_Skill.generated.h"
 
 /**
@@ -37,7 +38,7 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FMMCData
+struct FMMCData : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 public:
@@ -55,8 +56,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
 		FScalableFloat Base;
-	float Additive;
-	float Multiplicitive = 100;
+
+	UPROPERTY()
+		float Additive;
+
+	UPROPERTY()
+		float Multiplicitive = 100;
 };
 
 UCLASS()
@@ -69,7 +74,6 @@ protected:
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	virtual const FGameplayTagContainer* GetCooldownTags() const override;
 	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
@@ -105,10 +109,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Condition|Range")
 		float Range = 500.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
+	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
 		FMMCData ManaCost;
 
-	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
+	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
 		FMMCData Cooldown;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
@@ -127,9 +131,9 @@ public:
 private:
 protected:
 	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)override;
-	virtual void OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData);
 
 	virtual float GetCooldown()const;
 	virtual float GetCost()const;
 public:
+	virtual void Enhance(FGameplayTag StatusTag, float Value);
 };

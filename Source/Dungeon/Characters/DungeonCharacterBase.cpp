@@ -185,39 +185,6 @@ void ADungeonCharacterBase::Server_SetName_Implementation(const FText& NewName)
 	OnRep_Name();
 }
 
-//void ADungeonCharacterBase::ChangeState(EStateType PrevType, EStateType NewType)
-//{
-//	CheckTrue(PrevType == NewType);
-//
-//	if (NewType == EStateType::Dead)
-//	{
-//		Montage->PlayDeadMontage();
-//
-//		if (!HealthBarWidget)
-//			HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
-//		HealthBarWidget->Dead();
-//
-//		//ignore cursor
-//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-//		//ignore character
-//		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-//
-//	}
-//	else if (NewType == EStateType::Hit)
-//	{
-//		Montage->PlayHitMontage();
-//	}
-//	else if (NewType == EStateType::KnockBack)
-//	{
-//		//playmontage
-//	}
-//	else if (NewType == EStateType::KnockDown)
-//	{
-//		Montage->PlayKnockDownMontage();
-//	}
-//}
-
 void ADungeonCharacterBase::HideHealthBar()
 {
 	HealthBar->SetHiddenInGame(1);
@@ -226,6 +193,19 @@ void ADungeonCharacterBase::HideHealthBar()
 void ADungeonCharacterBase::RevealHealthBar()
 {
 	HealthBar->SetHiddenInGame(0);
+}
+
+void ADungeonCharacterBase::Dead()
+{
+	if (!HealthBarWidget)
+		HealthBarWidget = Cast<UUW_HealthBar>(HealthBar->GetWidget());
+	HealthBarWidget->Dead();
+	
+	//ignore cursor
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	//ignore character
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 }
 
 bool ADungeonCharacterBase::CanUse()

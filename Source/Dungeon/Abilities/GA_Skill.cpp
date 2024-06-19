@@ -8,7 +8,6 @@
 #include "Characters/DungeonCharacterBase.h"
 #include "Abilities/AbilityTaskTypes.h"
 #include "Abilities/AT_MontageNotifyEvent.h"
-#include "Abilities/AT_PersistentTask.h"
 #include "Objects/DamageDealer.h"
 
 UGA_Skill::UGA_Skill()
@@ -19,18 +18,21 @@ UGA_Skill::UGA_Skill()
 void UGA_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UGA_Skill, ManaCost);
+	DOREPLIFETIME(UGA_Skill, Cooldown);
 }
 
-void UGA_Skill::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	Super::OnGiveAbility(ActorInfo, Spec);
-
-	FGameplayTagContainer enhancement;
-	enhancement.AddTag(EnhancementTag);
-	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, enhancement);
-	Task->EventReceived.AddDynamic(this, &UGA_Skill::OnEnhanced);
-	Task->ReadyForActivation();
-}
+//void UGA_Skill::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+//{
+//	Super::OnGiveAbility(ActorInfo, Spec);
+//
+//	FGameplayTagContainer enhancement;
+//	enhancement.AddTag(EnhancementTag);
+//	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, enhancement);
+//	Task->EventReceived.AddDynamic(this, &UGA_Skill::OnEnhanced);
+//	Task->ReadyForActivation();
+//}
 
 void UGA_Skill::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
@@ -134,22 +136,6 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 	}
 }
 
-void UGA_Skill::OnEnhanced(FGameplayTag EventTag, FGameplayEventData EventData)
-{
-	CheckFalse(GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority);
-	const UPersistentTaskData* data = Cast<UPersistentTaskData>(EventData.OptionalObject);
-	if (data)
-	{
-		for (auto i : data->Datas)
-		{
-			if (ManaCost.AdditiveTag == i.Key)ManaCost.Additive += i.Value;
-			if (ManaCost.MultiplicitiveTag == i.Key)ManaCost.Multiplicitive -= i.Value;
-			if (Cooldown.AdditiveTag == i.Key)Cooldown.Additive += i.Value;
-			if (Cooldown.MultiplicitiveTag == i.Key)Cooldown.Multiplicitive -= i.Value;
-		}
-	}
-}
-
 float UGA_Skill::GetCooldown() const
 {
 	int32 lv = GetAbilityLevel();
@@ -174,4 +160,14 @@ float UGA_Skill::GetCost() const
 	if (result < 0)result = 0;
 
 	return -result;
+}
+
+void UGA_Skill::Enhance(FGameplayTag StatusTag, float Value)
+{
+	CheckFalse(GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority);
+	
+	if (ManaCost.AdditiveTag == StatusTag)ManaCost.Additive += Value;
+	if (ManaCost.MultiplicitiveTag == StatusTag)ManaCost.Multiplicitive -= Value;
+	if (Cooldown.AdditiveTag == StatusTag)Cooldown.Additive += Value;
+	if (Cooldown.MultiplicitiveTag == StatusTag)Cooldown.Multiplicitive -= Value;
 }

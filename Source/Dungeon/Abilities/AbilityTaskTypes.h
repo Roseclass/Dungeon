@@ -13,7 +13,7 @@
  * 
  */
 
-//#include "Characters/AbilityTaskTypes.h"
+//#include "Abilities/AbilityTaskTypes.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAbilityTaskEventDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
 
@@ -23,7 +23,7 @@ struct FSkillEnhancement : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-		FGameplayTag EnhanceEventTag;
+		FGameplayTag SkillTag;
 
 	UPROPERTY(EditAnywhere)
 		FGameplayTag EnhanceStatusTag;
