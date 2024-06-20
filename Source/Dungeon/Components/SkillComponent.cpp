@@ -63,6 +63,31 @@ void USkillComponent::GiveDefaultAbilities()
 			this
 		));
 	}
+	OnGameplayEffectAppliedDelegateToSelf.AddUFunction(this, "HitReaction");
+}
+
+void USkillComponent::HitReaction(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle)
+{
+	CheckFalse(GetOwner()->HasAuthority());
+	FGameplayTagContainer tags;InSpec.GetAllAssetTags(tags);
+	for (auto tag : tags)
+	{
+		if (tag != FGameplayTag::RequestGameplayTag("Ability.Hit") &&
+		tag != FGameplayTag::RequestGameplayTag("Ability.Knockback") &&
+		tag != FGameplayTag::RequestGameplayTag("Ability.Knockdown"))
+			continue;
+		FGameplayTagContainer reactionTags;
+		reactionTags.AddTag(tag);
+		TArray<FGameplayAbilitySpecHandle> arr;
+		FindAllAbilitiesWithTags(arr,reactionTags);
+		for (auto i : arr)
+		{
+			FGameplayEventData* data = new FGameplayEventData();
+			data->ContextHandle = InSpec.GetContext();
+			data->EventMagnitude = InSpec.GetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Force")));
+			InternalTryActivateAbility(i, FPredictionKey(), nullptr, nullptr, data);
+		}
+	}
 }
 
 void USkillComponent::UseSkill(int32 InSkillID)

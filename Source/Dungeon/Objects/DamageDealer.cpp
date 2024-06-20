@@ -57,10 +57,14 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 		IAbilitySystemInterface* HitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
         if (HitCharacter)
         {
+
             UAbilitySystemComponent* AbilitySystemComponent = HitCharacter->GetAbilitySystemComponent();
             if (AbilitySystemComponent && GamePlayEffectClass)
             {
-				FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GamePlayEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
+				FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+				EffectContextHandle.AddInstigator(GetOwner(), this);
+				EffectContextHandle.AddHitResult(SweepResult);
+				FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GamePlayEffectClass, 1.0f, EffectContextHandle);
 
 				if (SpecHandle.IsValid())
 				{
@@ -70,9 +74,12 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 						FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage"));
 						float DamageValue = -Damage;
 						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
+
+						FGameplayTag ForceTag = FGameplayTag::RequestGameplayTag(FName("Effect.Force"));
+						float ForceValue = Force;
+						EffectSpec->SetSetByCallerMagnitude(ForceTag, ForceValue);
+
 						AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec);
-						FGameplayTagContainer tags;tags.AddTag(ReactionTag);
-						AbilitySystemComponent->TryActivateAbilitiesByTag(tags);
 					}
 				}
             }

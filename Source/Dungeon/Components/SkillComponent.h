@@ -95,6 +95,7 @@ public:
 private:
 	void GiveDefaultAbilities();
 protected:
+	UFUNCTION()virtual void HitReaction(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle);
 public:
 	void UseSkill(int32 InSkillID);
 	void UseQuickSlotSkill(int32 InQuickSlotIndex);

@@ -45,14 +45,13 @@ protected:
 		float Damage;
 
 	UPROPERTY(EditAnywhere, Category = "Datas")
+		float Force;
+
+	UPROPERTY(EditAnywhere, Category = "Datas")
 		uint8 TeamID = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FName OverlapComponentTag = FName("OverlapCollision");
-
-	UPROPERTY(EditDefaultsOnly, Category = "Datas")
-		FGameplayTag ReactionTag;
-
 public:
 
 	//function
