@@ -28,6 +28,7 @@ public:
 
 	//property
 private:
+	bool bAct;
 	TArray<UShapeComponent*> CollisionComponents;
 
 	TArray<AActor*> OverlappedActors;
@@ -66,6 +67,11 @@ protected:
 	FORCEINLINE const AActor* GetCurrentOverlappedActor()const { return CurrentOverlappedActor; }
 	FORCEINLINE const TArray<AActor*>& GetDamagedActors()const { return DamagedActors; }
 public:
+	virtual void Activate();
+	virtual void Deactivate();
+
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
 	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }
+	FORCEINLINE float GetDamage()const { return Damage; }
+	FORCEINLINE bool IsActivated()const { return bAct; }
 };

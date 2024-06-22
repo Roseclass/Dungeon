@@ -11,6 +11,8 @@
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
 #include "Abilities/AttributeSetBase.h"
+#include "Abilities/GameplayEffectContexts.h"
+#include "Abilities/MMC_Damage.h"
 
 ADamageDealer::ADamageDealer()
 {
@@ -61,9 +63,10 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
             UAbilitySystemComponent* AbilitySystemComponent = HitCharacter->GetAbilitySystemComponent();
             if (AbilitySystemComponent && GamePlayEffectClass)
             {
-				FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+				FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(new FDamageTextEffectContext());
 				EffectContextHandle.AddInstigator(GetOwner(), this);
 				EffectContextHandle.AddHitResult(SweepResult);
+				
 				FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GamePlayEffectClass, 1.0f, EffectContextHandle);
 
 				if (SpecHandle.IsValid())
@@ -71,13 +74,13 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 					FGameplayEffectSpec* EffectSpec = SpecHandle.Data.Get();
 					if (EffectSpec)
 					{
-						FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage"));
-						float DamageValue = -Damage;
-						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
-
 						FGameplayTag ForceTag = FGameplayTag::RequestGameplayTag(FName("Effect.Force"));
 						float ForceValue = Force;
 						EffectSpec->SetSetByCallerMagnitude(ForceTag, ForceValue);
+
+						FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage"));
+						float DamageValue = -Damage;
+						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
 
 						AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec);
 					}
@@ -125,4 +128,14 @@ void ADamageDealer::FindCollision()
 		component->OnComponentBeginOverlap.AddDynamic(this, &ADamageDealer::OnComponentBeginOverlap);
 		component->OnComponentEndOverlap.AddDynamic(this, &ADamageDealer::OnComponentEndOverlap);
 	}
+}
+
+void ADamageDealer::Activate()
+{
+	bAct = 1;
+}
+
+void ADamageDealer::Deactivate()
+{
+	bAct = 0;
 }

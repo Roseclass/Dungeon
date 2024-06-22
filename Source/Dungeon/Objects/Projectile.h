@@ -26,7 +26,6 @@ public:
 
 	//property
 private:
-	bool bAct;
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		bool bAOE;
 protected:
@@ -40,8 +39,4 @@ private:
 protected:
 	virtual void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)override;
 public:
-	virtual void Activate();
-	virtual void Deactivate();
-
-	FORCEINLINE bool IsActivated()const { return bAct; }
 };

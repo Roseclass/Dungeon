@@ -56,13 +56,3 @@ void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompone
 		Destroy();
 	}
 }
-
-void AProjectile::Activate()
-{
-	bAct = 1;
-}
-
-void AProjectile::Deactivate()
-{
-	bAct = 0;
-}

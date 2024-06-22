@@ -132,7 +132,9 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
 		//dealer->Range = Range;
-		dealer->SetOwner(CurrentActorInfo->AvatarActor.Get());
+		ADungeonCharacterBase* character = Cast<ADungeonCharacterBase>(CurrentActorInfo->AvatarActor.Get());
+		if (character)dealer->SetOwner(character->GetController());
+		dealer->Activate();
 		dealer->FinishSpawning(transform);
 	}
 }
