@@ -6,6 +6,7 @@
 #include "Components/SkillComponent.h"
 
 #include "Objects/CustomDamageType.h"
+#include "DungeonPlayerController.h"
 
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
@@ -13,6 +14,7 @@
 #include "Abilities/AttributeSetBase.h"
 #include "Abilities/GameplayEffectContexts.h"
 #include "Abilities/MMC_Damage.h"
+#include "GameplayEffectExecutionCalculation.h"
 
 ADamageDealer::ADamageDealer()
 {
@@ -56,35 +58,33 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	// send Damage
 	if (OtherActor && OtherActor != this)
     {
-		IAbilitySystemInterface* HitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
-        if (HitCharacter)
+		// Check hit actor
+		IAbilitySystemInterface* hitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
+        if (hitCharacter)
         {
-
-            UAbilitySystemComponent* AbilitySystemComponent = HitCharacter->GetAbilitySystemComponent();
-            if (AbilitySystemComponent && GamePlayEffectClass)
+			// Get asc
+            UAbilitySystemComponent* hitASC = hitCharacter->GetAbilitySystemComponent();
+            if (hitASC && GamePlayEffectClass)
             {
-				FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(new FDamageTextEffectContext());
-				EffectContextHandle.AddInstigator(GetOwner(), this);
+				// Make effectcontext handle
+				FDamageEffectContext* context = new FDamageEffectContext();
+				FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+				ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+				EffectContextHandle.AddInstigator(owner ? owner->GetController() : nullptr, this);
 				EffectContextHandle.AddHitResult(SweepResult);
+				context->BaseDamage = Damage;
+				context->Force = Force;
 				
-				FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GamePlayEffectClass, 1.0f, EffectContextHandle);
+				// Set instigator asc
+				UAbilitySystemComponent* instigatorASC = hitASC;
+				if (owner)instigatorASC = owner->GetAbilitySystemComponent();
 
-				if (SpecHandle.IsValid())
-				{
-					FGameplayEffectSpec* EffectSpec = SpecHandle.Data.Get();
-					if (EffectSpec)
-					{
-						FGameplayTag ForceTag = FGameplayTag::RequestGameplayTag(FName("Effect.Force"));
-						float ForceValue = Force;
-						EffectSpec->SetSetByCallerMagnitude(ForceTag, ForceValue);
+				// Pre-calculate MMC value and setting DamageText datas
+				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+				context->CalculatedDamage = MyMMC->CalculateDamageTextValue(context, hitASC);
 
-						FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Effect.Damage"));
-						float DamageValue = -Damage;
-						EffectSpec->SetSetByCallerMagnitude(DamageTag, DamageValue);
-
-						AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec);
-					}
-				}
+				// Must use ToTarget for auto mmc
+				instigatorASC->ApplyGameplayEffectToTarget(GamePlayEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
             }
         }
     }

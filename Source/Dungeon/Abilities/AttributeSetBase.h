@@ -42,6 +42,8 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category = "Mana", ReplicatedUsing = OnRep_MaxMana)
         FGameplayAttributeData MaxMana;
 
+    UPROPERTY(BlueprintReadOnly, Category = "Mana", ReplicatedUsing = OnRep_Defense)
+        FGameplayAttributeData Defense;
 public:
 
 	//function
@@ -53,9 +55,11 @@ protected:
     UFUNCTION()virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
     UFUNCTION()virtual void OnRep_Mana(const FGameplayAttributeData& OldMana);
     UFUNCTION()virtual void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana);
+    UFUNCTION()virtual void OnRep_Defense(const FGameplayAttributeData& OldDefense);
 public:
     ATTRIBUTE_ACCESSORS(UAttributeSetBase, Health);
     ATTRIBUTE_ACCESSORS(UAttributeSetBase, MaxHealth);
     ATTRIBUTE_ACCESSORS(UAttributeSetBase, Mana);
     ATTRIBUTE_ACCESSORS(UAttributeSetBase, MaxMana);
+    ATTRIBUTE_ACCESSORS(UAttributeSetBase, Defense);
 };

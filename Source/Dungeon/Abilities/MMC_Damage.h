@@ -8,6 +8,8 @@
  * 
  */
 
+struct FDamageEffectContext;
+
 UCLASS()
 class DUNGEON_API UMMC_Damage : public UGameplayModMagnitudeCalculation
 {
@@ -28,4 +30,5 @@ public:
 private:
 protected:
 public:
+	float CalculateDamageTextValue(const FDamageEffectContext* Context, UAbilitySystemComponent* TargetComponent)const ;
 };

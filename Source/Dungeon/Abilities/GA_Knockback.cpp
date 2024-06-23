@@ -6,6 +6,7 @@
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
 #include "Characters/DungeonCharacterBase.h"
+#include "Abilities/GameplayEffectContexts.h"
 
 UGA_Knockback::UGA_Knockback()
 {
@@ -18,14 +19,19 @@ void UGA_Knockback::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	if (TriggerEventData)
 	{
-		FVector direction = -TriggerEventData->ContextHandle.GetHitResult()->Normal;
-		direction.Z = 0;
+		const FDamageEffectContext* context = static_cast<const FDamageEffectContext*>(TriggerEventData->ContextHandle.Get());
+		if (context)
+		{
+			FVector direction = -TriggerEventData->ContextHandle.GetHitResult()->Normal;
+			direction.Z = 0;
 
-		RootMotionTask =
-			UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce
-			(this, NAME_None, direction, TriggerEventData->EventMagnitude, /*float Duration*/1, false, nullptr,
-				ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, FVector(), 0, 1);
-		RootMotionTask->ReadyForActivation();
+			RootMotionTask =
+				UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce
+				(this, NAME_None, direction, context->Force, /*float Duration*/1, false, nullptr,
+					ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, FVector(), 0, 1);
+			RootMotionTask->ReadyForActivation();
+		}
+		else CLog::Print(FString::Printf(TEXT("%s UGA_Knockback::ActivateAbility TriggerEventData Context is nullptr"), *ActorInfo->AvatarActor.Get()->GetName()), -1, 10, FColor::Red);
 	}
 	else CLog::Print(FString::Printf(TEXT("%s UGA_Knockback::ActivateAbility TriggerEventData is nullptr"), *ActorInfo->AvatarActor.Get()->GetName()), -1, 10, FColor::Red);
 }

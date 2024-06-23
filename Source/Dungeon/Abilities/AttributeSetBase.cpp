@@ -10,6 +10,7 @@ UAttributeSetBase::UAttributeSetBase()
     InitMaxHealth(100);
     InitMana(100);
     InitMaxMana(100);
+    InitDefense(0);
 }
 
 void UAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -98,3 +99,7 @@ void UAttributeSetBase::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana)
     GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, MaxMana, OldMaxMana);
 }
 
+void UAttributeSetBase::OnRep_Defense(const FGameplayAttributeData& OldDefense)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, Defense, OldDefense);
+}

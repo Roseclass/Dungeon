@@ -14,10 +14,13 @@
 //#include "Abilities/GameplayEffectContexts.h"
 
 USTRUCT(BlueprintType)
-struct FDamageTextEffectContext : public FGameplayEffectContext
+struct FDamageEffectContext : public FGameplayEffectContext
 {
     GENERATED_BODY()
 
+public:
+    UPROPERTY()float Force;
+    UPROPERTY()float BaseDamage;
     UPROPERTY()float CalculatedDamage;
     UPROPERTY()bool bIsCritical;
 };

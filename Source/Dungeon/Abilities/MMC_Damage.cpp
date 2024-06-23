@@ -4,13 +4,15 @@
 #include "GameplayEffect.h"
 #include "GameplayEffectExtension.h"
 
+#include "AbilitySystemComponent.h"
 #include "Abilities/AttributeSetBase.h"
+#include "Abilities/GameplayEffectContexts.h"
 
 UMMC_Damage::UMMC_Damage()
 {
-    //DefenseDef.AttributeToCapture = UAttributeSetBase::GetDefenseAttribute();
-    //DefenseDef.AttributeSource = EGameplayEffectAttributeCaptureSource::Target;
-    //DefenseDef.bSnapshot = false;
+    DefenseDef.AttributeToCapture = UAttributeSetBase::GetDefenseAttribute();
+    DefenseDef.AttributeSource = EGameplayEffectAttributeCaptureSource::Target;
+    DefenseDef.bSnapshot = false;
 
     RelevantAttributesToCapture.Add(DefenseDef);
 }
@@ -29,10 +31,30 @@ float UMMC_Damage::CalculateBaseMagnitude_Implementation(const FGameplayEffectSp
     GetCapturedAttributeMagnitude(DefenseDef, Spec, EvaluationParameters, defense);
     defense = FMath::Max<float>(defense, 0.0f);
 
-    float result = Spec.GetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")));
+    float result = 0;
+    const FDamageEffectContext* effectContext = static_cast<const FDamageEffectContext*>(Spec.GetEffectContext().Get());
+    if (!effectContext)return result;
+
+    result = effectContext->BaseDamage;
     result /= (1 + defense);
 
-    CLog::Print(result);
+    return result;
+}
+
+float UMMC_Damage::CalculateDamageTextValue(const FDamageEffectContext* Context, UAbilitySystemComponent* TargetComponent)const
+{
+    float result = 0;
+    if (!Context)return result;
+
+    if (!TargetComponent)return result;
+
+    const UAttributeSetBase* attribute = Cast<UAttributeSetBase>(TargetComponent->GetAttributeSet(UAttributeSetBase::StaticClass()));
+    if (!attribute)return result;
+
+    float defense = defense = FMath::Max<float>(attribute->GetDefense(), 0.0f);
+
+    result = Context->BaseDamage;
+    result /= (1 + defense);
 
     return result;
 }

@@ -84,7 +84,6 @@ void USkillComponent::HitReaction(UAbilitySystemComponent* InComponent, const FG
 		{
 			FGameplayEventData* data = new FGameplayEventData();
 			data->ContextHandle = InSpec.GetContext();
-			data->EventMagnitude = InSpec.GetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Force")));
 			InternalTryActivateAbility(i, FPredictionKey(), nullptr, nullptr, data);
 		}
 	}

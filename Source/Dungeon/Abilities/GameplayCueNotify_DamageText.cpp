@@ -23,8 +23,7 @@ bool UGameplayCueNotify_DamageText::OnExecute_Implementation(AActor* MyTarget, c
 	ADungeonPlayerController* instigator = Cast<ADungeonPlayerController>(Parameters.GetInstigator());
 	if (!instigator || !instigator->IsLocalController())return false;
 
-	// causer is nulltpr maybe
-	const FDamageTextEffectContext* effectContext = static_cast<const FDamageTextEffectContext*>(Parameters.EffectContext.Get());
+	const FDamageEffectContext* effectContext = static_cast<const FDamageEffectContext*>(Parameters.EffectContext.Get());
 	if (!effectContext)return false;
 
 	FTransform transform;
