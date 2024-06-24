@@ -44,7 +44,7 @@ void ADamageText::Tick(float DeltaTime)
 	float since = GetGameTimeSinceCreation();
 
 	// set translation
-	CurrentX = (since / InitialLifeSpan) * DistanceX;
+	CurrentX = since * DistanceX;
 	if (bUseTransltaionCurve && YCurve)YTimeLine.TickTimeline(DeltaTime);
 	else CurrentY = UKismetMathLibrary::Sin((since / InitialLifeSpan) * PI * RateY) * DistanceY;
 	Widget->GetUserWidgetObject()->SetRenderTranslation(FVector2D(CurrentX, CurrentY));
@@ -63,4 +63,10 @@ void ADamageText::YSequenceTickFunction(float Value)
 void ADamageText::OpacitySequenceTickFunction(float Value)
 {
 	CurrentOpacity = Value;
+}
+
+void ADamageText::Init(float InDamage, bool IsCritical)
+{
+	Damage = InDamage;
+	Critical = IsCritical;
 }

@@ -9,6 +9,7 @@
 #include "Abilities/AbilityTaskTypes.h"
 #include "Abilities/AT_MontageNotifyEvent.h"
 #include "Objects/DamageDealer.h"
+#include "Objects/WarningSign.h"
 
 UGA_Skill::UGA_Skill()
 {
@@ -22,17 +23,6 @@ void UGA_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(UGA_Skill, ManaCost);
 	DOREPLIFETIME(UGA_Skill, Cooldown);
 }
-
-//void UGA_Skill::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-//{
-//	Super::OnGiveAbility(ActorInfo, Spec);
-//
-//	FGameplayTagContainer enhancement;
-//	enhancement.AddTag(EnhancementTag);
-//	UAT_PersistentTask* Task = UAT_PersistentTask::CreatePersistentTask(this, NAME_None, enhancement);
-//	Task->EventReceived.AddDynamic(this, &UGA_Skill::OnEnhanced);
-//	Task->ReadyForActivation();
-//}
 
 void UGA_Skill::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
@@ -108,7 +98,7 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 
 	// Only spawn projectiles on the Server.
 	// Predicting projectiles is an advanced topic not covered in this example.
-	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && DealerClassMap.Contains(EventTag))
+	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && DamageDealerDataMap.Contains(EventTag))
 	{
 		ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
 		if (!ch)
@@ -122,13 +112,26 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 		//// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
 		//DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), Damage);
 
-		FTransform transform = ch->GetMesh()->GetSocketTransform(SocketName);
+		FTransform transform = ch->GetMesh()->GetSocketTransform(DamageDealerDataMap[EventTag].SocketName);
 		transform.SetScale3D(FVector(1.0f));
+		if (!DamageDealerDataMap[EventTag].bUseSocketLocation)
+		{
+			FVector loc = ch->GetActorLocation();
+			loc += ch->GetActorForwardVector() * DamageDealerDataMap[EventTag].FrontDist;
+			loc += ch->GetActorRightVector() * DamageDealerDataMap[EventTag].RightDist;
+			loc += ch->GetActorUpVector() * DamageDealerDataMap[EventTag].UpDist;
+			transform.SetTranslation(loc);
+		}
+		if (!DamageDealerDataMap[EventTag].bUseSocketRotation)
+		{
+			FRotator rot = ch->GetActorRotation();
+			transform.SetRotation(FQuat4d(rot + DamageDealerDataMap[EventTag].Rotation));
+		}
 
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DealerClassMap[EventTag], transform, GetOwningActorFromActorInfo(),
+		ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DamageDealerDataMap[EventTag].Class, transform, GetOwningActorFromActorInfo(),
 			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
 		//dealer->Range = Range;
@@ -136,6 +139,38 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 		if (character)dealer->SetOwner(character);
 		dealer->Activate();
 		dealer->FinishSpawning(transform);
+	}
+
+	if (WarningSignDataMap.Contains(EventTag))
+	{
+		ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
+		if (!ch)
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+
+		FTransform transform;
+		
+		transform.SetScale3D(WarningSignDataMap[EventTag].Scale);
+
+		{
+			FVector loc = ch->GetActorLocation();
+			loc += ch->GetActorForwardVector() * WarningSignDataMap[EventTag].ForwardOffset;
+			loc += ch->GetActorRightVector() * WarningSignDataMap[EventTag].RightOffset;
+
+			FHitResult result;
+			GetWorld()->LineTraceSingleByObjectType(result, ch->GetActorLocation() + FVector(0, 0, 1000), ch->GetActorLocation() + FVector(0, 0, -1000),
+				FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic));
+
+			transform.SetTranslation(result.Location);
+		}
+
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AWarningSign* sign = GetWorld()->SpawnActorDeferred<AWarningSign>(WarningSignDataMap[EventTag].WarningSignClass, transform, GetOwningActorFromActorInfo(),
+			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		ADungeonCharacterBase* character = Cast<ADungeonCharacterBase>(CurrentActorInfo->AvatarActor.Get());
+		sign->Activate(WarningSignDataMap[EventTag].Duration, WarningSignDataMap[EventTag].ExtraDuration);
+		sign->FinishSpawning(transform);
 	}
 }
 

@@ -10,7 +10,10 @@
 
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "GameplayEffect.h"
+#include "GameplayCueManager.h"
+
 #include "Abilities/AttributeSetBase.h"
 #include "Abilities/GameplayEffectContexts.h"
 #include "Abilities/MMC_Damage.h"
@@ -82,6 +85,10 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 				// Pre-calculate MMC value and setting DamageText datas
 				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
 				context->CalculatedDamage = MyMMC->CalculateDamageTextValue(context, hitASC);
+
+				UAbilitySystemGlobals::Get().GetGameplayCueManager()->InvokeGameplayCueExecuted(,);
+
+				//instigatorASC->AddGameplayCue();
 
 				// Must use ToTarget for auto mmc
 				instigatorASC->ApplyGameplayEffectToTarget(GamePlayEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);

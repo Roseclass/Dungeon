@@ -6,6 +6,8 @@
 #include "Abilities/GA_Skill.h"
 #include "Components/SkillTreeComponent.h"
 
+#define QUICKSLOT_EMPTY -100
+
 USkillComponent::USkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -38,7 +40,7 @@ void USkillComponent::GiveDefaultAbilities()
 	CheckNull(DataTable);
 	DataTable->GetAllRows<FSkillData>("", SkillDatas);
 	for (int32 i = 0; i < int32(EQuickSlotPosition::Max); ++i)
-		QuickSlotData[i] = -1;
+		QuickSlotData[i] = QUICKSLOT_EMPTY;
 
 	CheckTrue(GetOwner()->GetLocalRole() != ROLE_Authority);
 
@@ -132,7 +134,7 @@ void USkillComponent::ChangeQuickSlotData(int32 InQuickSlotIndex, int32 InSkillI
 	{
 		if (i == InQuickSlotIndex)continue;
 		if (QuickSlotData[i] == InSkillID)
-			ChangeQuickSlotData(i, -1);
+			ChangeQuickSlotData(i, QUICKSLOT_EMPTY);
 	}
 }
 

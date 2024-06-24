@@ -77,7 +77,7 @@ void AEnemy::PlaySequence_Implementation(int32 InIndex)
 void AEnemy::UseSkill(int32 Idx)
 {
 	Super::UseSkill(Idx);
-	//Multicast_UseSkill(Idx);
+	UseSkill(Idx);
 }
 
 void AEnemy::Dead()

@@ -14,6 +14,36 @@ class ADamageDealer;
 class AWarningSign;
 
 USTRUCT(BlueprintType)
+struct FDamageDealerData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ADamageDealer> Class;
+
+	UPROPERTY(EditAnywhere)
+		FName SocketName;
+
+	UPROPERTY(EditAnywhere)
+		bool bUseSocketLocation = 1;
+
+	UPROPERTY(EditAnywhere)
+		bool bUseSocketRotation = 0;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "!bUseSocketLocation", EditConditionHides))
+		float FrontDist;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "!bUseSocketLocation", EditConditionHides))
+		float RightDist;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "!bUseSocketLocation", EditConditionHides))
+		float UpDist;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "!bUseSocketRotation", EditConditionHides))
+		FRotator Rotation;
+};
+
+USTRUCT(BlueprintType)
 struct FWaringSignData
 {
 	GENERATED_BODY()
@@ -83,16 +113,7 @@ public:
 private:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Dealer")
-		TMap<FGameplayTag, TSubclassOf<ADamageDealer>> DealerClassMap;
-
-	UPROPERTY(EditAnywhere, Category = "Dealer")
-		FName SocketName;
-
-	UPROPERTY(EditAnywhere, Category = "Dealer")
-		bool bUseSocketLocation = 1;
-
-	UPROPERTY(EditAnywhere, Category = "Dealer")
-		bool bUseSocketRotation = 0;
+		TMap<FGameplayTag, FDamageDealerData> DamageDealerDataMap;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
 		float BaseDamage = 10;
@@ -116,7 +137,7 @@ protected:
 		FMMCData Cooldown;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
-		TArray<FWaringSignData> WarningSignDatas;
+		TMap<FGameplayTag, FWaringSignData> WarningSignDataMap;
 
 	UPROPERTY(Transient)
 		FGameplayTagContainer TempCooldownTags;

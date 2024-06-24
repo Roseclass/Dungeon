@@ -27,6 +27,10 @@ private:
 	float CurrentX;
 	float CurrentY;
 	float CurrentOpacity;
+
+	// WidgetData
+	float Damage;
+	bool Critical;
 protected:	
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* Scene;
@@ -34,6 +38,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
 		UWidgetComponent* Widget;
 
+	// TranslationSettings
 	UPROPERTY(EditDefaultsOnly, Category = "TranslationSettings")
 		bool bUseTransltaionCurve;
 
@@ -58,7 +63,7 @@ protected:
 	FOnTimelineFloat YTimelineFloat;
 
 
-
+	// OpacitySettings
 	UPROPERTY(EditDefaultsOnly, Category = "OpacitySettings")
 		bool bUseOpacityCurve;
 
@@ -70,7 +75,6 @@ protected:
 	FTimeline OpacityTimeLine;
 	FOnTimelineFloat OpacityTimelineFloat;
 
-
 public:
 
 	//function
@@ -79,5 +83,8 @@ private:
 	UFUNCTION()void OpacitySequenceTickFunction(float Value);
 protected:
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)void Init(float InDamage, bool IsCritical);
+	void Init(float InDamage, bool IsCritical);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)float GetDamage()const { return Damage; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)bool IsCritical()const { return Critical; }
 };
