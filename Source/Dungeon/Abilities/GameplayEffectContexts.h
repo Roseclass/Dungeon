@@ -24,3 +24,18 @@ public:
     UPROPERTY()float CalculatedDamage;
     UPROPERTY()bool bIsCritical;
 };
+
+class AWarningSign;
+
+USTRUCT(BlueprintType)
+struct FWarningSignEffectContext : public FGameplayEffectContext
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()TSubclassOf<AWarningSign> Class;
+    UPROPERTY()FTransform Transform;
+    UPROPERTY()AActor* Owner;
+    UPROPERTY()ESpawnActorCollisionHandlingMethod CollisionHandlingOverride;
+    UPROPERTY()float Duration;
+    UPROPERTY()float ExtraDuration;
+};

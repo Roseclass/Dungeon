@@ -1,11 +1,7 @@
 #include "Abilities/GameplayCueNotify_DamageText.h"
 #include "Global.h"
 
-#include "DungeonPlayerController.h"
-#include "Characters/PlayerCharacter.h"
-#include "Characters/Enemy.h"
 #include "Objects/DamageText.h"
-#include "Objects/DamageDealer.h"
 #include "Abilities/GameplayEffectContexts.h"
 
 UGameplayCueNotify_DamageText::UGameplayCueNotify_DamageText()

@@ -15,6 +15,8 @@ class UMediaSource;
 class UGABase;
 class USaveGameData;
 
+class AWarningSign;
+
 enum class ESkillTreeSkillState : uint8;
 
 USTRUCT(BlueprintType)
@@ -110,8 +112,9 @@ public:
 	// ability
 	void EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, float Rate = 1.0f);
 
-	// cue
+	// Reliable cue
 	UFUNCTION(Client, Reliable)void Cient_DamageText(float InDamage, bool IsCritical, FVector InLocation);
+	UFUNCTION(NetMulticast, Reliable)void Multicast_WarningSign(TSubclassOf<AWarningSign> Class, FTransform const& Transform, AActor* InOwner, APawn* Instigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride,float Duration, float ExtraDuration);
 
 	//state
 	bool CanUse()const;

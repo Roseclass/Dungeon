@@ -104,14 +104,6 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 		if (!ch)
 			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 
-
-		// TODO:: 여기서 데미지 이펙트 만들어서 적용하기
-		// 데미지 이펙트 클래스는 디폴트오브젝트에서 받아오기
-		//FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
-
-		//// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
-		//DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Damage")), Damage);
-
 		FTransform transform = ch->GetMesh()->GetSocketTransform(DamageDealerDataMap[EventTag].SocketName);
 		transform.SetScale3D(FVector(1.0f));
 		if (!DamageDealerDataMap[EventTag].bUseSocketLocation)
@@ -128,15 +120,11 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 			transform.SetRotation(FQuat4d(rot + DamageDealerDataMap[EventTag].Rotation));
 		}
 
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
 		ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DamageDealerDataMap[EventTag].Class, transform, GetOwningActorFromActorInfo(),
 			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
 		//dealer->Range = Range;
-		ADungeonCharacterBase* character = Cast<ADungeonCharacterBase>(CurrentActorInfo->AvatarActor.Get());
-		if (character)dealer->SetOwner(character);
+		dealer->SetOwner(ch);
 		dealer->Activate();
 		dealer->FinishSpawning(transform);
 	}
@@ -147,10 +135,12 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 		if (!ch)
 			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 
-		FTransform transform;
-		
-		transform.SetScale3D(WarningSignDataMap[EventTag].Scale);
+		USkillComponent* skill = Cast<USkillComponent>(ch->GetAbilitySystemComponent());
+		if (!skill)
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 
+		FTransform transform;		
+		transform.SetScale3D(WarningSignDataMap[EventTag].Scale);
 		{
 			FVector loc = ch->GetActorLocation();
 			loc += ch->GetActorForwardVector() * WarningSignDataMap[EventTag].ForwardOffset;
@@ -163,14 +153,8 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 			transform.SetTranslation(result.Location);
 		}
 
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		AWarningSign* sign = GetWorld()->SpawnActorDeferred<AWarningSign>(WarningSignDataMap[EventTag].WarningSignClass, transform, GetOwningActorFromActorInfo(),
-			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-		ADungeonCharacterBase* character = Cast<ADungeonCharacterBase>(CurrentActorInfo->AvatarActor.Get());
-		sign->Activate(WarningSignDataMap[EventTag].Duration, WarningSignDataMap[EventTag].ExtraDuration);
-		sign->FinishSpawning(transform);
+		skill->Multicast_WarningSign(WarningSignDataMap[EventTag].WarningSignClass, transform, GetOwningActorFromActorInfo(),
+			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn, WarningSignDataMap[EventTag].Duration, WarningSignDataMap[EventTag].ExtraDuration);
 	}
 }
 

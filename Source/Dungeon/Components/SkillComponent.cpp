@@ -205,6 +205,25 @@ void USkillComponent::Cient_DamageText_Implementation(float InDamage, bool IsCri
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.DamageText"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
 }
 
+void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningSign> Class, FTransform const& Transform, AActor* InOwner, APawn* Instigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, float Duration, float ExtraDuration)
+{
+	FGameplayCueParameters gameplayCueParameters;
+
+	FWarningSignEffectContext* context = new FWarningSignEffectContext();
+	FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+	context->Class = Class;
+	context->Transform = Transform;
+	context->Owner = InOwner;
+	context->AddInstigator(Instigator, nullptr);
+	context->CollisionHandlingOverride = CollisionHandlingOverride;
+	context->Duration = Duration;
+	context->ExtraDuration = ExtraDuration;
+
+	gameplayCueParameters.EffectContext = EffectContextHandle;
+
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.WarningSign"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
+}
+
 bool USkillComponent::CanUse() const
 {
 	return !HasAnyMatchingGameplayTags(BlockUseTags);
