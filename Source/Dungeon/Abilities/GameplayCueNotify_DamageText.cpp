@@ -15,19 +15,11 @@ UGameplayCueNotify_DamageText::UGameplayCueNotify_DamageText()
 
 bool UGameplayCueNotify_DamageText::OnExecute_Implementation(AActor* MyTarget, const FGameplayCueParameters& Parameters) const
 {
-	// to Enemy?
-	AEnemy* target = Cast<AEnemy>(MyTarget);
-	if (!target)return false;
-	
-	// from Local Player?
-	ADungeonPlayerController* instigator = Cast<ADungeonPlayerController>(Parameters.GetInstigator());
-	if (!instigator || !instigator->IsLocalController())return false;
-
 	const FDamageEffectContext* effectContext = static_cast<const FDamageEffectContext*>(Parameters.EffectContext.Get());
-	if (!effectContext)return false;
+	if (!effectContext)return false;	
 
 	FTransform transform;
-	transform.SetTranslation(target->GetActorLocation());
+	transform.SetTranslation(Parameters.Location);
 	ADamageText* txt = GetWorld()->SpawnActorDeferred<ADamageText>(DamageTextClass, transform);
 	txt->Init(effectContext->CalculatedDamage, effectContext->bIsCritical);
 	UGameplayStatics::FinishSpawningActor(txt, transform);

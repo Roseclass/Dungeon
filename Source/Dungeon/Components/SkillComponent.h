@@ -110,6 +110,9 @@ public:
 	// ability
 	void EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, float Rate = 1.0f);
 
+	// cue
+	UFUNCTION(Client, Reliable)void Cient_DamageText(float InDamage, bool IsCritical, FVector InLocation);
+
 	//state
 	bool CanUse()const;
 	bool CanMove()const;

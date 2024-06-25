@@ -3,7 +3,12 @@
 
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
+
+#include "AbilitySystemGlobals.h"
+#include "GameplayCueManager.h"
+
 #include "Abilities/GA_Skill.h"
+#include "Abilities/GameplayEffectContexts.h"
 #include "Components/SkillTreeComponent.h"
 
 #define QUICKSLOT_EMPTY -100
@@ -184,6 +189,20 @@ void USkillComponent::EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, f
 				skill->Enhance(i.EnhanceStatusTag, i.EnhanceStatus * Rate);
 			}
 	}
+}
+
+void USkillComponent::Cient_DamageText_Implementation(float InDamage, bool IsCritical, FVector InLocation)
+{
+	FGameplayCueParameters gameplayCueParameters;
+
+	FDamageEffectContext* context = new FDamageEffectContext();
+	FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+	context->CalculatedDamage = InDamage;
+
+	gameplayCueParameters.EffectContext = EffectContextHandle;
+	gameplayCueParameters.Location = InLocation;
+
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.DamageText"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
 }
 
 bool USkillComponent::CanUse() const

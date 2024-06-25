@@ -9,7 +9,6 @@
 #include "DungeonPlayerController.h"
 
 #include "AbilitySystemInterface.h"
-#include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "GameplayEffect.h"
 #include "GameplayCueManager.h"
@@ -79,18 +78,14 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 				context->Force = Force;
 				
 				// Set instigator asc
-				UAbilitySystemComponent* instigatorASC = hitASC;
-				if (owner)instigatorASC = owner->GetAbilitySystemComponent();
+				USkillComponent* instigatorASC = Cast<USkillComponent>(hitASC);
+				if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
 
 				// Pre-calculate MMC value and setting DamageText datas
 				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
-				context->CalculatedDamage = MyMMC->CalculateDamageTextValue(context, hitASC);
+				instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
 
-				UAbilitySystemGlobals::Get().GetGameplayCueManager()->InvokeGameplayCueExecuted(,);
-
-				//instigatorASC->AddGameplayCue();
-
-				// Must use ToTarget for auto mmc
+				// Must use EffectToTarget for auto mmc
 				instigatorASC->ApplyGameplayEffectToTarget(GamePlayEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
             }
         }
