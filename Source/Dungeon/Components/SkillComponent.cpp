@@ -92,6 +92,8 @@ void USkillComponent::HitReaction(UAbilitySystemComponent* InComponent, const FG
 			FGameplayEventData* data = new FGameplayEventData();
 			data->ContextHandle = InSpec.GetContext();
 			InternalTryActivateAbility(i, FPredictionKey(), nullptr, nullptr, data);
+			delete data;
+			data = nullptr;
 		}
 	}
 }
@@ -203,6 +205,9 @@ void USkillComponent::Cient_DamageText_Implementation(float InDamage, bool IsCri
 	gameplayCueParameters.Location = InLocation;
 
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.DamageText"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
+
+	delete context;
+	context = nullptr;
 }
 
 void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningSign> Class, FTransform const& Transform, AActor* InOwner, APawn* Instigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, float Duration, float ExtraDuration)
@@ -222,6 +227,9 @@ void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningS
 	gameplayCueParameters.EffectContext = EffectContextHandle;
 
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.WarningSign"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
+
+	delete context;
+	context = nullptr;
 }
 
 bool USkillComponent::CanUse() const

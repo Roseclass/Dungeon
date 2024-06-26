@@ -11,6 +11,9 @@
 #include "Objects/DamageDealer.h"
 #include "Objects/WarningSign.h"
 
+#include "Components/InventoryComponent.h"
+
+
 UGA_Skill::UGA_Skill()
 {
 	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
@@ -86,6 +89,79 @@ void UGA_Skill::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGamepl
 	}
 }
 
+void UGA_Skill::SpawnDamageDealer(FGameplayTag EventTag)
+{
+	ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
+	if (!ch)
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+
+	FTransform transform = ch->GetMesh()->GetSocketTransform(DamageDealerDataMap[EventTag].SocketName);
+	transform.SetScale3D(FVector(1.0f));
+	if (!DamageDealerDataMap[EventTag].bUseSocketLocation)
+	{
+		FVector loc = ch->GetActorLocation();
+		loc += ch->GetActorForwardVector() * DamageDealerDataMap[EventTag].FrontDist;
+		loc += ch->GetActorRightVector() * DamageDealerDataMap[EventTag].RightDist;
+		loc += ch->GetActorUpVector() * DamageDealerDataMap[EventTag].UpDist;
+		transform.SetTranslation(loc);
+	}
+	if (!DamageDealerDataMap[EventTag].bUseSocketRotation)
+	{
+		FRotator rot = ch->GetActorRotation();
+		transform.SetRotation(FQuat4d(rot + DamageDealerDataMap[EventTag].Rotation));
+	}
+
+	ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DamageDealerDataMap[EventTag].Class, transform, GetOwningActorFromActorInfo(),
+		ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
+	//dealer->Range = Range;
+	dealer->SetOwner(ch);
+	dealer->Activate();
+	dealer->FinishSpawning(transform);
+}
+
+void UGA_Skill::SpawnWarningSign(FGameplayTag EventTag)
+{
+	ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
+	if (!ch)
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+
+	USkillComponent* skill = Cast<USkillComponent>(ch->GetAbilitySystemComponent());
+	if (!skill)
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+
+	FTransform transform;
+	transform.SetScale3D(WarningSignDataMap[EventTag].Scale);
+	{
+		FVector loc = ch->GetActorLocation();
+		loc += ch->GetActorForwardVector() * WarningSignDataMap[EventTag].ForwardOffset;
+		loc += ch->GetActorRightVector() * WarningSignDataMap[EventTag].RightOffset;
+
+		FHitResult result;
+		GetWorld()->LineTraceSingleByObjectType(result, ch->GetActorLocation() + FVector(0, 0, 1000), ch->GetActorLocation() + FVector(0, 0, -1000),
+			FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic));
+
+		transform.SetTranslation(result.Location);
+	}
+
+	skill->Multicast_WarningSign(WarningSignDataMap[EventTag].WarningSignClass, transform, GetOwningActorFromActorInfo(),
+		ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn, WarningSignDataMap[EventTag].Duration, WarningSignDataMap[EventTag].ExtraDuration);
+}
+
+void UGA_Skill::OnCollision()
+{
+	UInventoryComponent* inv = CHelpers::GetComponent<UInventoryComponent>(GetOwningActorFromActorInfo());
+	CheckNull(inv);
+	inv->OnCollision(&DamageData);
+}
+
+void UGA_Skill::OffCollision()
+{
+	UInventoryComponent* inv = CHelpers::GetComponent<UInventoryComponent>(GetOwningActorFromActorInfo());
+	CheckNull(inv);
+	inv->OffCollision();
+}
+
 void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
 {
 	// Montage told us to end the ability before the montage finished playing.
@@ -99,63 +175,16 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 	// Only spawn projectiles on the Server.
 	// Predicting projectiles is an advanced topic not covered in this example.
 	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && DamageDealerDataMap.Contains(EventTag))
-	{
-		ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
-		if (!ch)
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		SpawnDamageDealer(EventTag);
 
-		FTransform transform = ch->GetMesh()->GetSocketTransform(DamageDealerDataMap[EventTag].SocketName);
-		transform.SetScale3D(FVector(1.0f));
-		if (!DamageDealerDataMap[EventTag].bUseSocketLocation)
-		{
-			FVector loc = ch->GetActorLocation();
-			loc += ch->GetActorForwardVector() * DamageDealerDataMap[EventTag].FrontDist;
-			loc += ch->GetActorRightVector() * DamageDealerDataMap[EventTag].RightDist;
-			loc += ch->GetActorUpVector() * DamageDealerDataMap[EventTag].UpDist;
-			transform.SetTranslation(loc);
-		}
-		if (!DamageDealerDataMap[EventTag].bUseSocketRotation)
-		{
-			FRotator rot = ch->GetActorRotation();
-			transform.SetRotation(FQuat4d(rot + DamageDealerDataMap[EventTag].Rotation));
-		}
+	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && WarningSignDataMap.Contains(EventTag))
+		SpawnWarningSign(EventTag);
 
-		ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DamageDealerDataMap[EventTag].Class, transform, GetOwningActorFromActorInfo(),
-			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-		//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
-		//dealer->Range = Range;
-		dealer->SetOwner(ch);
-		dealer->Activate();
-		dealer->FinishSpawning(transform);
-	}
+	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.OnCollision")))
+		OnCollision();
 
-	if (WarningSignDataMap.Contains(EventTag))
-	{
-		ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
-		if (!ch)
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-
-		USkillComponent* skill = Cast<USkillComponent>(ch->GetAbilitySystemComponent());
-		if (!skill)
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-
-		FTransform transform;		
-		transform.SetScale3D(WarningSignDataMap[EventTag].Scale);
-		{
-			FVector loc = ch->GetActorLocation();
-			loc += ch->GetActorForwardVector() * WarningSignDataMap[EventTag].ForwardOffset;
-			loc += ch->GetActorRightVector() * WarningSignDataMap[EventTag].RightOffset;
-
-			FHitResult result;
-			GetWorld()->LineTraceSingleByObjectType(result, ch->GetActorLocation() + FVector(0, 0, 1000), ch->GetActorLocation() + FVector(0, 0, -1000),
-				FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic));
-
-			transform.SetTranslation(result.Location);
-		}
-
-		skill->Multicast_WarningSign(WarningSignDataMap[EventTag].WarningSignClass, transform, GetOwningActorFromActorInfo(),
-			ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn, WarningSignDataMap[EventTag].Duration, WarningSignDataMap[EventTag].ExtraDuration);
-	}
+	else if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.OffCollision")))
+		OffCollision();
 }
 
 float UGA_Skill::GetCooldown() const
@@ -192,4 +221,6 @@ void UGA_Skill::Enhance(FGameplayTag StatusTag, float Value)
 	if (ManaCost.MultiplicitiveTag == StatusTag)ManaCost.Multiplicitive -= Value;
 	if (Cooldown.AdditiveTag == StatusTag)Cooldown.Additive += Value;
 	if (Cooldown.MultiplicitiveTag == StatusTag)Cooldown.Multiplicitive -= Value;
+	if (DamageData.AdditiveTag == StatusTag)DamageData.Additive += Value;
+	if (DamageData.MultiplicitiveTag == StatusTag)DamageData.Multiplicitive += Value;
 }

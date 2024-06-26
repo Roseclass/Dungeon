@@ -8,6 +8,7 @@
 #include "Components/CanvasPanelSlot.h"
 
 #include "Objects/ItemObject.h"
+#include "Objects/Weapon.h"
 
 void UUW_InventoryPopup::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
@@ -37,10 +38,26 @@ void UUW_InventoryPopup::On(UItemObject* InObject)
 	//set name
 	Name->SetText(FText::FromString(data.GetName()));
 
+	// TODO::Check
 	int32 damage = data.GetFinalDamage();
 	Damage->SetText(FText::FromString(
 		FString::Printf(TEXT("데미지 : %i"), damage)
 		));
+
+	{
+		AWeapon* weapon = Cast<AWeapon>(InObject->GetEqquipment());
+		if (weapon)
+		{
+			TArray<FString> arr;
+			weapon->GetUniqueEffectDescriptions(arr);
+			// set description
+			// if there was unique effect in armor?
+			// color?
+		}
+	}
+
+
+	InObject->GetEqquipment();
 
 	SetVisibility(ESlateVisibility::HitTestInvisible);
 	bOn = 1;
@@ -49,4 +66,5 @@ void UUW_InventoryPopup::On(UItemObject* InObject)
 void UUW_InventoryPopup::Off()
 {
 	SetVisibility(ESlateVisibility::Collapsed);
+	bOn = 0;
 }

@@ -30,5 +30,5 @@ public:
 private:
 protected:
 public:
-	float CalculateDamageTextValue(const FDamageEffectContext* Context, UAbilitySystemComponent* TargetComponent)const ;
+	virtual float CalculateDamageTextValue(const FDamageEffectContext* Context, UAbilitySystemComponent* TargetComponent)const;
 };

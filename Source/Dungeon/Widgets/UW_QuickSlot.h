@@ -82,7 +82,7 @@ protected:
 	TArray<UMaterialInstanceDynamic*> Materials;
 	TArray<float> RemainingCoolDowns;
 	TArray<float> CoolDownDurations;
-	TArray<FGameplayTagContainer> CooldownTags;
+	TArray<FGameplayTagContainer> AbilityTagContainers;
 public:
 
 	//function

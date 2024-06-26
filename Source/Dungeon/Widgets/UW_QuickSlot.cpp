@@ -38,7 +38,7 @@ void UUW_QuickSlot::NativeConstruct()
 	}
 	RemainingCoolDowns.Init(0, 6);
 	CoolDownDurations.Init(-1, 6);
-	CooldownTags.Init(FGameplayTagContainer(), 6);
+	AbilityTagContainers.Init(FGameplayTagContainer(), 6);
 }
 
 void UUW_QuickSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -95,11 +95,13 @@ void UUW_QuickSlot::OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillD
 	
 	if (InSkillData.SkillClass)
 	{
-		CooldownTags[InQuickSlotIndex] = InSkillData.SkillClass.GetDefaultObject()->GetSkillCooldownTags();
+		AbilityTagContainers[InQuickSlotIndex] = InSkillData.SkillClass.GetDefaultObject()->GetSkillAbilityTagContainers();
 		GetCooldownTimeRemainingAndDuration(InQuickSlotIndex, RemainingCoolDowns[InQuickSlotIndex], CoolDownDurations[InQuickSlotIndex]);
 	}
 	else
 	{
+		// TODO ::check
+		AbilityTagContainers[InQuickSlotIndex] = FGameplayTagContainer();
 		RemainingCoolDowns[InQuickSlotIndex] = 0;
 		CoolDownDurations[InQuickSlotIndex] = -1;
 	}
@@ -113,13 +115,13 @@ void UUW_QuickSlot::OnQuickSlotCoolDown(int32 Index, float Time)
 
 void UUW_QuickSlot::OnCooldownTagAdded(UAbilitySystemComponent* InComponent, const FGameplayEffectSpec& InSpec, FActiveGameplayEffectHandle InHandle)
 {
-	for (int32 i = 0; i < CooldownTags.Num(); ++i)
+	for (int32 i = 0; i < AbilityTagContainers.Num(); ++i)
 		GetCooldownTimeRemainingAndDuration(i, RemainingCoolDowns[i], CoolDownDurations[i]);
 }
 
 void UUW_QuickSlot::GetCooldownTimeRemainingAndDuration(int32 InQuickSlotIndex, float& Remaining, float& Duration)
 {
-	FGameplayEffectQuery const Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(CooldownTags[InQuickSlotIndex]);
+	FGameplayEffectQuery const Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(AbilityTagContainers[InQuickSlotIndex]);
 	TArray< TPair<float, float> > DurationAndTimeRemaining = OwnerComponent->GetActiveEffectsTimeRemainingAndDuration(Query);
 	if (DurationAndTimeRemaining.Num())
 	{

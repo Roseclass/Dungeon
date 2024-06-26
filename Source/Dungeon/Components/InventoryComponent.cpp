@@ -245,7 +245,7 @@ void UInventoryComponent::Server_Buy_Implementation(AEqquipment* InObject)
 	//
 }
 
-void UInventoryComponent::OnCollision()
+void UInventoryComponent::OnCollision(const FDamageEhancementData* InDamageData)
 {
 	int32 idx = int32(EItemType::Weapon);
 	if (!EquippedItems.IsValidIndex(idx))
@@ -254,7 +254,7 @@ void UInventoryComponent::OnCollision()
 		return;
 	}
 	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
-	if (weapon)weapon->OnCollision();
+	if (weapon)weapon->OnCollision(InDamageData);
 }
 
 void UInventoryComponent::OffCollision()

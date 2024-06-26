@@ -7,7 +7,11 @@
 
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
-#include "Objects/CustomDamageType.h"
+
+#include "Abilities/GA_Skill.h"
+#include "Abilities/GameplayEffectContexts.h"
+#include "Abilities/GE_UniqueItemEffect.h"
+#include "Abilities/MMC_Damage.h"
 
 AWeapon::AWeapon()
 {
@@ -50,10 +54,7 @@ void AWeapon::FindComponents()
 		for (auto i : component->ComponentTags)
 		{
 			if (i == FName("OverlapCollision"))
-			{
 				CollisionComponents.Add(component);
-				break;
-			}
 		}
 	}
 	for (UShapeComponent* component : CollisionComponents)
@@ -97,7 +98,6 @@ void AWeapon::SetPickableMode()
 		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	Super::SetPickableMode();
-
 }
 
 void AWeapon::SetInventoryMode()
@@ -120,38 +120,102 @@ void AWeapon::SetEquipMode()
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	CheckFalse(HasAuthority());
 	CheckTrue(HitActors.Contains(OtherActor));
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	CheckNull(owner);
+
 	IGenericTeamAgentInterface* other = Cast<IGenericTeamAgentInterface>(OtherActor);
-	ACharacter* otherCh = Cast<ACharacter>(OtherActor);
-	if (!other && !otherCh)	return;
+	ADungeonCharacterBase* otherCh = Cast<ADungeonCharacterBase>(OtherActor);
+	CheckTrue(!other && !otherCh);
 
 	USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(OtherActor);
-	if (!skill)return;
-	if (skill->IsDead())return;
+	CheckNull(skill);
+	CheckTrue(skill->IsDead());
 
-
-	//ignore alliance
+	// ignore alliance
 	CheckTrue(other->GetGenericTeamId() == TeamID);
 
-	SendDamage(Damage, OtherActor, SweepResult);
+	// Apply Base Damage Effect
+	{
+		// Make effectcontext handle
+		FDamageEffectContext* context = new FDamageEffectContext();
+		FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+		EffectContextHandle.AddInstigator(owner->GetController(), this);
+		EffectContextHandle.AddHitResult(SweepResult);
+
+		float tempDamage = Damage;
+
+		if (DamageData)
+		{
+			tempDamage += DamageData->Additive;
+			tempDamage *= DamageData->Multiplicitive;
+		}
+		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
+
+		context->BaseDamage = tempDamage;
+
+		// Set instigator asc
+		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
+		USkillComponent* instigatorASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
+		if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+
+		// Pre-calculate MMC value and setting DamageText datas
+		UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+		instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
+
+		// Must use EffectToTarget for auto mmc
+		instigatorASC->ApplyGameplayEffectToTarget(CommonEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
+
+		delete context;
+		context = nullptr;
+	}
+
+	// Apply Damage Effect
+	{
+		// Make effectcontext handle
+		FDamageEffectContext* context = new FDamageEffectContext();
+		FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+		EffectContextHandle.AddInstigator(owner->GetController(), this);
+		EffectContextHandle.AddHitResult(SweepResult);
+
+		float tempDamage = Damage;
+
+		if (DamageData)
+		{
+			tempDamage += DamageData->Additive;
+			tempDamage *= DamageData->Multiplicitive;
+		}
+		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
+
+		context->BaseDamage = Damage;
+		context->CalculatedDamage = tempDamage;
+
+		// Set instigator asc
+		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
+		USkillComponent* instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+
+		TArray<TSubclassOf<UGameplayEffect>> effects = UniqueEffectClasses;
+		effects.Add(CommonEffectClass);
+
+		for (auto effct : effects)
+		{
+			// Pre-calculate MMC value and setting DamageText datas
+			UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+			instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
+
+			// Must use EffectToTarget for auto mmc
+			instigatorASC->ApplyGameplayEffectToTarget(effct.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
+
+			delete context;
+			context = nullptr;
+		}
+	}
 }
 
 void AWeapon::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-}
-
-void AWeapon::SendDamage(float InDamage, AActor* OtherActor, const FHitResult& SweepResult)
-{
-	CheckFalse(HasAuthority());
-	ACharacter* ch = Cast<ACharacter>(GetOwner());
-	AController* inst = nullptr;
-	if (ch)inst = ch->GetController();
-
-	FDamageEvent f;
-	f.DamageTypeClass = DamageTypeClass;
-	OtherActor->TakeDamage(InDamage, f, inst, this);
-	HitActors.Add(OtherActor);
 }
 
 void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
@@ -162,16 +226,18 @@ void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
 	SetTeamID(id->GetGenericTeamId());
 }
 
-void AWeapon::OnCollision()
+void AWeapon::OnCollision(const FDamageEhancementData* InDamageData)
 {
 	for (auto i : CollisionComponents)
 		i->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DamageData = InDamageData;
 }
 
 void AWeapon::OffCollision()
 {
 	for (auto i : CollisionComponents)
 		i->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DamageData = nullptr;
 }
 
 void AWeapon::ResetHitActors()
@@ -202,4 +268,15 @@ void AWeapon::ChangeVisibility(EItemMode InMode)
 void AWeapon::SetMode(EItemMode InMode)
 {
 	Super::SetMode(InMode);
+}
+
+void AWeapon::GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const
+{
+	// TODO::Check
+	for (auto effect : UniqueEffectClasses)
+	{
+		UGE_UniqueItemEffect * unique = Cast<UGE_UniqueItemEffect>(effect.GetDefaultObject());
+		if (!unique)continue;
+		Descriptions.Add(unique->GetDescription());
+	}
 }

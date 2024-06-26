@@ -16,7 +16,6 @@
 
 #include "Components/InventoryComponent.h"
 
-#include "Objects/CustomDamageType.h"
 #include "Widgets/UW_HealthBar.h"
 
 ADungeonCharacterBase::ADungeonCharacterBase()
@@ -219,15 +218,12 @@ bool ADungeonCharacterBase::CanMove()
 
 void ADungeonCharacterBase::OnCollision()
 {
-	Inventory->OnCollision();
 }
 
 void ADungeonCharacterBase::OffCollision()
 {
-	Inventory->OffCollision();
 }
 
 void ADungeonCharacterBase::ResetHitActors()
 {
-	Inventory->ResetHitActors();
 }

@@ -90,7 +90,6 @@ private:
 	void OffAllWidget();
 protected:
 	virtual void Init()override;
-	//virtual void ChangeState(EStateType PrevType, EStateType NewType);
 public:
 	void InitClientWidget();
 	

@@ -20,9 +20,6 @@ class UAbilitySystemComponent;
 class UAttributeSetBase;
 class UGameplayAbility;
 
-enum class EStateType : uint8;
-enum class EReactionType : uint8;
-
 UCLASS()
 class DUNGEON_API ADungeonCharacterBase : public ACharacter, public IGenericTeamAgentInterface, public IAbilitySystemInterface
 {

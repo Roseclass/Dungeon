@@ -10,7 +10,6 @@
  */
 
 class AController;
-class UCustomDamageType;
 class UShapeComponent;
 class UGameplayEffect;
 
@@ -36,9 +35,6 @@ private:
 
 	TArray<AActor*> DamagedActors;
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Datas")
-		TSubclassOf<UCustomDamageType> DamageTypeClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		TSubclassOf<UGameplayEffect> GamePlayEffectClass;
 

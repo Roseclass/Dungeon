@@ -68,7 +68,7 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FMMCData : public FFastArraySerializerItem
+struct FConditionEhancementData : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 public:
@@ -86,6 +86,24 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
 		FScalableFloat Base;
+
+	UPROPERTY()
+		float Additive;
+
+	UPROPERTY()
+		float Multiplicitive = 100;
+};
+
+USTRUCT(BlueprintType)
+struct FDamageEhancementData : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag AdditiveTag;
+
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag MultiplicitiveTag;
 
 	UPROPERTY()
 		float Additive;
@@ -116,25 +134,16 @@ protected:
 		TMap<FGameplayTag, FDamageDealerData> DamageDealerDataMap;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
-		float BaseDamage = 10;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
-		float AdditiveDamage = 10;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
-		float BaseDamageRate = 1;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Damage")
-		float AdditiveDamageRate = 1;
+		FDamageEhancementData DamageData;
 
 	UPROPERTY(EditAnywhere, Category = "Condition|Range")
 		float Range = 500.0f;
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
-		FMMCData ManaCost;
+		FConditionEhancementData ManaCost;
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
-		FMMCData Cooldown;
+		FConditionEhancementData Cooldown;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TMap<FGameplayTag, FWaringSignData> WarningSignDataMap;
@@ -150,6 +159,10 @@ public:
 
 	//function
 private:
+	virtual void SpawnDamageDealer(FGameplayTag EventTag);
+	virtual void SpawnWarningSign(FGameplayTag EventTag);
+	virtual void OnCollision();
+	virtual void OffCollision();
 protected:
 	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)override;
 

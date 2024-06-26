@@ -15,6 +15,8 @@ class UUW_Inventory;
 class UUW_Trade;
 class USaveGameData;
 
+struct FDamageEhancementData;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInventoryChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryEquippedDataChanged, UItemObject*, InObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryEquippedChanged, EAppearancePart, InMeshPart, int32, InIndex);
@@ -78,7 +80,7 @@ private:
 protected:
 public:
 	//for equipment
-	void OnCollision();
+	void OnCollision(const FDamageEhancementData* InDamageData);
 	void OffCollision();
 	void ResetHitActors();
 
