@@ -14,6 +14,7 @@ class AWeapon;
 class UUW_Inventory;
 class UUW_Trade;
 class USaveGameData;
+class UGameplayEffect;
 
 struct FDamageEhancementData;
 
@@ -122,6 +123,8 @@ public:
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
 
+	//for ability
+	void GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
 
 	//
 	// 드래그 드롭 - 이동 및 장착, 해제

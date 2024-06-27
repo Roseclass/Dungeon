@@ -7,6 +7,7 @@
 #include "Components/SkillComponent.h"
 #include "Widgets/UW_SkillTree.h"
 #include "Abilities/GABase.h"
+#include "Abilities/AttributeSet_Player.h"
 
 USkillTreeComponent::USkillTreeComponent()
 {
@@ -100,6 +101,12 @@ void USkillTreeComponent::Server_UpdateSkillState_Implementation(int32 InSkillID
 void USkillTreeComponent::Server_LevelUpSkillState_Implementation(int32 InSkillID)
 {
 	// TODO::add point condition
+	CheckNull(SkillComp);
+	const UAttributeSet_Player* attribute = Cast<UAttributeSet_Player>(SkillComp->GetAttributeSet(UAttributeSet_Player::StaticClass()));
+	CheckNull(attribute);
+	CheckTrue(attribute->GetSkillPoint() < 1);
+
+	//TODO:: apply effect
 
 	CheckFalse(SkillStates.Items.IsValidIndex(InSkillID));
 
@@ -191,4 +198,11 @@ void USkillTreeComponent::LoadData(USaveGameData* const ReadData)
 
 	if (GetOwner()->GetLocalRole() == ROLE_Authority)
 		OnRep_SkillStates();
+}
+
+ESkillTreeSkillState USkillTreeComponent::GetSkillTreeSkillState(int32 InSkillID) const
+{
+	ESkillTreeSkillState result = ESkillTreeSkillState::Locked;
+	if (!SkillWidgetStates.IsValidIndex(InSkillID))return result;
+	return result = SkillWidgetStates[InSkillID];
 }

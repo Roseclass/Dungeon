@@ -130,4 +130,6 @@ public:
 	int32 GetSkillLevel(int32 InSkillID) const;
 	const TArray<const FSkillData*> GetSkillDatas() const;
 	const FSkillData* GetSkillData(int32 InSkillID)const;
+	float GetDefense() const;
+	float GetPower() const;
 };

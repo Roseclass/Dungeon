@@ -10,6 +10,7 @@
 
 class UBorder;
 class UTextBlock;
+class URichTextBlock;
 class UItemObject;
 
 UCLASS()
@@ -31,6 +32,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UTextBlock* Damage;
+
+	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
+		URichTextBlock* EffectDescription;
 
 public:
 

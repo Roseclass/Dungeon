@@ -649,3 +649,12 @@ void UInventoryComponent::LoadData(USaveGameData* const ReadData)
 
 	Server_LoadData(equippedClasses, equippedDatas, locations, inventoryClasses, inventoryDatas);
 }
+
+void UInventoryComponent::GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
+{
+	for (int32 i = int(EItemType::Helms); i<int(EItemType::Max); ++i)
+	{
+		if (!EquippedItems[i])continue;
+		EquippedItems[i]->GetAllEffectEffectClasses(Classes);
+	}
+}

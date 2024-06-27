@@ -7,6 +7,7 @@
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
 
+#include "Abilities/AttributeSetBase.h"
 #include "Abilities/GA_Skill.h"
 #include "Abilities/GameplayEffectContexts.h"
 #include "Components/SkillTreeComponent.h"
@@ -92,8 +93,6 @@ void USkillComponent::HitReaction(UAbilitySystemComponent* InComponent, const FG
 			FGameplayEventData* data = new FGameplayEventData();
 			data->ContextHandle = InSpec.GetContext();
 			InternalTryActivateAbility(i, FPredictionKey(), nullptr, nullptr, data);
-			delete data;
-			data = nullptr;
 		}
 	}
 }
@@ -205,9 +204,6 @@ void USkillComponent::Cient_DamageText_Implementation(float InDamage, bool IsCri
 	gameplayCueParameters.Location = InLocation;
 
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.DamageText"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
-
-	delete context;
-	context = nullptr;
 }
 
 void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningSign> Class, FTransform const& Transform, AActor* InOwner, APawn* Instigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride, float Duration, float ExtraDuration)
@@ -227,9 +223,6 @@ void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningS
 	gameplayCueParameters.EffectContext = EffectContextHandle;
 
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.WarningSign"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
-
-	delete context;
-	context = nullptr;
 }
 
 bool USkillComponent::CanUse() const
@@ -290,7 +283,7 @@ const TArray<const FSkillData*> USkillComponent::GetSkillDatas() const
 	return result;
 }
 
-const FSkillData* USkillComponent::GetSkillData(int32 InSkillID)const
+const FSkillData* USkillComponent::GetSkillData(int32 InSkillID) const
 {
 	for (auto i : SkillDatas)
 	{
@@ -299,4 +292,24 @@ const FSkillData* USkillComponent::GetSkillData(int32 InSkillID)const
 			return i;
 	}
 	return nullptr;
+}
+
+float USkillComponent::GetDefense() const
+{
+	const UAttributeSetBase* attribute = Cast<UAttributeSetBase>(GetAttributeSet(UAttributeSetBase::StaticClass()));
+
+	float defense = attribute->GetDefense();
+	float additiveDefense = attribute->GetAdditiveDefense();
+	float multiplicitiveDefense = attribute->GetMultiplicitiveDefense() * 0.01;
+	return (defense + additiveDefense) * multiplicitiveDefense;
+}
+
+float USkillComponent::GetPower() const
+{
+	const UAttributeSetBase* attribute = Cast<UAttributeSetBase>(GetAttributeSet(UAttributeSetBase::StaticClass()));
+
+	float power = attribute->GetPower();
+	float additivePower = attribute->GetAdditivePower();
+	float multiplicitivePower = attribute->GetMultiplicitivePower() * 0.01;
+	return (power + additivePower) * multiplicitivePower;
 }

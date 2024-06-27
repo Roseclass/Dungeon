@@ -2,6 +2,7 @@
 #include "Global.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
+#include "Components/RichTextBlock.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
@@ -38,26 +39,18 @@ void UUW_InventoryPopup::On(UItemObject* InObject)
 	//set name
 	Name->SetText(FText::FromString(data.GetName()));
 
-	// TODO::Check
+	//set damage
 	int32 damage = data.GetFinalDamage();
 	Damage->SetText(FText::FromString(
 		FString::Printf(TEXT("데미지 : %i"), damage)
 		));
 
-	{
-		AWeapon* weapon = Cast<AWeapon>(InObject->GetEqquipment());
-		if (weapon)
-		{
-			TArray<FString> arr;
-			weapon->GetUniqueEffectDescriptions(arr);
-			// set description
-			// if there was unique effect in armor?
-			// color?
-		}
-	}
-
-
-	InObject->GetEqquipment();
+	//set effect description
+	TArray<FString> arr;
+	InObject->GetEqquipment()->GetUniqueEffectDescriptions(arr);
+	FString txt = "";
+	for (auto i : arr)txt += i;
+	EffectDescription->SetText(FText::FromString(txt));
 
 	SetVisibility(ESlateVisibility::HitTestInvisible);
 	bOn = 1;

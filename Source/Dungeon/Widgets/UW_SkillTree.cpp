@@ -83,10 +83,14 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 {
 	int32 skillID = InButton->GetSkillID();
 	CheckFalse(skillID > -1);
-	//TODO::How to level up
-	//if (OwnerComponent)
-	//	OwnerComponent->LevelUp(skillID);
-	//else if (OwnerComponent)
+
+	ESkillTreeSkillState state = OwnerComponent->GetSkillTreeSkillState(skillID);
+	CheckTrue(state == ESkillTreeSkillState::Locked);
+
+	if (state == ESkillTreeSkillState::Unlocked)Popup->UnlockedMode();
+	else if (state == ESkillTreeSkillState::Acquired_Max)Popup->MaxAcquiredMode();
+	else Popup->AcquiredMode();
+
 	{
 		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
 		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
@@ -97,6 +101,23 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 		Popup->SetSkillID(skillID);
 		Popup->SetVisibility(ESlateVisibility::Visible);
 	}
+
+
+
+
+	// 팝업
+	// -스킬레벨업	<< 스킬의 상태가 acquired10인경우 잠금
+	// -1슬롯지정
+	// -2슬롯지정..	<< 스킬의 상태가 unlocked이하인경우 잠금
+	//
+	// 스킬 레벨업
+	// 레벨업클릭(클라)
+	// 
+	// 레벨업(서버)
+	// 어트리뷰트 체크, 스킬상태변경
+	// 
+	// 위젯 갱신(클라)
+	//
 }
 
 void UUW_SkillTree::OnButtonHovered(USkillButton* InButton)
@@ -161,6 +182,7 @@ void UUW_SkillTree::Init(const TArray<const FSkillData*>& Array, USkillTreeCompo
 
 	//팝업 버튼 클릭 함수 바인딩
 	Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
+	Popup->OnLevelUpButtonClicked.AddUFunction(OwnerComponent, "LevelUp");
 
 	bInit = 1;
 }

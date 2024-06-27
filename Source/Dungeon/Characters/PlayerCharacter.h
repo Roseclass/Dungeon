@@ -21,6 +21,7 @@ class USkillTreeComponent;
 class UQuestComponent;
 class AEqquipment;
 class UUW_Main;
+class UAttributeSet_Player;
 
 struct FSkillData;
 
@@ -83,6 +84,8 @@ private:
 		UTravelEffectComponent* TravelPostProcess;
 
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+		UAttributeSet_Player* AttributeSet_Player;
 public:
 
 	//function

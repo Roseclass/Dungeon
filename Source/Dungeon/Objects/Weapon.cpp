@@ -4,13 +4,13 @@
 
 #include "Characters/DungeonCharacterBase.h"
 #include "Components/SkillComponent.h"
+#include "Components/InventoryComponent.h"
 
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 
 #include "Abilities/GA_Skill.h"
 #include "Abilities/GameplayEffectContexts.h"
-#include "Abilities/GE_UniqueItemEffect.h"
 #include "Abilities/MMC_Damage.h"
 
 AWeapon::AWeapon()
@@ -136,67 +136,41 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 	// ignore alliance
 	CheckTrue(other->GetGenericTeamId() == TeamID);
 
-	// Apply Base Damage Effect
-	{
-		// Make effectcontext handle
-		FDamageEffectContext* context = new FDamageEffectContext();
-		FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
-		EffectContextHandle.AddInstigator(owner->GetController(), this);
-		EffectContextHandle.AddHitResult(SweepResult);
+	// 다른 장비들의 effect를 가져옴
+	// 어트리뷰트에서 합산데미지를 가져옴
+	// 데미지 적용
 
-		float tempDamage = Damage;
 
-		if (DamageData)
-		{
-			tempDamage += DamageData->Additive;
-			tempDamage *= DamageData->Multiplicitive;
-		}
-		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
+	TArray<TSubclassOf<UGameplayEffect>> effects = UniqueEffectClasses;
+	if(CommonEffectClass)effects.Add(CommonEffectClass);
 
-		context->BaseDamage = tempDamage;
-
-		// Set instigator asc
-		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
-		USkillComponent* instigatorASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
-		if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
-
-		// Pre-calculate MMC value and setting DamageText datas
-		UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
-		instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
-
-		// Must use EffectToTarget for auto mmc
-		instigatorASC->ApplyGameplayEffectToTarget(CommonEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
-
-		delete context;
-		context = nullptr;
+	// get owner's equpment effects
+	{	
+		UInventoryComponent* inv = CHelpers::GetComponent<UInventoryComponent>(owner);
+		if (inv)inv->GetEquipmentEffectClasses(effects);
 	}
 
 	// Apply Damage Effect
 	{
+		// Set instigator asc
+		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
+		USkillComponent* instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+
 		// Make effectcontext handle
 		FDamageEffectContext* context = new FDamageEffectContext();
 		FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
 		EffectContextHandle.AddInstigator(owner->GetController(), this);
 		EffectContextHandle.AddHitResult(SweepResult);
 
-		float tempDamage = Damage;
+		context->BaseDamage = instigatorASC->GetPower();
+		context->CalculatedDamage = context->BaseDamage;
 
 		if (DamageData)
 		{
-			tempDamage += DamageData->Additive;
-			tempDamage *= DamageData->Multiplicitive;
+			context->CalculatedDamage += DamageData->Additive;
+			context->CalculatedDamage *= DamageData->Multiplicitive;
 		}
 		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
-
-		context->BaseDamage = Damage;
-		context->CalculatedDamage = tempDamage;
-
-		// Set instigator asc
-		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
-		USkillComponent* instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
-
-		TArray<TSubclassOf<UGameplayEffect>> effects = UniqueEffectClasses;
-		effects.Add(CommonEffectClass);
 
 		for (auto effct : effects)
 		{
@@ -206,9 +180,6 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 
 			// Must use EffectToTarget for auto mmc
 			instigatorASC->ApplyGameplayEffectToTarget(effct.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
-
-			delete context;
-			context = nullptr;
 		}
 	}
 }
@@ -268,15 +239,4 @@ void AWeapon::ChangeVisibility(EItemMode InMode)
 void AWeapon::SetMode(EItemMode InMode)
 {
 	Super::SetMode(InMode);
-}
-
-void AWeapon::GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const
-{
-	// TODO::Check
-	for (auto effect : UniqueEffectClasses)
-	{
-		UGE_UniqueItemEffect * unique = Cast<UGE_UniqueItemEffect>(effect.GetDefaultObject());
-		if (!unique)continue;
-		Descriptions.Add(unique->GetDescription());
-	}
 }

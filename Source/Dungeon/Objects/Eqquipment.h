@@ -10,6 +10,7 @@
 #include "Interfaces/IInteractable.h"
 #include "Eqquipment.generated.h"
 
+class UGameplayEffect;
 class UFXSystemAsset;
 class UShapeComponent;
 class UBoxComponent;
@@ -217,6 +218,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Gloves", EditConditionHides,DisplayName = "Datas"))
 		TArray<FItemAppearanceData> GlovesAppearanceDatas;
 protected:
+	UPROPERTY(EditAnywhere, Category = "GameplayEffect")
+		TSubclassOf<UGameplayEffect> CommonEffectClass;
+
+	UPROPERTY(EditAnywhere, Category = "GameplayEffect")
+		TArray<TSubclassOf<UGameplayEffect>> UniqueEffectClasses;
 public:
 
 	//function
@@ -257,5 +263,6 @@ public:
 	FORCEINLINE FItemStatusData GetItemStatus() const { return ItemStatus; }
 	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
 	void GetDimensions(int32& X, int32& Y);
-	
+	void GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const;
+	void GetAllEffectEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
 };

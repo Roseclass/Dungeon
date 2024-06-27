@@ -86,9 +86,6 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 
 				// Must use EffectToTarget for auto mmc
 				instigatorASC->ApplyGameplayEffectToTarget(GamePlayEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
-
-				delete context;
-				context = nullptr;
             }
         }
     }

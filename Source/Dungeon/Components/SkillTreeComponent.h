@@ -21,7 +21,7 @@ enum class ESkillTreeSkillState : uint8
 	Locked, Unlocked,
 	Acquired_1, Acquired_2, Acquired_3,
 	Acquired_4, Acquired_5, Acquired_6,
-	Acquired_7, Acquired_8, Acquired_9, Acquired_10,
+	Acquired_7, Acquired_8, Acquired_9, Acquired_Max,
 	Max
 };
 
@@ -86,7 +86,7 @@ protected:
 public:
 	void Init(const TArray<const FSkillData*> InDatas, USkillComponent* InSkillComp, TFunction<void(int32, int32)> OnPopupClicked);
 	void AddPoints();
-	void LevelUp(int32 InSkillID);
+	UFUNCTION()void LevelUp(int32 InSkillID);
 
 	//Widget
 	bool IsWidgetVisible();
@@ -97,6 +97,7 @@ public:
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
 
+	ESkillTreeSkillState GetSkillTreeSkillState(int32 InSkillID) const;
 	FORCEINLINE TArray<FVector2D> GetRootDatas() const { return RootDatas; }
 	FORCEINLINE TMap<FVector2D, TArray<FVector2D>> GetTreeDatas() const { return TreeDatas; }
 };

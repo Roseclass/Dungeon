@@ -15,7 +15,7 @@
 #include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_Item.h"
-
+#include "Abilities/GE_UniqueItemEffect.h"
 
 AEqquipment::AEqquipment()
 {
@@ -521,4 +521,22 @@ void AEqquipment::GetDimensions(int32& X, int32& Y)
 {
 	X = DimensionX;
 	Y = DimensionY;
+}
+
+void AEqquipment::GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const
+{
+	// TODO::Check
+	for (auto effect : UniqueEffectClasses)
+	{
+		UGE_UniqueItemEffect* unique = Cast<UGE_UniqueItemEffect>(effect.GetDefaultObject());
+		if (!unique)continue;
+		Descriptions.Add(unique->GetDescription());
+	}
+}
+
+void AEqquipment::GetAllEffectEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
+{
+	// TODO::Check
+	for(auto i : Classes)Classes.Add(i);
+	if (CommonEffectClass)Classes.Add(CommonEffectClass);
 }

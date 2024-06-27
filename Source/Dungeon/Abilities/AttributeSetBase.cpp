@@ -11,6 +11,11 @@ UAttributeSetBase::UAttributeSetBase()
     InitMana(100);
     InitMaxMana(100);
     InitDefense(0);
+    InitAdditiveDefense(0);
+    InitMultiplicitiveDefense(100);
+    InitPower(0);
+    InitAdditivePower(0);
+    InitMultiplicitivePower(100);
 }
 
 void UAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -61,8 +66,17 @@ void UAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
     DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, Health, COND_None, REPNOTIFY_Always);
     DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_Always);
+
     DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, Mana, COND_None, REPNOTIFY_Always);
     DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, MaxMana, COND_None, REPNOTIFY_Always);
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, Defense, COND_None, REPNOTIFY_Always);
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, AdditiveDefense, COND_None, REPNOTIFY_Always);
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, MultiplicitiveDefense, COND_None, REPNOTIFY_Always);
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, Power, COND_None, REPNOTIFY_Always);
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, AdditivePower, COND_None, REPNOTIFY_Always);
+    DOREPLIFETIME_CONDITION_NOTIFY(UAttributeSetBase, MultiplicitivePower, COND_None, REPNOTIFY_Always);
 }
 
 void UAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty)
@@ -102,4 +116,29 @@ void UAttributeSetBase::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana)
 void UAttributeSetBase::OnRep_Defense(const FGameplayAttributeData& OldDefense)
 {
     GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, Defense, OldDefense);
+}
+
+void UAttributeSetBase::OnRep_AdditiveDefense(const FGameplayAttributeData& OldAdditiveDefense)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, AdditiveDefense, OldAdditiveDefense);
+}
+
+void UAttributeSetBase::OnRep_MultiplicitiveDefense(const FGameplayAttributeData& OldMultiplicitiveDefense)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, MultiplicitiveDefense, OldMultiplicitiveDefense);
+}
+
+void UAttributeSetBase::OnRep_Power(const FGameplayAttributeData& OldPower)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, Power, OldPower);
+}
+
+void UAttributeSetBase::OnRep_AdditivePower(const FGameplayAttributeData& OldAdditivePower)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, AdditivePower, OldAdditivePower);
+}
+
+void UAttributeSetBase::OnRep_MultiplicitivePower(const FGameplayAttributeData& OldMultiplicitivePower)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UAttributeSetBase, MultiplicitivePower, OldMultiplicitivePower);
 }

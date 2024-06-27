@@ -18,6 +18,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystemComponent.h"
 #include "Abilities/AttributeSetBase.h"
+#include "Abilities/AttributeSet_Player.h"
 #include "Abilities/GABase.h"
 
 #include "SaveManager.h"
@@ -78,6 +79,8 @@ APlayerCharacter::APlayerCharacter()
 	CHelpers::CreateActorComponent<USkillTreeComponent>(this, &SkillTree, "SkillTree");
 	CHelpers::CreateActorComponent<UQuestComponent>(this, &Quest, "Quest");
 	CHelpers::CreateActorComponent<UTravelEffectComponent>(this, &TravelPostProcess, "TravelPostProcess");
+
+	AttributeSet_Player = CreateDefaultSubobject<UAttributeSet_Player>(TEXT("AttributeSet_Player"));
 }
 
 void APlayerCharacter::BeginPlay()

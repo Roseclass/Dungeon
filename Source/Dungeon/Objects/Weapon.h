@@ -8,8 +8,6 @@
  *
  */
 
-class UGameplayEffect;
-
 struct FDamageEhancementData;
 
 UCLASS()
@@ -44,12 +42,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Essential")
 		float Damage;
 
-	UPROPERTY(EditAnywhere, Category = "Essential")
-		TSubclassOf<UGameplayEffect> CommonEffectClass;
-
-	UPROPERTY(EditAnywhere, Category = "Essential")
-		TArray<TSubclassOf<UGameplayEffect>> UniqueEffectClasses;
-
 public:
 
 	//function
@@ -79,8 +71,6 @@ public:
 	virtual void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None)override;
 	virtual void ChangeVisibility(EItemMode InMode)override;
 	virtual void SetMode(EItemMode InMode)override;
-
-	void GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const;
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
 	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }

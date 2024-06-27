@@ -95,12 +95,11 @@ void UUW_QuickSlot::OnQuickSlotDataChanged(int32 InQuickSlotIndex, const FSkillD
 	
 	if (InSkillData.SkillClass)
 	{
-		AbilityTagContainers[InQuickSlotIndex] = InSkillData.SkillClass.GetDefaultObject()->GetSkillAbilityTagContainers();
+		AbilityTagContainers[InQuickSlotIndex] = InSkillData.SkillClass.GetDefaultObject()->GetSkillCooldownTags();
 		GetCooldownTimeRemainingAndDuration(InQuickSlotIndex, RemainingCoolDowns[InQuickSlotIndex], CoolDownDurations[InQuickSlotIndex]);
 	}
 	else
 	{
-		// TODO ::check
 		AbilityTagContainers[InQuickSlotIndex] = FGameplayTagContainer();
 		RemainingCoolDowns[InQuickSlotIndex] = 0;
 		CoolDownDurations[InQuickSlotIndex] = -1;
