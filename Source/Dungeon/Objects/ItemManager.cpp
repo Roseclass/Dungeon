@@ -21,10 +21,11 @@ void AItemManager::BeginPlay()
 	{
 		TArray<AActor*> arr;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEqquipment::StaticClass(), arr);
-		for (auto i : arr)
-			Cast<AEqquipment>(i)->SetManager(this);
+		//for (auto i : arr)
+		//	Cast<AEqquipment>(i)->SetManager(this);
 	}
 
+	//이거 한번만 하게 해야됨 모든 매니저가 이렇게 할수는없음
 	FTimerHandle WaitHandle;
 	float WaitTime = 1;
 	GetWorld()->GetTimerManager().SetTimer(WaitHandle, FTimerDelegate::CreateLambda([&]()
@@ -33,8 +34,8 @@ void AItemManager::BeginPlay()
 		{
 			TArray<AActor*> arr;
 			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemy::StaticClass(), arr);
-			for (auto i : arr)
-				Cast<AEnemy>(i)->GenerateLootItems();
+			//for (auto i : arr)
+			//	Cast<AEnemy>(i)->GenerateLootItems();
 		}
 	}), WaitTime, false);
 
@@ -73,7 +74,7 @@ void AItemManager::Server_AttachItemToComponent_Implementation(AEqquipment* InIt
 void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, EItemMode NewMode)
 {
 	CheckNull(InItem);
-	InItem->SetMode(NewMode);
+	//InItem->SetMode(NewMode);
 
 	if (NewMode == EItemMode::Loot)
 	{
@@ -92,16 +93,21 @@ void AItemManager::Server_ChangeVisibility_Implementation(AEqquipment* InItem, E
 		FVector end = UNavigationSystemV1::GetRandomPointInNavigableRadius(GetWorld(), start, 200);
 		start.Z += halfSize;
 
-		InItem->SetOwnerCharacter(nullptr);
+		//InItem->SetOwnerCharacter(nullptr);
 
 		Multicast_DropSequence(InItem, start, end);
 	}
 }
 
+void AItemManager::Multicast_SpawnEquipment_Implementation(AEqquipment* InItem, FVector Start, FVector End)
+{
+
+}
+
 void AItemManager::Multicast_DropSequence_Implementation(AEqquipment* InItem, FVector Start, FVector End)
 {
 	CheckNull(InItem);
-	InItem->PlayDropSequence(Start, End);
+	//InItem->PlayDropSequence(Start, End);
 }
 
 void AItemManager::SetItemLocation(AEqquipment* InItem, const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
@@ -141,13 +147,13 @@ void AItemManager::ChangeVisibility(AEqquipment* InItem, EItemMode NewMode)
 AEqquipment* AItemManager::SpawnItem(UClass* Class, FTransform const& Transform, const FActorSpawnParameters& SpawnParameters)
 {
 	AEqquipment* result = GetWorld()->SpawnActor<AEqquipment>(Class, Transform, SpawnParameters);
-	if (result)result->SetManager(this);
+	//if (result)result->SetManager(this);
 	return result;
 }
 
 AEqquipment* AItemManager::SpawnItemDeferred(UClass* Class, FTransform const& Transform, AActor* NewOwner, APawn* NewInstigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride)
 {
 	AEqquipment* result = GetWorld()->SpawnActorDeferred<AEqquipment>(Class, Transform, NewOwner, NewInstigator, CollisionHandlingOverride);
-	if (result)result->SetManager(this);
+	//if (result)result->SetManager(this);
 	return result;
 }

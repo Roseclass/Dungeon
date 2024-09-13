@@ -6,7 +6,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/DecalComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "Components/StaticMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -186,6 +185,33 @@ void APlayerCharacter::OffAllWidget()
 
 }
 
+FRotator APlayerCharacter::FindCursorRotation()
+{
+	FHitResult result;
+	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(GetController());
+	if (controller)
+		controller->GetHitResultUnderCursor(ECC_Visibility, 1, result);
+
+	FVector loc = GetActorLocation();
+	
+	float ratio = (loc.Z - result.TraceStart.Z) / (result.TraceEnd.Z - result.TraceStart.Z);
+
+	FVector goal = result.TraceStart + (result.TraceEnd - result.TraceStart) * ratio;
+
+	return UKismetMathLibrary::FindLookAtRotation(loc, goal);
+}
+
+void APlayerCharacter::Server_ReplicateRotation_Implementation(FRotator NewRotation)
+{
+	SetActorRotation(NewRotation);
+	Multicast_ReplicateRotation(NewRotation);
+}
+
+void APlayerCharacter::Multicast_ReplicateRotation_Implementation(FRotator NewRotation)
+{
+	SetActorRotation(NewRotation);
+}
+
 void APlayerCharacter::Init()
 {
 	Super::Init();
@@ -361,60 +387,47 @@ void APlayerCharacter::Dead()
 void APlayerCharacter::UseLeft()
 {
 	CheckFalse(CanUse());
-	//CheckTrue(Skill->IsQuickSlotCoolDown(0));
-	//CheckFalse(Skill->GetQuickSlotManaCost(0) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(0)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
 	UseSkill(0);
 }
 
 void APlayerCharacter::UseRight()
 {
 	CheckFalse(CanUse());
-	//CheckTrue(Skill->IsQuickSlotCoolDown(1));
-	//CheckFalse(Skill->GetQuickSlotManaCost(1) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(1)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
+	Server_ReplicateRotation(FindCursorRotation());
 	UseSkill(1);
 }
 
 void APlayerCharacter::UseQ()
 {
 	CheckFalse(CanUse());
-	//CheckTrue(Skill->IsQuickSlotCoolDown(2));
-	//CheckFalse(Skill->GetQuickSlotManaCost(2) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(2)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
+	Server_ReplicateRotation(FindCursorRotation());
 	UseSkill(2);
 }
 
 void APlayerCharacter::UseW()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(3));
-	//CheckFalse(Skill->GetQuickSlotManaCost(3) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(3)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
+	Server_ReplicateRotation(FindCursorRotation());
 	UseSkill(3);
 }
 
 void APlayerCharacter::UseE()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(4));
-	//CheckFalse(Skill->GetQuickSlotManaCost(4) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(4)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
+	Server_ReplicateRotation(FindCursorRotation());
 	UseSkill(4);
 }
 
 void APlayerCharacter::UseR()
 {
 	CheckFalse(CanUse());
-	CheckTrue(Skill->IsQuickSlotCoolDown(5));
-	//CheckFalse(Skill->GetQuickSlotManaCost(5) <= Status->GetCurrentMana_Client());
-	//if (!Skill->GetSkillActor(5)->GetSkillData()->bCanMove)
-	//	GetCharacterMovement()->StopMovementImmediately();
+
+	Server_ReplicateRotation(FindCursorRotation());
 	UseSkill(5);
 }
 
@@ -425,7 +438,7 @@ void APlayerCharacter::ChangeQuickSlotData(int32 Index, int32 InInputID)
 
 void APlayerCharacter::TryAddItem(AEqquipment* InObject)
 {
-	Inventory->Server_TryAddItem(InObject);
+	Inventory->Server_TryAddItem(InObject->GetUniqueID());
 }
 
 void APlayerCharacter::ToggleSkillTree()

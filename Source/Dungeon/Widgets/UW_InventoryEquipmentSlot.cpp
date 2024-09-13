@@ -82,7 +82,7 @@ bool UUW_InventoryEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const
 			// equip
 			ChangeEquippedData(int32(SlotType), item->GetEqquipment());		
 		else // return to inv
-			OwnerComponent->Server_TryAddItem(item->GetEqquipment());
+			OwnerComponent->Server_TryAddItem(item->GetEqquipment()->GetUniqueID());
 	}
 
 	return 1;
@@ -167,5 +167,5 @@ void UUW_InventoryEquipmentSlot::Init(UInventoryComponent* InComponent, UUW_Inve
 
 void UUW_InventoryEquipmentSlot::ChangeEquippedData(int32 InIdx, AEqquipment* InData)
 {
-	OwnerComponent->Server_ChangeEquippedData(InIdx, InData);
+	OwnerComponent->Server_ChangeEquippedData(InIdx, InData->GetUniqueID());
 }

@@ -68,33 +68,6 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FConditionEhancementData : public FFastArraySerializerItem
-{
-	GENERATED_BODY()
-public:
-	UPROPERTY(EditDefaultsOnly)
-		FGameplayTag Tag;
-
-	UPROPERTY(EditDefaultsOnly)
-		FGameplayTag BaseTag;
-
-	UPROPERTY(EditDefaultsOnly)
-		FGameplayTag AdditiveTag;
-
-	UPROPERTY(EditDefaultsOnly)
-		FGameplayTag MultiplicitiveTag;
-
-	UPROPERTY(EditDefaultsOnly, meta = (DisplayName = "BaseCost"))
-		FScalableFloat Base;
-
-	UPROPERTY()
-		float Additive;
-
-	UPROPERTY()
-		float Multiplicitive = 100;
-};
-
-USTRUCT(BlueprintType)
 struct FDamageEhancementData : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
@@ -139,11 +112,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Condition|Range")
 		float Range = 500.0f;
 
-	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
-		FConditionEhancementData ManaCost;
+	UPROPERTY(EditAnywhere, Category = "Condition|Cost")
+		FScalableFloat CostBase;
 
-	UPROPERTY(EditAnywhere, Replicated, Category = "Condition|Cost")
-		FConditionEhancementData Cooldown;
+	UPROPERTY(EditAnywhere, Category = "Condition|Cooldown")
+		FScalableFloat CooldownBase;
 
 	UPROPERTY(EditAnywhere, Category = "WarningSign")
 		TMap<FGameplayTag, FWaringSignData> WarningSignDataMap;
@@ -163,11 +136,11 @@ private:
 	virtual void SpawnWarningSign(FGameplayTag EventTag);
 	virtual void OnCollision();
 	virtual void OffCollision();
+	virtual void ResetHitActors();
 protected:
 	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)override;
 
-	virtual float GetCooldown()const;
-	virtual float GetCost()const;
+	virtual float GetCooldown(const FGameplayAbilityActorInfo* ActorInfo)const;
+	virtual float GetCost(const FGameplayAbilityActorInfo* ActorInfo)const;
 public:
-	virtual void Enhance(FGameplayTag StatusTag, float Value);
 };

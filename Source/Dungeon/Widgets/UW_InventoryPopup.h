@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Abilities/AbilityTaskTypes.h"
 #include "UW_InventoryPopup.generated.h"
 
 /**
@@ -12,6 +13,8 @@ class UBorder;
 class UTextBlock;
 class URichTextBlock;
 class UItemObject;
+
+enum class EItemGrade : uint8;
 
 UCLASS()
 class DUNGEON_API UUW_InventoryPopup : public UUserWidget
@@ -31,16 +34,17 @@ protected:
 		UTextBlock* Type;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UTextBlock* Damage;
+		UTextBlock* StatusDescription;
 
 	UPROPERTY(VisibleDefaultsOnly, meta = (BindWidget))
-		URichTextBlock* EffectDescription;
+		URichTextBlock* EhancementDescription;
 
 public:
 
 	//function
 private:
 	void RefreshLocation();
+	FString MakeEhancementText(const FSkillEnhancement& Data, EItemGrade Grade);
 protected:
 public:
 	void On(UItemObject* InObject);

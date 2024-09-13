@@ -40,7 +40,6 @@ public:
 	void Init(int32 InX, int32 InY, UMaterialInstance* InIcon, UMaterialInstance* InIconRotated, AEqquipment* InEqquipment, EItemType InType);
 	void Rotate();
 	void GetDimensions(int32& X, int32& Y);
-	void ChangeVisibility(EItemMode InMode = EItemMode::Max);
 
 	FORCEINLINE EItemType GetType() const {return Type;}
 	FORCEINLINE UMaterialInstance* GetIcon() const {return bRotated ? IconRotated : Icon;}

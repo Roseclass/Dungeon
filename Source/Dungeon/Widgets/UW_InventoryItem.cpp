@@ -87,7 +87,8 @@ void UUW_InventoryItem::NativeOnDragDetected(const FGeometry& InGeometry, const 
 
 	if (ItemObject && OwnerComponent)
 	{
-		ItemObject->GetEqquipment()->ChangeVisibility(EItemMode::Inventory);
+		//TODO::CHECK
+		//ItemObject->GetEqquipment()->ChangeVisibility(EItemMode::Inventory);
 	}
 }
 

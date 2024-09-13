@@ -2,11 +2,11 @@
 #include "Global.h"
 #include "Components/ShapeComponent.h"
 
+#include "DungeonPlayerController.h"
 #include "Characters/DungeonCharacterBase.h"
 #include "Components/SkillComponent.h"
 #include "Components/InventoryComponent.h"
 
-#include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 
 #include "Abilities/GA_Skill.h"
@@ -16,7 +16,6 @@
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = 1;
 }
 
 void AWeapon::BeginPlay()
@@ -27,19 +26,6 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// Replicated 변수를 여기에 추가
-	//DOREPLIFETIME_CONDITION(AWeapon, Mode, COND_None);
-}
-
-void AWeapon::OnRep_Mode()
-{
-	Super::OnRep_Mode();
 }
 
 void AWeapon::FindComponents()
@@ -66,56 +52,12 @@ void AWeapon::FindComponents()
 	}
 }
 
-void AWeapon::SpawnLootEffects()
+void AWeapon::SetOwnerCharacter(ADungeonCharacterBase* InCharacter)
 {
-	Super::SpawnLootEffects();
-}
-
-void AWeapon::SetEffectLocation()
-{
-	Super::SetEffectLocation();
-}
-
-void AWeapon::SortMesh()
-{
-	Super::SortMesh();
-}
-
-void AWeapon::ActivateEffect()
-{
-	Super::ActivateEffect();
-}
-
-void AWeapon::DeactivateEffect()
-{
-	Super::DeactivateEffect();
-}
-
-void AWeapon::SetPickableMode()
-{
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	Super::SetPickableMode();
-}
-
-void AWeapon::SetInventoryMode()
-{
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	Super::SetInventoryMode();
-}
-
-void AWeapon::SetEquipMode()
-{
-	// Off Collision
-	for (UShapeComponent* component : CollisionComponents)
-		component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-	Super::SetEquipMode();
+	Super::SetOwnerCharacter(InCharacter);
+	IGenericTeamAgentInterface* id = Cast<IGenericTeamAgentInterface>(InCharacter);
+	CheckNull(id);
+	SetTeamID(id->GetGenericTeamId());
 }
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -141,7 +83,7 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 	// 데미지 적용
 
 
-	TArray<TSubclassOf<UGameplayEffect>> effects = UniqueEffectClasses;
+	TArray<TSubclassOf<UGameplayEffect>> effects;
 	if(CommonEffectClass)effects.Add(CommonEffectClass);
 
 	// get owner's equpment effects
@@ -172,12 +114,15 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 		}
 		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
 
+		ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
 		for (auto effct : effects)
 		{
-			// Pre-calculate MMC value and setting DamageText datas
-			UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
-			instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
-
+			if (pc)
+			{	
+				// Pre-calculate MMC value and setting DamageText datas
+				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+				instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
+			}
 			// Must use EffectToTarget for auto mmc
 			instigatorASC->ApplyGameplayEffectToTarget(effct.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
 		}
@@ -187,14 +132,6 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 void AWeapon::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-}
-
-void AWeapon::SetOwnerCharacter(ACharacter* InCharacter)
-{
-	Super::SetOwnerCharacter(InCharacter);
-	IGenericTeamAgentInterface* id = Cast<IGenericTeamAgentInterface>(InCharacter);
-	CheckNull(id)
-	SetTeamID(id->GetGenericTeamId());
 }
 
 void AWeapon::OnCollision(const FDamageEhancementData* InDamageData)
@@ -214,29 +151,4 @@ void AWeapon::OffCollision()
 void AWeapon::ResetHitActors()
 {
 	HitActors.Empty();
-}
-
-void AWeapon::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
-{
-	Super::SetItemLocation(NewLocation, bSweep, OutSweepHitResult, Teleport);
-}
-
-void AWeapon::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
-{
-	Super::SetItemRotation(NewRotation, Teleport);
-}
-
-void AWeapon::AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName)
-{
-	Super::AttachItemToComponent(Parent,AttachmentRules,InSocketName);
-}
-
-void AWeapon::ChangeVisibility(EItemMode InMode)
-{
-	Super::ChangeVisibility(InMode);
-}
-
-void AWeapon::SetMode(EItemMode InMode)
-{
-	Super::SetMode(InMode);
 }

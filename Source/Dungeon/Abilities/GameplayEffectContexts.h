@@ -36,6 +36,19 @@ public:
     UPROPERTY()FTransform Transform;
     UPROPERTY()AActor* Owner;
     UPROPERTY()ESpawnActorCollisionHandlingMethod CollisionHandlingOverride;
+    UPROPERTY()float StartServerTime;
     UPROPERTY()float Duration;
     UPROPERTY()float ExtraDuration;
+};
+
+class UNiagaraSystem;
+
+USTRUCT(BlueprintType)
+struct FNiagaraFXEffectContext : public FGameplayEffectContext
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()UNiagaraSystem* FX;
+    UPROPERTY()FTransform Transform;
+    UPROPERTY()AActor* AttachTarget;
 };

@@ -36,7 +36,9 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	{
 		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
 		if (itemWidget)itemWidget->DragDropEnd();
-		item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
+		//TODO::TEST
+		//item->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
+		OwnerComponent->Server_RemoveItem(item->GetEqquipment()->GetUniqueID());
 		Popup->Off();
 		return result;
 	}
@@ -52,7 +54,7 @@ bool UUW_Inventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	{
 		UUW_InventoryItem* itemWidget = Cast<UUW_InventoryItem>(InOperation->DefaultDragVisual);
 		if (itemWidget)itemWidget->DragDropEnd();
-		OwnerComponent->Server_TryAddItem(item->GetEqquipment());
+		OwnerComponent->Server_TryAddItem(item->GetEqquipment()->GetUniqueID());
 	}	
 
 	return result;

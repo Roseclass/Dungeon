@@ -58,37 +58,7 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 
 	// send Damage
 	if (OtherActor && OtherActor != this)
-    {
-		// Check hit actor
-		IAbilitySystemInterface* hitCharacter = Cast<IAbilitySystemInterface>(OtherActor);
-        if (hitCharacter)
-        {
-			// Get asc
-            UAbilitySystemComponent* hitASC = hitCharacter->GetAbilitySystemComponent();
-            if (hitASC && GamePlayEffectClass)
-            {
-				// Make effectcontext handle
-				FDamageEffectContext* context = new FDamageEffectContext();
-				FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
-				ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
-				EffectContextHandle.AddInstigator(owner ? owner->GetController() : nullptr, this);
-				EffectContextHandle.AddHitResult(SweepResult);
-				context->BaseDamage = Damage;
-				context->Force = Force;
-				
-				// Set instigator asc
-				USkillComponent* instigatorASC = Cast<USkillComponent>(hitASC);
-				if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
-
-				// Pre-calculate MMC value and setting DamageText datas
-				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
-				instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
-
-				// Must use EffectToTarget for auto mmc
-				instigatorASC->ApplyGameplayEffectToTarget(GamePlayEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
-            }
-        }
-    }
+		SendDamage(GamePlayEffectClass, Force, Damage, OtherActor, SweepResult);
 }
 
 void ADamageDealer::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -128,6 +98,40 @@ void ADamageDealer::FindCollision()
 		component->OnComponentEndOverlap.Clear();
 		component->OnComponentBeginOverlap.AddDynamic(this, &ADamageDealer::OnComponentBeginOverlap);
 		component->OnComponentEndOverlap.AddDynamic(this, &ADamageDealer::OnComponentEndOverlap);
+	}
+}
+
+void ADamageDealer::SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult)
+{
+	// Check hit actor
+	IAbilitySystemInterface* hitCharacter = Cast<IAbilitySystemInterface>(Target);
+	if (hitCharacter)
+	{
+		// Get asc
+		UAbilitySystemComponent* hitASC = hitCharacter->GetAbilitySystemComponent();
+		if (hitASC && EffectClass)
+		{
+			// Make effectcontext handle
+			FDamageEffectContext* context = new FDamageEffectContext();
+			FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+			ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+			EffectContextHandle.AddInstigator(owner ? owner->GetController() : nullptr, this);
+			EffectContextHandle.AddHitResult(SweepResult);
+			context->BaseDamage = InDamage;
+			context->Force = InForce;
+
+			// Set instigator asc
+			USkillComponent* instigatorASC = Cast<USkillComponent>(hitASC);
+			if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+
+			// Pre-calculate MMC value and setting DamageText datas
+			UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+			instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, Target->GetActorLocation());
+
+			// Must use EffectToTarget for auto mmc
+			instigatorASC->ApplyGameplayEffectToTarget(EffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
+		}
+		CurrentDamagedActor = Target;
 	}
 }
 

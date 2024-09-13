@@ -14,7 +14,6 @@ class UCameraComponent;
 class USceneCaptureComponent2D;
 class UTravelEffectComponent;
 class USpringArmComponent;
-class UStaticMeshComponent;
 class UAppearanceComponent;
 class UClearViewComponent;
 class USkillTreeComponent;
@@ -91,6 +90,9 @@ public:
 	//function
 private:
 	void OffAllWidget();
+	FRotator FindCursorRotation();
+	UFUNCTION(Reliable, Server) void Server_ReplicateRotation(FRotator NewRotation);
+	UFUNCTION(NetMulticast, Reliable) void Multicast_ReplicateRotation(FRotator NewRotation);
 protected:
 	virtual void Init()override;
 public:

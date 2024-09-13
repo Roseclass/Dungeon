@@ -8,6 +8,7 @@
 #include "Abilities/AbilityTaskTypes.h"
 #include "Components/TimeLineComponent.h"
 #include "Interfaces/IInteractable.h"
+#include "AttributeSet.h"
 #include "Eqquipment.generated.h"
 
 class UGameplayEffect;
@@ -18,17 +19,36 @@ class UMeshComponent;
 class USplineComponent;
 class UWidgetComponent;
 class UMaterialInstance;
-class ACharacter;
+class ADungeonCharacterBase;
 class UItemObject;
 class UNiagaraComponent;
 class USceneComponent;
 class UParticleSystemComponent;
-class AItemManager;
+
+UENUM()
+enum class EEquipmentInitType : uint8
+{
+	Spawned, Placed, Max
+};
 
 UENUM()
 enum class EItemMode : uint8
 {
-	Loot, Inventory, Equip, Max
+	Loot /*Visible,Interactable,NoOwner*/,
+	Inventory /*Invisible,NotInteractable,HasOwner*/,
+	Equip /*Visible,NotInteractable,HasOwner*/,
+	Drop /*Visible,Interactable After DropSequence,NoOwner*/,
+	Max
+};
+
+UENUM(BlueprintType)
+enum class EItemGrade : uint8
+{
+	Common,
+	Uncommon,
+	Rare,
+	Unique,
+	Max
 };
 
 UENUM(BlueprintType)
@@ -67,50 +87,43 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetInfo")
 		FString Name;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-		float BaseDamage;
-
-	UPROPERTY()
-		float FinalDamage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Health")
-		float BaseMaxHealth;
-	
-	UPROPERTY()
-		float FinalMaxHealth;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Health")
-		float BaseHealthRegen;
-
-	UPROPERTY()
-		float FinalHealthRegen;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Mana")
-		float BaseMaxMana;
-
-	UPROPERTY()
-		float FinalMaxMana;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Mana")
-		float BaseManaRegen;
-
-	UPROPERTY()
-		float FinalManaRegen;
-
 	UPROPERTY()
 		bool bRandomize;
 
 	UPROPERTY()
 		TArray<FSkillEnhancement> EnhancementDatas;
 
+	UPROPERTY()
+		TArray<EItemGrade> EnhancementGrades;
+
+	UPROPERTY()
+		TArray<FGameplayAttribute> TargetAttributes;
+
+	UPROPERTY()
+		TArray<EItemGrade> TargetAttributeGrades;
+
+	UPROPERTY()
+		TArray<float> TargetAttributeValues;
+
 public:
 	FORCEINLINE FString GetName()const { return Name; }
-	FORCEINLINE float GetFinalDamage()const { return FinalDamage; }
-	FORCEINLINE float GetFinalMaxHealth()const { return FinalMaxHealth; }
-	FORCEINLINE float GetFinalHealthRegen()const { return FinalHealthRegen; }
-	FORCEINLINE float GetFinalMaxMana()const { return FinalMaxMana; }
-	FORCEINLINE float GetFinalManaRegen()const { return FinalManaRegen; }
 	FORCEINLINE const TArray<FSkillEnhancement>& GetEnhancementDatas()const { return EnhancementDatas; }
+	FORCEINLINE const TArray<EItemGrade>& GetEnhancementGrades()const { return EnhancementGrades; }
+	FORCEINLINE const TArray<FGameplayAttribute>& GetTargetAttributes()const { return TargetAttributes; }
+	FORCEINLINE const TArray<EItemGrade>& GetTargetAttributeGrades()const { return TargetAttributeGrades; }
+	FORCEINLINE const TArray<float>& GetTargetAttributeValues()const { return TargetAttributeValues; }
+};
+
+USTRUCT()
+struct FEquipmentStateUpdateParameters
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()EItemMode State;
+	UPROPERTY()ADungeonCharacterBase* NewOwner;
+	UPROPERTY()FVector Location;
+	UPROPERTY()FVector DropStart;
+	UPROPERTY()FVector DropEnd;
 };
 
 UCLASS()
@@ -125,7 +138,7 @@ protected:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-	virtual void PostNetReceiveLocationAndRotation()override;
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -137,15 +150,15 @@ public:
 
 	//property
 private:
-	bool bUpdateLocationAndRotation = 1;
-	AItemManager* Manager;
-	UShapeComponent* InteractCollisionComponent;
+	FString UniqueID;
+	FItemStatusData ItemStatus;
 	TArray<UMeshComponent*> MeshComponents;
+	UPROPERTY()UShapeComponent* InteractCollisionComponent;
 	UPROPERTY()UItemObject* ItemObject;
-	UPROPERTY(Replicated)ACharacter* OwnerCharacter;
-	bool bPickable;
+	ADungeonCharacterBase* OwnerCharacter;
+	bool bInteractable;
 
-	UPROPERTY(ReplicatedUsing = "OnRep_Mode")EItemMode Mode = EItemMode::Max;
+	EItemMode Mode = EItemMode::Max;
 
 	UPROPERTY()UNiagaraComponent* NiagaraPickEffect;
 	UPROPERTY()UParticleSystemComponent* ParticlePickEffect;
@@ -159,6 +172,7 @@ private:
 	UPROPERTY(VisibleDefaultsOnly)
 		UWidgetComponent* NameWidget;
 
+	//InventroyData
 	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
 		int32 DimensionX;
 
@@ -171,6 +185,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "InventroyData")
 		UMaterialInstance* IconRotated;
 
+	//Loot
 	UPROPERTY(EditDefaultsOnly, Category = "Loot")
 		UFXSystemAsset* LootEffect;
 
@@ -180,6 +195,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Loot")
 		FQuat LootEffectWorldRotation;
 
+	//Drop
 	UPROPERTY(EditDefaultsOnly, Category = "Drop")
 		float Speed = 1;
 
@@ -193,15 +209,21 @@ private:
 		UCurveFloat* DropCurve;
 	FTimeline DropTimeLine;
 	FOnTimelineFloat DropTimelineFloat;
+	FVector DropStart;
+	FVector DropEnd;
 
+	//Data
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Data", ReplicatedUsing = "OnRep_Status")
-		FItemStatusData ItemStatus;
+	UPROPERTY(EditAnywhere, Category = "Data")
+		EEquipmentInitType InitType;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		UDataTable* EnhancementDataTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		TMap<FGameplayAttribute,float> TargetAttributes;
 
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Helms", EditConditionHides,DisplayName = "Datas"))
 		TArray<FItemAppearanceData> HelmsAppearanceDatas;
@@ -221,48 +243,46 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "GameplayEffect")
 		TSubclassOf<UGameplayEffect> CommonEffectClass;
 
-	UPROPERTY(EditAnywhere, Category = "GameplayEffect")
-		TArray<TSubclassOf<UGameplayEffect>> UniqueEffectClasses;
 public:
 
 	//function
 private:
+	EItemGrade CheckGrade(float Rate);
 protected:
-	UFUNCTION()virtual void OnRep_Mode();
-	UFUNCTION()virtual void OnRep_Status();
 	virtual void FindComponents();
 	virtual void SpawnLootEffects();
 	virtual void SetEffectLocation();
 	virtual void SortMesh();
 	virtual void ActivateEffect();
 	virtual void DeactivateEffect();
-	virtual void SetPickableMode();
-	virtual void SetInventoryMode();
-	virtual void SetEquipMode();
 
+	virtual void SetLootMode(const FEquipmentStateUpdateParameters& UpdateParameters);
+	virtual void SetInventoryMode(const FEquipmentStateUpdateParameters& UpdateParameters);
+	virtual void SetEquipMode(const FEquipmentStateUpdateParameters& UpdateParameters);
+	virtual void SetDropMode(const FEquipmentStateUpdateParameters& UpdateParameters);
+
+	virtual void SetOwnerCharacter(ADungeonCharacterBase* InCharacter);
+
+	virtual void PlayDropSequence(FVector Start,FVector End);
 	UFUNCTION()void DropTickFunction(float Value);
 public:
-	virtual void SetOwnerCharacter(ACharacter* InCharacter);
-
-	virtual void FindManager();
-	virtual void SetItemLocation(const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None);
-	virtual void SetItemRotation(FRotator NewRotation, ETeleportType Teleport = ETeleportType::None);
-	virtual void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None);
-	virtual void ChangeVisibility(EItemMode InMode);
-	virtual void SetMode(EItemMode InMode);
-	virtual void PlayDropSequence(FVector Start,FVector End);
+	void AssignUniqueID(FString NewUniqueID);
+	virtual void UpdateState(const FEquipmentStateUpdateParameters& UpdateParameters);
+	virtual void UpdateStatus(const FItemStatusData& UpdateData);
 
 	void Load(const FItemStatusData& InData);
 
-	FORCEINLINE void SetManager(AItemManager* InManager) { Manager = InManager; OnRep_Mode(); }
-
 	FORCEINLINE bool HasOwnerCharacter() const { return OwnerCharacter != nullptr; }
-	FORCEINLINE ACharacter* GetOwnerCharacter() const { return OwnerCharacter; }
+	FORCEINLINE ADungeonCharacterBase* GetOwnerCharacter() const { return OwnerCharacter; }
 	FORCEINLINE UItemObject* GetItemObject() const { return ItemObject; }
 	FORCEINLINE EItemType GetType() const { return ItemType; }
-	FORCEINLINE FItemStatusData GetItemStatus() const { return ItemStatus; }
+	FORCEINLINE EEquipmentInitType GetInitType() const { return InitType; }
+	FORCEINLINE const FItemStatusData& GetItemStatus() const { return ItemStatus; }
+	FORCEINLINE FString GetUniqueID() const { return UniqueID; }
+	FORCEINLINE virtual FName GetSocketName() const { return NAME_None; }
+	FORCEINLINE const TMap<FGameplayAttribute, float>& GetTargetAttributes() const { return TargetAttributes; }
 	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
+	FEquipmentStateUpdateParameters GetEquipmentState() const;
 	void GetDimensions(int32& X, int32& Y);
-	void GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const;
-	void GetAllEffectEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
+	void GetAllEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
 };

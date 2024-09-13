@@ -70,7 +70,6 @@ private:
 	UFUNCTION()void OnInfoPopup(UItemObject* InObject);
 	UFUNCTION()void OffInfoPopup();
 	UFUNCTION()FEventReply OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent);
-	void DropItem(UItemObject* InObject);
 
 protected:
 public:

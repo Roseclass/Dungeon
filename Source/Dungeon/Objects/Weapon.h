@@ -21,7 +21,6 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//property
 private:
@@ -47,34 +46,20 @@ public:
 	//function
 private:
 protected:	
-	virtual void OnRep_Mode()override;
 	virtual void FindComponents()override;
-	virtual void SpawnLootEffects()override;
-	virtual void SetEffectLocation()override;
-	virtual void SortMesh()override;
-	virtual void ActivateEffect()override;
-	virtual void DeactivateEffect()override;
-	virtual void SetPickableMode()override;
-	virtual void SetInventoryMode()override;
-	virtual void SetEquipMode()override;
+
+	virtual void SetOwnerCharacter(ADungeonCharacterBase* InCharacter)override;
 
 	UFUNCTION()void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 public:
-	virtual void SetOwnerCharacter(ACharacter* InCharacter)override;
 	void OnCollision(const FDamageEhancementData* InDamageData);
 	void OffCollision();
 	void ResetHitActors();
-
-	virtual void SetItemLocation(const FVector& NewLocation, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None)override;
-	virtual void SetItemRotation(FRotator NewRotation, ETeleportType Teleport = ETeleportType::None)override;
-	virtual void AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName = NAME_None)override;
-	virtual void ChangeVisibility(EItemMode InMode)override;
-	virtual void SetMode(EItemMode InMode)override;
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
 	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }
 
 	FORCEINLINE FTransform GetAttachTransform() { return AttachTransform; }
-	FORCEINLINE FName GetSocketName() { return SocketName; }
+	FORCEINLINE virtual FName GetSocketName() const override{ return SocketName; }
 };

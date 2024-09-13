@@ -8,6 +8,7 @@
 #include "Widgets/UW_SkillTree.h"
 #include "Abilities/GABase.h"
 #include "Abilities/AttributeSet_Player.h"
+#include "Abilities/GE_SkillPoint.h"
 
 USkillTreeComponent::USkillTreeComponent()
 {
@@ -100,15 +101,16 @@ void USkillTreeComponent::Server_UpdateSkillState_Implementation(int32 InSkillID
 
 void USkillTreeComponent::Server_LevelUpSkillState_Implementation(int32 InSkillID)
 {
-	// TODO::add point condition
 	CheckNull(SkillComp);
 	const UAttributeSet_Player* attribute = Cast<UAttributeSet_Player>(SkillComp->GetAttributeSet(UAttributeSet_Player::StaticClass()));
 	CheckNull(attribute);
 	CheckTrue(attribute->GetSkillPoint() < 1);
-
-	//TODO:: apply effect
-
 	CheckFalse(SkillStates.Items.IsValidIndex(InSkillID));
+	CheckTrue(SkillStates.Items[InSkillID].SkillState == ESkillTreeSkillState::Acquired_Max);
+
+	FGameplayEffectSpecHandle handle = SkillComp->MakeOutgoingSpec(UGE_SkillPoint::StaticClass(), 0, SkillComp->MakeEffectContext());
+	handle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.SkillPoint")), -1);
+	SkillComp->ApplyGameplayEffectSpecToSelf(*handle.Data.Get());
 
 	int32 temp = int32(SkillStates.Items[InSkillID].SkillState) + 1;
 	temp %= int32(ESkillTreeSkillState::Max);
@@ -118,7 +120,7 @@ void USkillTreeComponent::Server_LevelUpSkillState_Implementation(int32 InSkillI
 	// update children state to unlock
 	if (SkillStates.Items[InSkillID].SkillState == ESkillTreeSkillState::Acquired_1 && SkillComp->GetSkillDatas().IsValidIndex(InSkillID))
 		for (auto i : SkillTreeDatas[InSkillID])
-			Server_LevelUpSkillState(i);
+			Server_UpdateSkillState(i, ESkillTreeSkillState::Unlocked);
 
 	OnRep_SkillStates();
 }

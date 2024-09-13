@@ -95,15 +95,29 @@ void UUW_SkillTree::OnButtonClicked(USkillButton* InButton)
 		FGeometry geo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
 		FVector2D mousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
 		mousePos /= geo.GetLocalSize();
+		FVector2D size = AnchorSize;
+
+		if (state == ESkillTreeSkillState::Unlocked)size.Y /= 7;
+
+		FAnchors anchors = FAnchors(mousePos.X, mousePos.Y, mousePos.X + size.X, mousePos.Y + size.Y);
+
+		if (mousePos.X + size.X > 1)
+		{
+			anchors.Minimum.X = mousePos.X - size.X;
+			anchors.Maximum.X = mousePos.X;
+		}
+
+		if (mousePos.Y + size.Y > 1)
+		{
+			anchors.Minimum.Y = mousePos.Y - size.Y;
+			anchors.Maximum.Y = mousePos.Y;
+		}
+
 		UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Popup);
-		FVector2D anchSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
-		slot->SetAnchors(FAnchors(mousePos.X, mousePos.Y - anchSize.Y, mousePos.X + anchSize.X, mousePos.Y));
+		slot->SetAnchors(anchors);
 		Popup->SetSkillID(skillID);
 		Popup->SetVisibility(ESlateVisibility::Visible);
 	}
-
-
-
 
 	// 팝업
 	// -스킬레벨업	<< 스킬의 상태가 acquired10인경우 잠금
@@ -183,6 +197,9 @@ void UUW_SkillTree::Init(const TArray<const FSkillData*>& Array, USkillTreeCompo
 	//팝업 버튼 클릭 함수 바인딩
 	Popup->OnPopupButtonClicked.AddLambda(OnPopupClicked);
 	Popup->OnLevelUpButtonClicked.AddUFunction(OwnerComponent, "LevelUp");
+
+	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Popup);
+	AnchorSize = slot->GetAnchors().Maximum - slot->GetAnchors().Minimum;
 
 	bInit = 1;
 }

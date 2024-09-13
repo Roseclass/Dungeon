@@ -53,7 +53,7 @@ bool UUW_Trade::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& 
 	if (!item)return 1;
 
 	// sell items
-	OwnerComponent->Server_Sell(item->GetEqquipment());
+	OwnerComponent->Server_Sell(item->GetEqquipment()->GetUniqueID());
 
 	return result;
 }

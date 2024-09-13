@@ -19,6 +19,8 @@ AProjectile::AProjectile()
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	CheckFalse(HasAuthority());
+	SpawnMuzzleFX();
 }
 
 void AProjectile::Tick(float DeltaTime)
@@ -50,9 +52,78 @@ void AProjectile::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompone
 
 	Super::OnComponentBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	if (!bAOE)
+	if (int32(Type) & 0b01)
 	{
+		SpawnDestroyFX(SweepResult);
 		Deactivate();
 		Destroy();
 	}
+}
+
+void AProjectile::FindCollision()
+{
+	Super::FindCollision();
+	const TArray<UShapeComponent*>& arr = GetCollisionComponents();
+	for(auto i : arr)
+		i->OnComponentHit.AddDynamic(this, &AProjectile::OnComponentHit);
+}
+
+void AProjectile::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	CheckFalse(HasAuthority());
+
+	if (int32(Type) & 0b10);
+	else return;
+
+	SpawnDestroyFX(Hit);
+	Deactivate();
+	Destroy();
+}
+
+void AProjectile::SpawnMuzzleFX()
+{
+	CheckNull(MuzzleFX);
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	if (!owner)
+	{
+		CLog::Print("AProjectile::SpawnDestroyFX there is no owner");
+		return;
+	}
+
+	USkillComponent* skill = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+	if (!skill)
+	{
+		CLog::Print("AProjectile::SpawnDestroyFX skill is nullptr");
+		return;
+	}
+
+	FTransform transform;
+	transform.SetLocation(GetActorLocation());
+	transform.SetRotation(FQuat4d(GetActorRotation()));
+
+	skill->Multicast_FXEffect_Transform(MuzzleFX, transform);
+}
+
+void AProjectile::SpawnDestroyFX(const FHitResult& SweepResult)
+{
+	CheckNull(DestroyFX);
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	if (!owner)
+	{
+		CLog::Print("AProjectile::SpawnDestroyFX there is no owner");
+		return;
+	}
+
+	USkillComponent* skill = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+	if (!skill)
+	{
+		CLog::Print("AProjectile::SpawnDestroyFX skill is nullptr");
+		return;
+	}
+
+	FTransform transform;
+	transform.SetLocation(SweepResult.Location);
+	transform.SetRotation(FQuat4d(SweepResult.Normal.Rotation()));
+
+	skill->Multicast_FXEffect_Transform(DestroyFX, transform);
 }

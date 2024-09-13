@@ -1,11 +1,13 @@
 #include "Components/InventoryComponent.h"
 #include "Global.h"
+#include "NavigationSystem.h"
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
 
 #include "SaveManager.h"
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Enemy.h"
 #include "DungeonPlayerController.h"
-#include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
 #include "Widgets/UW_Inventory.h"
@@ -13,8 +15,8 @@
 
 #include "GameplayTagContainer.h"
 #include "Components/SkillComponent.h"
+#include "Components/EquipmentManagementComponent.h"
 #include "Abilities/AbilityTaskTypes.h"
-
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -50,47 +52,30 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 void UInventoryComponent::InitDefault()
 {
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
-	int32 num = UGameplayStatics::GetNumLocalPlayerControllers(GetWorld());
-	AItemManager* manager = nullptr;
-	for (int32 i = 0; i < num; i++)
-	{
-		ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i));
-		if (pc && pc->IsLocalController())
-			manager = pc->GetItemManager();
-	}
 
-	Items.Init(nullptr, Columns * Rows);
-	EquippedItems.Init(nullptr, int32(EItemType::Max));
+	Items.Init(FString(), Columns * Rows);
+	EquippedItems.Init(FString(), int32(EItemType::Max));
 
+	//TODO::TEST
 	if (DefaultWeapon)
 	{
 		int32 idx = int32(EItemType::Weapon);
 		if (EquippedItems.IsValidIndex(idx))
 		{
-			AWeapon* weapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon);
-			if (weapon)
-			{
-				weapon->SetManager(manager);
-				weapon->OffCollision();
-				FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
-				weapon->AttachToComponent(owner->GetMesh(), f, weapon->GetSocketName());
-				weapon->SetOwner(owner);
-				weapon->SetTeamID(owner->GetGenericTeamId());
-				EquippedItems[idx] = weapon;
-			}
+			FEquipmentStateUpdateParameters state;
+			state.State = EItemMode::Equip;
+			state.NewOwner = owner;
+			UEquipmentManagementComponent::SpawnEquipment(GetWorld(), DefaultWeapon, state);
 		}
 	}
 
+	//TODO::TEST
 	for (auto i : DefaultItems)
 	{
-		FTransform transform;
-		AEqquipment* item = GetWorld()->SpawnActorDeferred<AEqquipment>(i, transform);
-		if (IsRoomAvailable(item))
-		{
-			UGameplayStatics::FinishSpawningActor(item, transform);
-			Server_TryAddItem(item);
-		}
-		else item->Destroy();
+		FEquipmentStateUpdateParameters state;
+		state.State = EItemMode::Inventory;
+		state.NewOwner = owner;
+		UEquipmentManagementComponent::SpawnEquipment(GetWorld(), DefaultWeapon, state);
 	}
 }
 
@@ -121,11 +106,13 @@ void UInventoryComponent::OnRep_EquippedItems()
 	// refresh inv slot
 	int32 t = EquippedItems.Num() > OnInventoryEquippedDataChanged.Num() ? OnInventoryEquippedDataChanged.Num() : EquippedItems.Num();
 
+	//TODO::TEST
 	for (int32 i = 0; i < t; ++i)
 	{
-		UItemObject* data = nullptr;
-		if (EquippedItems[i])
-			data = EquippedItems[i]->GetItemObject();
+		if (EquippedItems[i] == FString())continue;
+		AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[i]);
+		if (!equipment)continue;
+		UItemObject* data = equipment->GetItemObject();
 		if (OnInventoryEquippedDataChanged[i].IsBound())
 			OnInventoryEquippedDataChanged[i].Broadcast(data);
 	}
@@ -146,10 +133,10 @@ void UInventoryComponent::Reset()
 	//InventoryData
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
-		if (!Items[i])continue;
+		if (Items[i] == FString())continue;
 		//if (!itemSet.Contains(Items[i]))
 		//	itemSet.Add(EquippedItems[i]);
-		Items[i] = nullptr;
+		Items[i] = FString();
 	}
 
 	//for (auto i : itemSet)
@@ -166,42 +153,38 @@ bool UInventoryComponent::GetItemAtIndex(int32 InIndex, AEqquipment** OutObject)
 {
 	*OutObject = nullptr;
 	if (!Items.IsValidIndex(InIndex))return 0;
-	*OutObject = Items[InIndex];
-	return 1;
+
+	*OutObject = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), Items[InIndex]);
+	return *OutObject != nullptr;
 }
 
 void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassOf<AEqquipment>>& EquippedClasses, const TArray<FItemStatusData>& EquippedDatas,	const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses, const TArray<FItemStatusData>& InventoryDatas)
 {
-	AItemManager* manager = Cast<AItemManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AItemManager::StaticClass()));
-	if (!manager)
-	{
-		CLog::Print("UInventoryComponent::Server_LoadData manager is nullptr", -1, 10, FColor::Red);
-		return;
-	}
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 
-	FTransform transform;
+	//TODO::TEST
 	// spawn equipped items		
 	for (int32 i = 0; i < EquippedClasses.Num(); ++i)
 	{
 		if (!EquippedClasses[i])continue;
-		AEqquipment* equipment = manager->SpawnItem(EquippedClasses[i], transform);
+		FEquipmentStateUpdateParameters state;
+		state.State = EItemMode::Loot;
+		AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), EquippedClasses[i], state);
 		if (!equipment)continue;
-		equipment->Load(EquippedDatas[i]);
-
-		// equip item
-		Server_Equip(equipment);
+		UEquipmentManagementComponent::UpadteStatus(GetWorld(), equipment->GetUniqueID(), EquippedDatas[i]);
+		UEquipmentManagementComponent::Equip(GetWorld(), equipment->GetUniqueID(), owner);
 	}
 
 	// spawn inventory items
 	for (int32 i = 0; i < InventoryClasses.Num(); ++i)
 	{
 		if (!InventoryClasses[i])continue;
-		AEqquipment* equipment = manager->SpawnItem(InventoryClasses[i], transform);
+		FEquipmentStateUpdateParameters state;
+		state.State = EItemMode::Loot;
+		AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), EquippedClasses[i], state);
 		if (!equipment)continue;
-		equipment->Load(InventoryDatas[i]);
-		
-		// add items to inventory
-		Server_AddItemAt(equipment, TileToIndex(Locations[i].X, Locations[i].Y));
+		UEquipmentManagementComponent::UpadteStatus(GetWorld(), equipment->GetUniqueID(), EquippedDatas[i]);
+		UEquipmentManagementComponent::PickUp(GetWorld(), equipment->GetUniqueID(), owner);
 	}
 }
 
@@ -215,21 +198,23 @@ void UInventoryComponent::Client_Trade_Implementation(AActor* InActor)
 	Widget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UInventoryComponent::Server_Buy_Implementation(AEqquipment* InObject)
+void UInventoryComponent::Server_Buy_Implementation(const FString& InObject)
 {
 	// TODO::check gold condition
 
-	//check room
-	if (!IsRoomAvailable(InObject))
-	{
-		return;
-	}
+	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InObject);
+	CheckNull(equipment);
 
+	//check room
+	CheckFalse(IsRoomAvailable(equipment));
+
+	//TODO::TEST
 	// spawn,tryadd,reducegold->client:refresh
-	FTransform transform;
-	AEqquipment* item = GetWorld()->SpawnActorDeferred<AEqquipment>(InObject->GetClass(), transform);
-	UGameplayStatics::FinishSpawningActor(item, transform);
-	Server_TryAddItem(item);
+	FEquipmentStateUpdateParameters state;
+	state.State = EItemMode::Loot;
+	AEqquipment* buy = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), equipment->GetClass(), state);
+	UEquipmentManagementComponent::PickUp(GetWorld(), buy->GetUniqueID(), owner);
 
 	// TODO::send message
 	//if(flag == 0) proceed
@@ -253,7 +238,11 @@ void UInventoryComponent::OnCollision(const FDamageEhancementData* InDamageData)
 		CLog::Print("UInventoryComponent::OnCollision IsNotValidIndex", -1, 10, FColor::Red);
 		return;
 	}
-	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[idx]);
+	CheckNull(equipment);
+
+	AWeapon* weapon = Cast<AWeapon>(equipment);
 	if (weapon)weapon->OnCollision(InDamageData);
 }
 
@@ -265,7 +254,10 @@ void UInventoryComponent::OffCollision()
 		CLog::Print("UInventoryComponent::OffCollision IsNotValidIndex", -1, 10, FColor::Red);
 		return;
 	}
-	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[idx]);
+	CheckNull(equipment);
+
+	AWeapon* weapon = Cast<AWeapon>(equipment);
 	if (weapon)weapon->OffCollision();
 }
 
@@ -277,7 +269,10 @@ void UInventoryComponent::ResetHitActors()
 		CLog::Print("UInventoryComponent::ResetHitActors IsNotValidIndex", -1, 10, FColor::Red);
 		return;
 	}
-	AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[idx]);
+	CheckNull(equipment);
+
+	AWeapon* weapon = Cast<AWeapon>(equipment);
 	if (weapon)weapon->ResetHitActors();
 }
 
@@ -314,7 +309,7 @@ bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject)
 
 	for (int32 i = 0; i < arr.Num(); i++)
 	{
-		if (Items[i])continue;
+		if (Items[i] != FString())continue;
 		arr[i] = 1;
 		if (i / Columns)arr[i] += arr[i - Columns];
 	}
@@ -358,32 +353,58 @@ bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 	return 1;
 }
 
-void UInventoryComponent::Server_TryAddItem_Implementation(AEqquipment* InObject)
+void UInventoryComponent::Server_TryAddItem_Implementation(const FString& InObject)
 {
-	if (!InObject)return;
-	if (InObject->HasOwnerCharacter())
+	CheckTrue(InObject == FString());
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InObject);
+	CheckNull(equipment);
+
+	if (equipment->HasOwnerCharacter())
 	{
 		ACharacter* ownerCharacter = Cast<ACharacter>(GetOwner());
-		if (InObject->GetOwnerCharacter() != ownerCharacter)
+		if (equipment->GetOwnerCharacter() != ownerCharacter)
 		{
 			CLog::Print("UInventoryComponent::Server_TryAddItem_Implementation owner Error", -1, 10, FColor::Red);
 			return;
 		}
 	}
-	if (!IsRoomAvailable(InObject))return;
+	if (!IsRoomAvailable(equipment))
+	{
+		//TODO::TEST
+		ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
+		// check location
+		if (!ownerCharacter)
+		{
+			CLog::Print("UInventoryComponent::Server_TryAddItem_Implementation OwnerCharacter is nullptr", -1, 10, FColor::Red);
+			return;
+		}
+
+		// find drop location
+		float halfSize = ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		FVector start = ownerCharacter->GetActorLocation();
+		start.Z -= halfSize;
+		FVector end = UNavigationSystemV1::GetRandomPointInNavigableRadius(GetWorld(), start, 200);
+		start.Z += halfSize;
+
+		UEquipmentManagementComponent::Drop(GetWorld(), InObject, start, end);
+		return;
+	}
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
-		if (!IsRoomAvailable(InObject, i))continue;
+		if (!IsRoomAvailable(equipment, i))continue;
 		Server_AddItemAt(InObject, i);
 		return;
 	}
 }
 
-void UInventoryComponent::Server_AddItemAt_Implementation(AEqquipment* InObject, int32 TopLeftIndex)
+void UInventoryComponent::Server_AddItemAt_Implementation(const FString& InObject, int32 TopLeftIndex)
 {
+	CheckTrue(InObject == FString());
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InObject);
+
 	int32 x, y, X, Y;
 	IndexToTile(TopLeftIndex, x, y);
-	InObject->GetItemObject()->GetDimensions(X, Y);
+	equipment->GetItemObject()->GetDimensions(X, Y);
 	X += x; Y += y;
 	for (int32 i = x; i < X; i++)
 	{
@@ -396,18 +417,37 @@ void UInventoryComponent::Server_AddItemAt_Implementation(AEqquipment* InObject,
 		}
 	}
 
-	InObject->ChangeVisibility(EItemMode::Inventory);
-	InObject->SetOwnerCharacter(Cast<APlayerCharacter>(GetOwner()));
-	InObject->GetItemObject()->SetInventoryComp(this);
+	//TODO::TEST
+	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
+	UEquipmentManagementComponent::PickUp(GetWorld(), InObject, ownerCharacter);
+	equipment->GetItemObject()->SetInventoryComp(this);
 
 	OnRep_Items();
 }
 
-void UInventoryComponent::Server_RemoveItem_Implementation(AEqquipment* InObject)
+void UInventoryComponent::Server_RemoveItem_Implementation(const FString& InObject)
 {
-	CheckNull(InObject);
+	CheckTrue(InObject == FString());
 	for (int32 i = 0; i < Items.Num(); i++)
 		if (Items[i] == InObject)Items[i] = nullptr;
+
+	//TODO::TEST
+	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
+	// check location
+	if (!ownerCharacter)
+	{
+		CLog::Print("UInventoryComponent::Server_RemoveItem_Implementation OwnerCharacter is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
+	// find drop location
+	float halfSize = ownerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	FVector start = ownerCharacter->GetActorLocation();
+	start.Z -= halfSize;
+	FVector end = UNavigationSystemV1::GetRandomPointInNavigableRadius(GetWorld(), start, 200);
+	start.Z += halfSize;
+
+	UEquipmentManagementComponent::Drop(GetWorld(), InObject, start, end);
 
 	OnRep_Items();
 }
@@ -416,8 +456,8 @@ void UInventoryComponent::GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& 
 {
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
-		AEqquipment* cur = Items[i];
-		if (!Items[i])continue;
+		AEqquipment* cur = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), Items[i]);
+		if (!cur)continue;
 		if (Map.Contains(cur))continue;
 		int32 x, y;
 		IndexToTile(i, x, y);
@@ -431,12 +471,13 @@ void UInventoryComponent::Trade(AActor* InActor)
 	Client_Trade(InActor);
 }
 
-void UInventoryComponent::Server_Sell_Implementation(AEqquipment* InObject)
+void UInventoryComponent::Server_Sell_Implementation(const FString& InObject)
 {
 	// TODO::add gold
-	
+
+	// TODO::TEST	
 	//destroy item
-	InObject->Destroy();
+	UEquipmentManagementComponent::DestroyEquipment(GetWorld(), InObject);
 
 	OnRep_Items();
 }
@@ -445,99 +486,118 @@ void UInventoryComponent::Buy(AEqquipment* InObject)
 {
 	// TODO::check gold condition
 
-	Server_Buy(InObject);
+	Server_Buy(InObject->GetUniqueID());
 }
 
 bool UInventoryComponent::CanTakeOffEquipment(int32 InIdx)
 {
 	if (!EquippedItems.IsValidIndex(InIdx))return 0;
-	AEqquipment* item = EquippedItems[InIdx];
+	AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[InIdx]);
 	if (!item)return 1;
 	return IsRoomAvailable(item);
 }
 
 AEqquipment* UInventoryComponent::GetEquippedItems(int32 InIdx)
 {
-	return EquippedItems.IsValidIndex(InIdx) ? EquippedItems[InIdx] : nullptr;
+	if (!EquippedItems.IsValidIndex(InIdx))return nullptr;
+	return  UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[InIdx]);
 }
 
-void UInventoryComponent::Server_Equip_Implementation(AEqquipment* InData)
+void UInventoryComponent::Server_Equip_Implementation(const FString& InData)
 {
-	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+	AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InData);
 
-	if (!InData)
+	if (InData == FString() || !item)
 	{
 		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
 		return;
 	}
 
-	int32 idx = int32(InData->GetType());
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+
+	int32 idx = int32(item->GetType());
 
 	EquippedItems[idx] = InData;
-	EquippedItems[idx]->SetOwner(owner);
-	EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
+	//EquippedItems[idx]->SetOwner(owner);
+	//EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
 
-	if (InData->GetType() == EItemType::Weapon)
+	//TODO::TEST
+	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
+	UEquipmentManagementComponent::Equip(GetWorld(), InData, ownerCharacter);
+
+	if (item->GetType() == EItemType::Weapon)
 	{
-		AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+		AWeapon* weapon = Cast<AWeapon>(item);
 		if (weapon)
 		{
 			weapon->OffCollision();
 			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
 			weapon->SetTeamID(owner->GetGenericTeamId());
-			weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
+			//weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
 		}
 	}
 }
 
-void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, AEqquipment* InData)
+void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, const FString& InData)
 {
-	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+	AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InData);
 	
-	if (!InData)
+	if (InData == FString() || !item)
 	{
 		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
-		return;
-	
+		return;	
 	}
 
-	int32 idx = int32(InData->GetType());
+	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
+
+	int32 idx = int32(item->GetType());
+
+	AEqquipment* equipped = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[idx]);
 
 	if (!EquippedItems.IsValidIndex(idx))return;
 	if (!CanTakeOffEquipment(idx))return;
-	if (EquippedItems[idx] && !IsRoomAvailable(EquippedItems[idx]))return;
-	if (IsRoomAvailable(EquippedItems[idx]))Server_TryAddItem(EquippedItems[idx]);
+	if (EquippedItems[idx] != FString() && !IsRoomAvailable(equipped))return;
+	if (IsRoomAvailable(equipped))Server_TryAddItem(EquippedItems[idx]);
 
-	if(EquippedItems[idx])
+	// remove item effect
+	if(EquippedItems[idx] != FString())
 	{
-		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
+		const TArray<FSkillEnhancement>& enhancementDatas = equipped->GetItemStatus().GetEnhancementDatas();
 		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
-		if (skill)skill->EnhanceAbility(enhancementDatas, -1);
+		if (skill)
+		{
+			skill->EnhanceAbility(enhancementDatas, -1);
+			for (auto i : equipped->GetTargetAttributes())
+				skill->ApplyModToAttribute(i.Key, EGameplayModOp::Additive, -i.Value);
+		}
 	}
 
+	//TODO::TEST
+	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
+	UEquipmentManagementComponent::Equip(GetWorld(), InData, ownerCharacter);
 	EquippedItems[idx] = InData;
-	EquippedItems[idx]->SetOwner(owner);
-	EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
+	//EquippedItems[idx]->SetOwner(owner);
+	//EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
 
-	if (InData->GetType() == EItemType::Weapon)
+	if (item->GetType() == EItemType::Weapon)
 	{
-		AWeapon* weapon = Cast<AWeapon>(EquippedItems[idx]);
+		AWeapon* weapon = Cast<AWeapon>(item);
 		if (weapon)
 		{
 			weapon->OffCollision();
 			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
 			weapon->SetTeamID(owner->GetGenericTeamId());
-			weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
+			//weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
 		}
 	}
 
-	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[idx]->GetType() != EItemType::Weapon)
+	if (OnInventoryEquippedChanged.IsBound() && item->GetType() != EItemType::Weapon)
 	{
-		const TArray<FItemAppearanceData>& datas = EquippedItems[idx]->GetAppearanceDatas();
+		const TArray<FItemAppearanceData>& datas = item->GetAppearanceDatas();
 		for (auto i : datas)	OnInventoryEquippedChanged.Broadcast(i.PartType, i.Index);
 	}
 
-	if (OnChangeHairVisiblity.IsBound() && EquippedItems[idx]->GetType() == EItemType::Helms)
+	if (OnChangeHairVisiblity.IsBound() && item->GetType() == EItemType::Helms)
 		OnChangeHairVisiblity.Broadcast(0);
 
 	if (OnInventoryEquippedItemsChanged.IsBound())
@@ -545,38 +605,59 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 
 	OnRep_EquippedItems();
 
+	// add item effect
+	if (item)
 	{
-		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[idx]->GetItemStatus().GetEnhancementDatas();
+		const TArray<FSkillEnhancement>& enhancementDatas = item->GetItemStatus().GetEnhancementDatas();
 		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
-		if (skill)skill->EnhanceAbility(enhancementDatas);
+		if (skill)
+		{
+			skill->EnhanceAbility(enhancementDatas);
+			for (auto i : item->GetTargetAttributes())
+				skill->ApplyModToAttribute(i.Key, EGameplayModOp::Additive, i.Value);
+		}
 	}
 }
 
 void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 {
+	AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[InIdx]);
+
+	if (EquippedItems[InIdx] == FString() || !item)
+	{
+		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
+		return;
+	}
+
 	if (!EquippedItems.IsValidIndex(InIdx))return;
 
 	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 
-	if (EquippedItems[InIdx])
+	// remove item effect
+	if(EquippedItems[InIdx] != FString())
 	{
-		const TArray<FSkillEnhancement>& enhancementDatas = EquippedItems[InIdx]->GetItemStatus().GetEnhancementDatas();
+		const TArray<FSkillEnhancement>& enhancementDatas = item->GetItemStatus().GetEnhancementDatas();
 		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
-		if (skill)skill->EnhanceAbility(enhancementDatas, -1);
+		if (skill)
+		{
+			skill->EnhanceAbility(enhancementDatas, -1);
+			for (auto i : item->GetTargetAttributes())
+				skill->ApplyModToAttribute(i.Key, EGameplayModOp::Additive, -i.Value);
+		}
 	}
 
 	// reset to default
-	if (OnInventoryEquippedChanged.IsBound() && EquippedItems[InIdx]->GetType() != EItemType::Weapon)
+	if (OnInventoryEquippedChanged.IsBound() && item->GetType() != EItemType::Weapon)
 	{
-		const TArray<FItemAppearanceData>& datas = EquippedItems[InIdx]->GetAppearanceDatas();
+		const TArray<FItemAppearanceData>& datas = item->GetAppearanceDatas();
 		for (auto i : datas)	
 			OnInventoryEquippedChanged.Broadcast(i.PartType, 0);
 	}
 	
-	if (OnChangeHairVisiblity.IsBound() && EquippedItems[InIdx]->GetType() == EItemType::Helms)
+	if (OnChangeHairVisiblity.IsBound() && item->GetType() == EItemType::Helms)
 		OnChangeHairVisiblity.Broadcast(1);
 
-	EquippedItems[InIdx] = nullptr;
+	EquippedItems[InIdx] = FString();
 
 	if (OnInventoryEquippedItemsChanged.IsBound())
 		OnInventoryEquippedItemsChanged.Broadcast();
@@ -605,9 +686,11 @@ void UInventoryComponent::SaveData(USaveGameData* SaveData)
 	SaveData->PlayerData.EquippedClasses.Empty();
 	for (auto i : EquippedItems)
 	{
-		if (!i)continue;
-		SaveData->PlayerData.EquippedClasses.Add(i->GetClass());
-		SaveData->PlayerData.EquippedDatas.Add(i->GetItemStatus());
+		if (i == FString())continue;
+		AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), i);
+		if (!item)continue;
+		SaveData->PlayerData.EquippedClasses.Add(item->GetClass());
+		SaveData->PlayerData.EquippedDatas.Add(item->GetItemStatus());
 	}	
 
 	//save InventoryData
@@ -654,7 +737,9 @@ void UInventoryComponent::GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplay
 {
 	for (int32 i = int(EItemType::Helms); i<int(EItemType::Max); ++i)
 	{
-		if (!EquippedItems[i])continue;
-		EquippedItems[i]->GetAllEffectEffectClasses(Classes);
+		if (EquippedItems[i] == FString())continue;
+		AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[i]);
+		if (!item)continue;
+		item->GetAllEffectClasses(Classes);
 	}
 }

@@ -6,6 +6,7 @@
 #include "Components/DecalComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "GameFramework/GameStateBase.h"
 
 AWarningSign::AWarningSign()
 {
@@ -35,12 +36,51 @@ void AWarningSign::Tick(float DeltaTime)
 
 }
 
-void AWarningSign::Activate(float NewDuration, float NewExtraDuration)
+void AWarningSign::Activate(float StartServerTime, float NewDuration, float NewExtraDuration)
 {
+	UWorld* World = Owner->GetWorld();
+	AGameStateBase* GameState = World->GetGameState();
+
+	StartTime = GetWorld()->GetTimeSeconds();
+	float ServerWorldTime = StartTime;
+
+	if (GameState)GameState->GetServerWorldTimeSeconds();
+
+	StartTime -= (ServerWorldTime - StartServerTime);
+
 	Duration= NewDuration;
 	ExtraDuration= NewExtraDuration;
 
 	Decal->SetDecalMaterial(UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), Sign));
 	bActivate = 1;
-	StartTime = GetWorld()->GetTimeSeconds();
+
 }
+
+/*
+float FActiveGameplayEffectsContainer::GetServerWorldTime() const
+{
+	UWorld* World = Owner->GetWorld();
+	AGameStateBase* GameState = World->GetGameState();
+	if (GameState)
+	{
+		return GameState->GetServerWorldTimeSeconds();
+	}
+
+	return World->GetTimeSeconds();
+}
+
+float FActiveGameplayEffectsContainer::GetWorldTime() const
+{
+	UWorld *World = Owner->GetWorld();
+	return World->GetTimeSeconds();
+}
+void FActiveGameplayEffect::RecomputeStartWorldTime(const FActiveGameplayEffectsContainer& InArray)
+{
+	RecomputeStartWorldTime(InArray.GetWorldTime(), InArray.GetServerWorldTime());
+}
+
+void FActiveGameplayEffect::RecomputeStartWorldTime(const float WorldTime, const float ServerWorldTime)
+{
+	StartWorldTime = WorldTime - (ServerWorldTime - StartServerWorldTime);
+}
+*/

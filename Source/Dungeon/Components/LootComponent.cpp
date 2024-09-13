@@ -1,10 +1,12 @@
 #include "Components/LootComponent.h"
 #include "Global.h"
+#include "NavigationSystem.h"
+#include "Components/CapsuleComponent.h"
 
 #include "DungeonPlayerController.h"
 #include "Characters/Enemy.h"
 #include "Objects/Weapon.h"
-#include "Objects/ItemManager.h"
+#include "Components/EquipmentManagementComponent.h"
 
 ULootComponent::ULootComponent()
 {
@@ -14,6 +16,11 @@ ULootComponent::ULootComponent()
 void ULootComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CheckTrue(GetOwnerRole() != ENetRole::ROLE_Authority);
+	GenerateItems();
+	AEnemy* owner = Cast<AEnemy>(GetOwner());
+	owner->OnEnemyDead.AddUFunction(this, "DropItems");
 }
 
 void ULootComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -32,35 +39,39 @@ void ULootComponent::GenerateItems()
 		return;
 	}
 
-	// find manager
-	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	AItemManager* manager = controller->GetItemManager();
-	if (!manager)
-		CLog::Print("ULootComponent::GenerateItems manager is nullptr", -1, 10, FColor::Yellow);
-
 	// generate items
+	AEnemy* owner = Cast<AEnemy>(GetOwner());
 	for (auto i : Datas)
 	{
+		//TODO::TEST
 		double max = 1e5;
 		float rate = i->Rate;
 		int32 num = UKismetMathLibrary::RandomIntegerInRange(0, max);
 		if (num > rate * max) continue;
 		//spawn item
-		FTransform transform;		
-		AEqquipment* equipment = manager->SpawnItemDeferred(i->ItemClass, transform, GetOwner());
-		equipment->SetMode(EItemMode::Inventory);
-		UGameplayStatics::FinishSpawningActor(equipment, transform);
-		LootItems.Add(equipment);
-		equipment->SetOwnerCharacter(Cast<AEnemy>(GetOwner()));
+		FEquipmentStateUpdateParameters state;
+		state.State = EItemMode::Inventory;
+		state.NewOwner = owner;
+		UEquipmentManagementComponent::SpawnEquipment(GetWorld(), i->ItemClass, state);
 	}
 }
 
 void ULootComponent::DropItems()
 {
+	//TODO::TEST
+	CheckTrue(GetOwnerRole() != ENetRole::ROLE_Authority);
+	AEnemy* owner = Cast<AEnemy>(GetOwner());
 	//drop item
 	for(auto i : LootItems)
 	{ 
-		i->ChangeVisibility(EItemMode::Loot);
+		// find drop location
+		float halfSize = owner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		FVector start = owner->GetActorLocation();
+		start.Z -= halfSize;
+		FVector end = UNavigationSystemV1::GetRandomPointInNavigableRadius(GetWorld(), start, 200);
+		start.Z += halfSize;
+
+		UEquipmentManagementComponent::Drop(GetWorld(), i->GetUniqueID(), start, end);
 	}
 	LootItems.Empty();
 }

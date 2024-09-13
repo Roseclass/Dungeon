@@ -114,12 +114,13 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		bool vacant = OwnerComponent->IsRoomGreen(item->GetEqquipment(), idx);
 		if (vacant)
 		{
-			OwnerComponent->Server_AddItemAt(item->GetEqquipment(), idx);
+			OwnerComponent->Server_AddItemAt(item->GetEqquipment()->GetUniqueID(), idx);
 		}
 		else
 		{
-			if (!OwnerComponent->IsRoomAvailable(item->GetEqquipment()))DropItem(item);
-			else OwnerComponent->Server_TryAddItem(item->GetEqquipment());
+			//TODO::TEST
+			/*if (!OwnerComponent->IsRoomAvailable(item->GetEqquipment()))DropItem(item);
+			else */OwnerComponent->Server_TryAddItem(item->GetEqquipment()->GetUniqueID());
 		}
 	}
 
@@ -205,7 +206,7 @@ void UUW_InventoryGrid::OnItemRemoved(UItemObject* InObject)
 	CheckNull(OwnerComponent);
 	AEqquipment* weapon = nullptr;
 	if (InObject)weapon = InObject->GetEqquipment();
-	OwnerComponent->Server_RemoveItem(weapon);
+	OwnerComponent->Server_RemoveItem(weapon->GetUniqueID());
 	Refresh();
 	// 서버의 데이터 변화에 따라 갱신되게 설정해놨음
 	// 드래그드롭이 끝나면 본체도 없애고 다음 갱신을 기다렸는데
@@ -227,12 +228,6 @@ void UUW_InventoryGrid::OffInfoPopup()
 FEventReply UUW_InventoryGrid::OnGridBorderMouseButtonDown(FGeometry MyGeometry, const FPointerEvent& MouseEvent)
 {
 	return UWidgetBlueprintLibrary::Handled();
-}
-
-void UUW_InventoryGrid::DropItem(UItemObject* InObject)
-{
-	CheckNull(InObject);
-	InObject->GetEqquipment()->ChangeVisibility(EItemMode::Loot);
 }
 
 void UUW_InventoryGrid::Init(UInventoryComponent* InComponent, UUW_InventoryPopup* InPopup)

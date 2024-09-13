@@ -15,8 +15,8 @@
 #include "Characters/NPC.h"
 #include "Components/DialogComponent.h"
 #include "Components/ConfirmPopupComponent.h"
+#include "Components/EquipmentManagementComponent.h"
 #include "Objects/Weapon.h"
-#include "Objects/ItemManager.h"
 #include "Widgets/UW_Main.h"
 #include "Widgets/UW_Dialog.h"
 #include "Widgets/UW_Dead.h"
@@ -29,20 +29,12 @@ ADungeonPlayerController::ADungeonPlayerController()
 	DefaultMouseCursor = EMouseCursor::Default;
 
 	CHelpers::CreateActorComponent<UConfirmPopupComponent>(this, &ConfirmPopup, "ConfirmPopup");
-
-	CHelpers::GetClass(&ItemManagerClass, "Blueprint'/Game/TopDown/BP_ItemManager.BP_ItemManager_C'");
+	CHelpers::CreateActorComponent<UEquipmentManagementComponent>(this, &EquipmentManagement, "EquipmentManagement");
 }
 
 void ADungeonPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (HasAuthority())
-	{
-		ItemManager = GetWorld()->SpawnActor<AItemManager>(ItemManagerClass);
-		ItemManager->SetOwner(this);
-		if (IsLocalController())OnRep_ItemManager();
-	}
 }
 
 void ADungeonPlayerController::PlayerTick(float DeltaTime)
@@ -132,7 +124,6 @@ void ADungeonPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicated 변수를 여기에 추가
-	DOREPLIFETIME_CONDITION(ADungeonPlayerController, ItemManager, COND_None);
 	DOREPLIFETIME_CONDITION(ADungeonPlayerController, Index, COND_None);
 }
 
@@ -176,23 +167,6 @@ void ADungeonPlayerController::OnRep_Pawn()
 		MainWidget->Init(GetPawn());
 	}
 	else CLog::Print("ADungeonPlayerController::OnRep_Pawn is nullptr", -1, 10, FColor::Red);
-}
-
-void ADungeonPlayerController::OnRep_ItemManager()
-{
-	//클라이언트 동기화 완료 체크
-
-	if (ItemManager)
-	{
-		TArray<AActor*>arr;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeapon::StaticClass(), arr);
-		for (auto i : arr)
-		{
-			AWeapon* item = Cast<AWeapon>(i);
-			if (!item)continue;
-			item->SetManager(ItemManager);
-		}
-	}
 }
 
 void ADungeonPlayerController::Client_CreateMainWidget_Implementation()

@@ -8,7 +8,7 @@ UAttributeSet_Player::UAttributeSet_Player()
 {
     InitLevel(1);
     InitExp(0);
-    InitSkillPoint(1);
+    InitSkillPoint(100);
 }
 
 void UAttributeSet_Player::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)

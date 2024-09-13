@@ -16,15 +16,11 @@
 
 UGA_Skill::UGA_Skill()
 {
-	CooldownTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Skill.Cooldown")));
 }
 
 void UGA_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UGA_Skill, ManaCost);
-	DOREPLIFETIME(UGA_Skill, Cooldown);
 }
 
 void UGA_Skill::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
@@ -34,13 +30,24 @@ void UGA_Skill::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGa
 	{
 		int32 lv = GetAbilityLevel();
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), 1);
-		SpecHandle.Data.Get()->SetSetByCallerMagnitude(Cooldown.Tag, GetCooldown());
+
+		// set cooldown ge duration
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Skill.Cooldown"), GetCooldown(ActorInfo));
+
+		// set DynamicGrantedTags
+		TArray<FGameplayTag> tags;
+		GetCooldownTags()->GetGameplayTagArray(tags);
+		for (auto tag : tags)
+			SpecHandle.Data.Get()->DynamicGrantedTags.AddTag(tag);
+
+		// apply
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
 }
 
 const FGameplayTagContainer* UGA_Skill::GetCooldownTags() const
 {
+	// get tags applied during cooldown
 	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);
 	MutableTags->Reset(); // MutableTags writes to the TempCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
 	const FGameplayTagContainer* ParentTags = Super::GetCooldownTags();
@@ -60,7 +67,7 @@ bool UGA_Skill::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGamepl
 		USkillComponent* skillComp = Cast<USkillComponent>(ActorInfo->AbilitySystemComponent.Get());
 		check(skillComp != nullptr);
 
-		float RequiredMana = GetCost();
+		float RequiredMana = GetCost(ActorInfo);
 		float CurrentMana = skillComp->GetNumericAttribute(UAttributeSetBase::GetManaAttribute());
 
 		if (RequiredMana > CurrentMana)
@@ -84,7 +91,7 @@ void UGA_Skill::ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGamepl
 	{
 		int32 lv = GetAbilityLevel();
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CostGE->GetClass(), lv);
-		SpecHandle.Data->SetSetByCallerMagnitude(ManaCost.Tag, GetCost());
+		SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Skill.Cost"), GetCost(ActorInfo));
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
 }
@@ -116,6 +123,7 @@ void UGA_Skill::SpawnDamageDealer(FGameplayTag EventTag)
 	//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
 	//dealer->Range = Range;
 	dealer->SetOwner(ch);
+	dealer->SetTeamID(ch->GetGenericTeamId());
 	dealer->Activate();
 	dealer->FinishSpawning(transform);
 }
@@ -162,6 +170,13 @@ void UGA_Skill::OffCollision()
 	inv->OffCollision();
 }
 
+void UGA_Skill::ResetHitActors()
+{
+	UInventoryComponent* inv = CHelpers::GetComponent<UInventoryComponent>(GetOwningActorFromActorInfo());
+	CheckNull(inv);
+	inv->ResetHitActors();
+}
+
 void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
 {
 	// Montage told us to end the ability before the montage finished playing.
@@ -185,14 +200,19 @@ void UGA_Skill::EventReceived(FGameplayTag EventTag, FGameplayEventData EventDat
 
 	else if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.OffCollision")))
 		OffCollision();
+
+	else if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.OffCollision")))
+		OffCollision();
 }
 
-float UGA_Skill::GetCooldown() const
+float UGA_Skill::GetCooldown(const FGameplayAbilityActorInfo* ActorInfo) const
 {
+	USkillComponent* skill = Cast<USkillComponent>(ActorInfo->AbilitySystemComponent);
+	FSkillEhancementData data = skill->GetEhancementData(AbilityTags.First());
 	int32 lv = GetAbilityLevel();
-	float base = Cooldown.Base.GetValueAtLevel(lv);
-	float addtive = Cooldown.Additive;
-	float multiplicitive = (Cooldown.Multiplicitive) * 0.01;
+	float base = CooldownBase.GetValueAtLevel(lv);
+	float addtive = data.CooldownAdditive;
+	float multiplicitive = (data.CooldownMultiplicitive) * 0.01;
 	float result = (base - addtive) * multiplicitive;
 
 	if (result < base * 0.3)result = base * 0.3;
@@ -200,27 +220,17 @@ float UGA_Skill::GetCooldown() const
 	return result;
 }
 
-float UGA_Skill::GetCost() const
+float UGA_Skill::GetCost(const FGameplayAbilityActorInfo* ActorInfo) const
 {
+	USkillComponent* skill = Cast<USkillComponent>(ActorInfo->AbilitySystemComponent);
+	FSkillEhancementData data = skill->GetEhancementData(AbilityTags.First());
 	int32 lv = GetAbilityLevel();
-	float base = ManaCost.Base.GetValueAtLevel(lv);
-	float addtive = ManaCost.Additive;
-	float multiplicitive = (ManaCost.Multiplicitive) * 0.01;
+	float base = CostBase.GetValueAtLevel(lv);
+	float addtive = data.CostAdditive;
+	float multiplicitive = (data.CostMultiplicitive) * 0.01;
 	float result = (base - addtive) * multiplicitive;
 
 	if (result < 0)result = 0;
 
 	return -result;
-}
-
-void UGA_Skill::Enhance(FGameplayTag StatusTag, float Value)
-{
-	CheckFalse(GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority);
-	
-	if (ManaCost.AdditiveTag == StatusTag)ManaCost.Additive += Value;
-	if (ManaCost.MultiplicitiveTag == StatusTag)ManaCost.Multiplicitive -= Value;
-	if (Cooldown.AdditiveTag == StatusTag)Cooldown.Additive += Value;
-	if (Cooldown.MultiplicitiveTag == StatusTag)Cooldown.Multiplicitive -= Value;
-	if (DamageData.AdditiveTag == StatusTag)DamageData.Additive += Value;
-	if (DamageData.MultiplicitiveTag == StatusTag)DamageData.Multiplicitive += Value;
 }

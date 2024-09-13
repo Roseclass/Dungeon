@@ -53,5 +53,5 @@ public:
 private:
 protected:
 public:
-	void Activate(float NewDuration, float NewExtraDuration);
+	void Activate(float StartServerTime, float NewDuration, float NewExtraDuration);
 };

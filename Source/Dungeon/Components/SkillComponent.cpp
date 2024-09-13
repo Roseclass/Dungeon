@@ -1,5 +1,6 @@
 #include "Components/SkillComponent.h"
 #include "Global.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "SaveManager.h"
 #include "Characters/DungeonCharacterBase.h"
@@ -23,6 +24,16 @@ USkillComponent::USkillComponent()
 	HitTags.AddTag(FGameplayTag::RequestGameplayTag("State.Knockdown"));
 
 	DeadTags.AddTag(FGameplayTag::RequestGameplayTag("State.Dead"));
+
+	RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("State.CannotMove")).AddUFunction(this, "OnCannotMoveTagChanged");
+
+	CostBaseTag = FGameplayTag::RequestGameplayTag("Skill.Cost.Base");
+	CostAdditiveTag = FGameplayTag::RequestGameplayTag("Skill.Cost.Additive");
+	CostMultiplicitiveTag = FGameplayTag::RequestGameplayTag("Skill.Cost.Multiplicitive");
+
+	CooldownBaseTag = FGameplayTag::RequestGameplayTag("Skill.Cooldown.Base");
+	CooldownAdditiveTag = FGameplayTag::RequestGameplayTag("Skill.Cooldown.Additive");
+	CooldownMultiplicitiveTag = FGameplayTag::RequestGameplayTag("Skill.Cooldown.Multiplicitive");
 }
 
 void USkillComponent::BeginPlay()
@@ -39,6 +50,8 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 void USkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USkillComponent, EnhancementDatas);
 }
 
 void USkillComponent::GiveDefaultAbilities()
@@ -61,6 +74,8 @@ void USkillComponent::GiveDefaultAbilities()
 		));
 	}
 
+	int32 max = 0;
+
 	for (auto i : SkillDatas)
 	{
 		if (!i->SkillClass)continue;
@@ -70,7 +85,12 @@ void USkillComponent::GiveDefaultAbilities()
 			i->SkillClass.GetDefaultObject()->GetSkillID(),
 			this
 		));
+		max = UKismetMathLibrary::Max(max, i->SkillClass.GetDefaultObject()->GetSkillID());
 	}
+
+	for (int32 i = 0; i < max; i++)
+		EnhancementDatas.AddSkillEnhancement(FSkillEhancementData());
+
 	OnGameplayEffectAppliedDelegateToSelf.AddUFunction(this, "HitReaction");
 }
 
@@ -94,6 +114,20 @@ void USkillComponent::HitReaction(UAbilitySystemComponent* InComponent, const FG
 			data->ContextHandle = InSpec.GetContext();
 			InternalTryActivateAbility(i, FPredictionKey(), nullptr, nullptr, data);
 		}
+	}
+}
+
+void USkillComponent::OnCannotMoveTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+		if (owner)
+			owner->GetCharacterMovement()->StopMovementImmediately();
+	}
+	else
+	{
+		// 태그가 제거되었을 때 호출할 함수
 	}
 }
 
@@ -183,14 +217,38 @@ void USkillComponent::EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, f
 		TArray<FGameplayAbilitySpec*> arr;
 		GetActivatableGameplayAbilitySpecsByAllMatchingTags(tags, arr);
 		for (auto spec : arr)
-			for (auto ability : spec->ReplicatedInstances)
-			{
-				UGA_Skill* skill = Cast<UGA_Skill>(ability);
-				if (!skill)continue;
-				skill->Enhance(i.EnhanceStatusTag, i.EnhanceStatus * Rate);
-			}
+		{
+			if (!spec->Ability->AbilityTags.HasTag(i.SkillTag))continue;
+			if (!EnhancementDatas.Items.IsValidIndex(spec->InputID))continue;
+
+			FSkillEhancementData& data = EnhancementDatas.Items[spec->InputID];
+
+			if (CostAdditiveTag == i.EnhanceStatusTag)data.CostAdditive += i.EnhanceStatus * Rate;
+			if (CostMultiplicitiveTag == i.EnhanceStatusTag)data.CostMultiplicitive -= i.EnhanceStatus * Rate;
+			if (CooldownAdditiveTag == i.EnhanceStatusTag)data.CooldownAdditive += i.EnhanceStatus * Rate;
+			if (CooldownMultiplicitiveTag == i.EnhanceStatusTag)data.CooldownMultiplicitive -= i.EnhanceStatus * Rate;
+		}
 	}
 }
+
+FSkillEhancementData USkillComponent::GetEhancementData(FGameplayTag AbilityTag)
+{	
+	FGameplayTagContainer tags;
+	tags.AddTag(AbilityTag);
+	TArray<FGameplayAbilitySpecHandle> arr;
+	FindAllAbilitiesWithTags(arr, tags);
+
+	if (arr.IsEmpty())return FSkillEhancementData();
+
+	if (arr.Num() != 1)
+		CLog::Print("USkillComponent::GetEhancementData arr.Num() != 1");
+
+	FGameplayAbilitySpec* spec = FindAbilitySpecFromHandle(arr[0]);
+
+	if (!spec)return FSkillEhancementData();
+
+	return EnhancementDatas.Items.IsValidIndex(spec->InputID) ? EnhancementDatas.Items[spec->InputID] : FSkillEhancementData();
+}	
 
 void USkillComponent::Cient_DamageText_Implementation(float InDamage, bool IsCritical, FVector InLocation)
 {
@@ -217,12 +275,69 @@ void USkillComponent::Multicast_WarningSign_Implementation(TSubclassOf<AWarningS
 	context->Owner = InOwner;
 	context->AddInstigator(Instigator, nullptr);
 	context->CollisionHandlingOverride = CollisionHandlingOverride;
+	context->StartServerTime = InOwner->GetWorld()->GetTimeSeconds();
 	context->Duration = Duration;
 	context->ExtraDuration = ExtraDuration;
 
 	gameplayCueParameters.EffectContext = EffectContextHandle;
 
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.WarningSign"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
+}
+
+void USkillComponent::Multicast_FXEffect_Transform_Implementation(UNiagaraSystem* NiagaraFX, FTransform const& Transform)
+{
+	FGameplayCueParameters gameplayCueParameters;
+
+	FNiagaraFXEffectContext* context = new FNiagaraFXEffectContext();
+	FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+	context->FX = NiagaraFX;
+	context->Transform = Transform;
+
+	gameplayCueParameters.EffectContext = EffectContextHandle;
+
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.NiagaraFX"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);	
+}
+
+void USkillComponent::Multicast_FXEffect_Attached_Implementation(UNiagaraSystem* NiagaraFX, AActor* AttachTarget)
+{
+	FGameplayCueParameters gameplayCueParameters;
+
+	FNiagaraFXEffectContext* context = new FNiagaraFXEffectContext();
+	FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
+	context->FX = NiagaraFX;
+	context->AttachTarget = AttachTarget;
+
+	gameplayCueParameters.EffectContext = EffectContextHandle;
+
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), FGameplayTag::RequestGameplayTag("GameplayCue.NiagaraFX"), EGameplayCueEvent::Type::Executed, gameplayCueParameters);
+}
+
+void USkillComponent::Server_Teleport_Implementation(const FHitResult& HitResult, const float MaxDist)
+{
+	float dist = MaxDist;
+
+	//find direction
+	FVector dir = HitResult.Location - GetOwner()->GetActorLocation();
+	dir.Z = 0;
+	dir = UKismetMathLibrary::Normal(dir);
+
+	//clamp distance
+	dist = UKismetMathLibrary::Min(dist, FVector3d::Dist2D(HitResult.Location, GetOwner()->GetActorLocation()));
+
+	//make goal location
+	FVector loc = GetOwner()->GetActorLocation();
+	loc += (dir * dist);
+	loc.Z = HitResult.Location.Z - 500;
+
+	FHitResult hit;
+	if (!GetWorld()->LineTraceSingleByChannel(hit, loc + FVector(0, 0, 1000), loc, ECC_Visibility))
+	{
+		hit.Location = loc;
+		hit.Location.Z = HitResult.Location.Z;
+	}
+
+	//change location
+	GetOwner()->SetActorLocation(hit.Location + FVector(0, 0, 96), 0, nullptr, ETeleportType::TeleportPhysics);
 }
 
 bool USkillComponent::CanUse() const

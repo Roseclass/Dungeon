@@ -24,6 +24,8 @@ class ULootComponent;
 class UItemObject;
 class ASkillActor;
 
+DECLARE_MULTICAST_DELEGATE(FEnemyDead);
+
 UCLASS()
 class DUNGEON_API AEnemy : public ADungeonCharacterBase, public IIQuestObjective
 {
@@ -56,7 +58,7 @@ protected:
 		UBehaviorTree* BehaviorTree;
 
 public:
-
+	FEnemyDead OnEnemyDead;
 	//function
 private:
 protected:
@@ -70,9 +72,6 @@ public:
 	//Skill
 	virtual void UseSkill(int32 Idx)override;
 	virtual void Dead()override;
-
-	//Loot
-	void GenerateLootItems();
 
 	//for notify
 	UFUNCTION(BlueprintCallable)virtual void SpawnWarningSign(int32 InIndex);

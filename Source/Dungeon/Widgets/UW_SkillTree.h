@@ -34,6 +34,7 @@ public:
 private:
 	USkillTreeComponent* OwnerComponent;
 	bool bInit;
+	FVector2D AnchorSize;
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 		UCanvasPanel* BaseCanvasPanel;

@@ -34,6 +34,7 @@ private:
 	AActor* CurrentOverlappedActor;
 
 	TArray<AActor*> DamagedActors;
+	AActor* CurrentDamagedActor;
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		TSubclassOf<UGameplayEffect> GamePlayEffectClass;
@@ -58,10 +59,13 @@ protected:
 	UFUNCTION()virtual void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	virtual void ResetDamagedActors();
 	virtual void FindCollision();
+	virtual void SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult);
 
+	FORCEINLINE const TArray<UShapeComponent*>& GetCollisionComponents()const { return CollisionComponents; }
 	FORCEINLINE const TArray<AActor*>& GetOverlappedActors()const { return OverlappedActors; }
 	FORCEINLINE const AActor* GetCurrentOverlappedActor()const { return CurrentOverlappedActor; }
 	FORCEINLINE const TArray<AActor*>& GetDamagedActors()const { return DamagedActors; }
+	FORCEINLINE const AActor* GetCurrentDamagedActor()const { return CurrentDamagedActor; }
 public:
 	virtual void Activate();
 	virtual void Deactivate();

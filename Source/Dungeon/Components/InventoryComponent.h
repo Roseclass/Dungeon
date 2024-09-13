@@ -38,8 +38,8 @@ public:
 
 	//property
 private:
-	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<AEqquipment*> Items;
-	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<AEqquipment*> EquippedItems;
+	UPROPERTY(ReplicatedUsing = "OnRep_Items")TArray<FString> Items;
+	UPROPERTY(ReplicatedUsing = "OnRep_EquippedItems")TArray<FString> EquippedItems;
 
 	UPROPERTY()UUW_Inventory* Widget;
 protected:
@@ -77,7 +77,7 @@ private:
 													const TArray<FVector2D>& Locations, const TArray<TSubclassOf<AEqquipment>>& InventoryClasses, const TArray<FItemStatusData>& InventoryDatas);
 
 	UFUNCTION(Client, Reliable)void Client_Trade(AActor* InActor);
-	UFUNCTION(Reliable, Server)void Server_Buy(AEqquipment* InObject);
+	UFUNCTION(Reliable, Server)void Server_Buy(const FString& InObject);
 protected:
 public:
 	//for equipment
@@ -90,10 +90,10 @@ public:
 	bool IsRoomAvailable(AEqquipment* InObject);
 	bool IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex);
 
-	UFUNCTION(Reliable, Server)void Server_TryAddItem(AEqquipment* InObject);
-	UFUNCTION(Reliable, Server)void Server_AddItemAt(AEqquipment* InObject, int32 TopLeftIndex);
+	UFUNCTION(Reliable, Server)void Server_TryAddItem(const FString& InObject);
+	UFUNCTION(Reliable, Server)void Server_AddItemAt(const FString& InObject, int32 TopLeftIndex);
 
-	UFUNCTION(Reliable, Server)void Server_RemoveItem(AEqquipment* InObject);
+	UFUNCTION(Reliable, Server)void Server_RemoveItem(const FString& InObject);
 
 	void GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& Map);
 
@@ -103,15 +103,15 @@ public:
 
 	//for trade
 	void Trade(AActor* InActor);
-	UFUNCTION(Reliable, Server)void Server_Sell(AEqquipment* InObject);
+	UFUNCTION(Reliable, Server)void Server_Sell(const FString& InObject);
 	void Buy(AEqquipment* InObject);
 
 	//for EquipmentSlot
 	bool CanTakeOffEquipment(int32 InIdx);
 	AEqquipment* GetEquippedItems(int32 InIdx);
-	FORCEINLINE const TArray<AEqquipment*>& GetAllEquippedItems() { return EquippedItems; }
-	UFUNCTION(Reliable, Server)void Server_Equip(AEqquipment* InData);
-	UFUNCTION(Reliable, Server)void Server_ChangeEquippedData(int32 InIdx, AEqquipment* InData);
+	FORCEINLINE const TArray<FString>& GetAllEquippedItems() { return EquippedItems; }
+	UFUNCTION(Reliable, Server)void Server_Equip(const FString& InData);
+	UFUNCTION(Reliable, Server)void Server_ChangeEquippedData(int32 InIdx, const FString& InData);
 	UFUNCTION(Reliable, Server)void Server_RemoveEquipped_Drag(int32 InIdx);
 
 	//Widget
@@ -125,12 +125,4 @@ public:
 
 	//for ability
 	void GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
-
-	//
-	// 드래그 드롭 - 이동 및 장착, 해제
-	// 우클릭 - 장착 및 해제
-	// 장착전에 조건 확인
-	// 장착시 외형 변경, 효과 적용
-	// 드롭시 등급에 맞는 이펙트
-	//
 };

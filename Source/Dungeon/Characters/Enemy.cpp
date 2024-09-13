@@ -88,13 +88,8 @@ void AEnemy::Dead()
 	AEnemyAIController* controller = Cast<AEnemyAIController>(GetController());
 	if(controller)controller->StopLogic("");
 	
-	// Drop Items
-	Loot->DropItems();
-}
-
-void AEnemy::GenerateLootItems()
-{
-	Loot->GenerateItems();
+	if(OnEnemyDead.IsBound())
+		OnEnemyDead.Broadcast();
 }
 
 void AEnemy::SpawnWarningSign(int32 InIndex)

@@ -9,18 +9,19 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
+#include "GameplayEffect.h"
 
 #include "DungeonPlayerController.h"
 #include "Characters/PlayerCharacter.h"
-#include "Objects/ItemManager.h"
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_Item.h"
-#include "Abilities/GE_UniqueItemEffect.h"
+
+#define RateMax 1.2f
+#define RateMin 0.8f
 
 AEqquipment::AEqquipment()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = 1;
 
 	HelmsAppearanceDatas.Init(FItemAppearanceData(),2);
 	HelmsAppearanceDatas[0].PartType = EAppearancePart::HeadCoverings_NoHair;
@@ -75,11 +76,13 @@ void AEqquipment::BeginPlay()
 	// Randomize status
 	if (HasAuthority() && !ItemStatus.bRandomize)
 	{	
-		ItemStatus.FinalDamage = ItemStatus.BaseDamage * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
-		ItemStatus.FinalMaxHealth = ItemStatus.BaseMaxHealth * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
-		ItemStatus.FinalHealthRegen = ItemStatus.BaseHealthRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
-		ItemStatus.FinalMaxMana = ItemStatus.BaseMaxMana * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
-		ItemStatus.FinalManaRegen = ItemStatus.BaseManaRegen * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+		for (auto i : TargetAttributes)
+		{
+			float rate = UKismetMathLibrary::RandomFloatInRange(RateMax, RateMin);
+			ItemStatus.TargetAttributes.Add(i.Key);
+			ItemStatus.TargetAttributeValues.Add(i.Value * rate);
+			ItemStatus.TargetAttributeGrades.Add(CheckGrade(rate));
+		}
 
 		//TODO::Check
 		if (EnhancementDataTable)
@@ -88,8 +91,10 @@ void AEqquipment::BeginPlay()
 			EnhancementDataTable->GetAllRows<FSkillEnhancement>("", enhancementDatas);
 			for (auto i : enhancementDatas)
 			{
-				i->EnhanceStatus = i->EnhanceStatus * UKismetMathLibrary::RandomFloatInRange(0.8, 1.2);
+				float rate = UKismetMathLibrary::RandomFloatInRange(RateMax, RateMin);
+				i->EnhanceStatus = i->EnhanceStatus * rate;
 				ItemStatus.EnhancementDatas.Add(*i);
+				ItemStatus.EnhancementGrades.Add(CheckGrade(rate));
 			}
 		}
 
@@ -150,12 +155,6 @@ void AEqquipment::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 }
 #endif
 
-void AEqquipment::PostNetReceiveLocationAndRotation()
-{
-	CheckFalse(bUpdateLocationAndRotation);
-	Super::PostNetReceiveLocationAndRotation();
-}
-
 void AEqquipment::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -207,34 +206,18 @@ void AEqquipment::EndCursorOver(ADungeonPlayerController* InPlayer)
 
 bool AEqquipment::IsInteractable()
 {
-	return bPickable;
+	return bInteractable;
 }
 
-void AEqquipment::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+EItemGrade AEqquipment::CheckGrade(float Rate)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	float gap = (RateMax - RateMin) / 4;
 
-	// Replicated 변수를 여기에 추가
-	DOREPLIFETIME_CONDITION(AEqquipment, OwnerCharacter, COND_None);
-	DOREPLIFETIME_CONDITION(AEqquipment, Mode, COND_None);
-	DOREPLIFETIME_CONDITION(AEqquipment, ItemStatus, COND_None);
-}
-
-void AEqquipment::OnRep_Mode()
-{
-	switch (Mode)
-	{
-	case EItemMode::Loot:SetPickableMode(); break;
-	case EItemMode::Inventory:SetInventoryMode(); break;
-	case EItemMode::Equip:SetEquipMode(); break;
-	case EItemMode::Max:break;
-	default:break;
-	}
-}
-
-void AEqquipment::OnRep_Status()
-{
-	//CLog::Print(ItemStatus.GetFinalDamage());
+	if (RateMin <= Rate && Rate < RateMin + gap)return EItemGrade::Common;
+	else if (RateMin + gap <= Rate && Rate < RateMin + (gap * 2))return EItemGrade::Uncommon;
+	else if (RateMin + (gap * 2) <= Rate && Rate < RateMin + (gap * 3))return EItemGrade::Rare;
+	else if (RateMin + (gap * 3) <= Rate && Rate <= RateMax)return EItemGrade::Unique;
+	return EItemGrade::Max;
 }
 
 void AEqquipment::FindComponents()
@@ -292,7 +275,7 @@ void AEqquipment::SpawnLootEffects()
 			else if (i.ParamType == PSPT_Actor)fx->SetActorParameter(i.Name, i.Actor);
 		}
 	}
-	if (!bPickable)DeactivateEffect();
+	if (!bInteractable)DeactivateEffect();
 }
 
 void AEqquipment::SetEffectLocation()
@@ -325,9 +308,20 @@ void AEqquipment::DeactivateEffect()
 	if (ParticlePickEffect)ParticlePickEffect->SetVisibility(0);
 }
 
-void AEqquipment::SetPickableMode()
+void AEqquipment::SetLootMode(const FEquipmentStateUpdateParameters& UpdateParameters)
 {
-	bPickable = 1;
+	// Stop DropSequence
+	DropTimeLine.Stop();
+
+	// Change State
+	Mode = EItemMode::Loot;
+	bInteractable = 1;
+
+	// Chnage Location
+	SetActorLocation(UpdateParameters.Location);
+
+	// Change Owner
+	SetOwnerCharacter(nullptr);
 
 	// Save Field Loaction, Save Mesh Location, Adjust Effect Location
 	SetEffectLocation();
@@ -336,20 +330,28 @@ void AEqquipment::SetPickableMode()
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
 
-	// show name widget
+	// Show Name Widget
 	NameWidget->SetVisibility(1);
 
-	// Change Owner
-	FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
-	DetachFromActor(f);
+	// On Interaction Collision
+	if (InteractCollisionComponent)
+		InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	// On Item Effects
 	ActivateEffect();
 }
 
-void AEqquipment::SetInventoryMode()
+void AEqquipment::SetInventoryMode(const FEquipmentStateUpdateParameters& UpdateParameters)
 {
-	bPickable = 0;
+	// Stop DropSequence
+	DropTimeLine.Stop();
+
+	// Change State
+	Mode = EItemMode::Inventory;
+	bInteractable = 0;
+
+	// Change Owner
+	SetOwnerCharacter(UpdateParameters.NewOwner);
 
 	// Off Appearance
 	for (auto component : MeshComponents)
@@ -366,11 +368,19 @@ void AEqquipment::SetInventoryMode()
 	DeactivateEffect();
 }
 
-void AEqquipment::SetEquipMode()
+void AEqquipment::SetEquipMode(const FEquipmentStateUpdateParameters& UpdateParameters)
 {
-	bPickable = 0;
+	// Stop DropSequence
+	DropTimeLine.Stop();
 
-	// Off Appearance
+	// Change State
+	Mode = EItemMode::Equip;
+	bInteractable = 0;
+
+	// Change Owner
+	SetOwnerCharacter(UpdateParameters.NewOwner);
+
+	// On Appearance
 	for (auto component : MeshComponents)
 		component->SetVisibility(1);
 
@@ -385,86 +395,56 @@ void AEqquipment::SetEquipMode()
 	DeactivateEffect();
 }
 
-void AEqquipment::DropTickFunction(float Value)
+void AEqquipment::SetDropMode(const FEquipmentStateUpdateParameters& UpdateParameters)
 {
-	SetActorLocation(DropSpline->GetLocationAtTime(Value, ESplineCoordinateSpace::World));
-	float pitch = UKismetMathLibrary::DegCos(Value * 360 * RotationCount)* RotationAngle;
-	float yaw = 0;
-	float roll = UKismetMathLibrary::DegSin(Value * 360 * RotationCount)* RotationAngle;
-	for (auto i : MeshComponents)
-		i->SetRelativeRotation(FRotator(pitch, 0, roll));
+	// Stop DropSequence
+	DropTimeLine.Stop();
+
+	// Change State
+	Mode = EItemMode::Drop;
+	bInteractable = 0;
+	DropStart = UpdateParameters.DropStart;
+	DropEnd = UpdateParameters.DropEnd;
+
+	// Change Owner
+	SetOwnerCharacter(nullptr);
+
+	// On Appearance
+	for (auto component : MeshComponents)
+		component->SetVisibility(1);
+
+	// hide name widget
+	NameWidget->SetVisibility(1);
+
+	// Off Interaction Collision
+	if (InteractCollisionComponent)
+		InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Off Item Effects
+	DeactivateEffect();
+
+	// Play DropSequence
+	PlayDropSequence(UpdateParameters.DropStart, UpdateParameters.DropEnd);
 }
 
-void AEqquipment::SetOwnerCharacter(ACharacter* InCharacter)
+void AEqquipment::SetOwnerCharacter(ADungeonCharacterBase* InCharacter)
 {
 	OwnerCharacter = InCharacter;
-}
 
-void AEqquipment::FindManager()
-{
-	ADungeonPlayerController* controller = Cast<ADungeonPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	Manager = controller->GetItemManager();
-}
-
-void AEqquipment::SetItemLocation(const FVector& NewLocation, bool bSweep, FHitResult* OutSweepHitResult, ETeleportType Teleport)
-{
-	if (!Manager)FindManager();
-	if (!Manager)
+	if (!OwnerCharacter)
 	{
-		CLog::Print("AEqquipment::SetItemLocation Manager is nullptr");
-		return;
+		FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
+		DetachFromActor(f);
 	}
-	Manager->SetItemLocation(this, NewLocation, bSweep, OutSweepHitResult, Teleport);
-}
-
-void AEqquipment::SetItemRotation(FRotator NewRotation, ETeleportType Teleport)
-{
-	if (!Manager)FindManager();
-	if (!Manager)
+	else
 	{
-		CLog::Print("AEqquipment::SetItemRotation Manager is nullptr");
-		return;
+		FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
+		AttachToComponent(OwnerCharacter->GetMesh(), f, GetSocketName());
 	}
-	Manager->SetItemRotation(this, NewRotation, Teleport);
-}
-
-void AEqquipment::AttachItemToComponent(USceneComponent* Parent, const FAttachmentTransformRules& AttachmentRules, FName InSocketName)
-{
-	if (!Manager)FindManager();
-	if (!Manager)
-	{
-		CLog::Print("AEqquipment::AttachItemToComponent Manager is nullptr");
-		return;
-	}
-	Manager->AttachItemToComponent(this, Parent, AttachmentRules, InSocketName);
-}
-
-void AEqquipment::ChangeVisibility(EItemMode InMode)
-{
-	if (InMode == EItemMode::Max)return;
-	if (!Manager)FindManager();
-	if (!Manager)
-	{
-		CLog::Print("AEqquipment::ChangeVisibility Manager is nullptr");
-		return;
-	}
-	
-	Manager->ChangeVisibility(this, InMode);
-}
-
-void AEqquipment::SetMode(EItemMode InMode)
-{
-	// this is server
-	Mode = InMode;
-	OnRep_Mode();
 }
 
 void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 {
-	// stop update loc n rot
-	if(!HasAuthority())
-		bUpdateLocationAndRotation = 0;
-	
 	DropSpline->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
 	FVector mid = Start;
@@ -479,15 +459,11 @@ void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 	SetActorRotation(FRotator(0, 0, -90));
 
 	FOnTimelineEventStatic end;
-	end.BindLambda([this]() 
+	end.BindLambda([this, End]()
 	{
-		if (!HasAuthority())
-			bUpdateLocationAndRotation = 1; 
-
-		// On Interaction Collision
-		if (InteractCollisionComponent)
-			InteractCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
+		FEquipmentStateUpdateParameters params;
+		params.Location = End;
+		SetLootMode(params);
 	});
 	DropTimeLine.SetTimelineFinishedFunc(end);
 
@@ -495,9 +471,43 @@ void AEqquipment::PlayDropSequence(FVector Start, FVector End)
 	DropTimeLine.PlayFromStart();
 }
 
+void AEqquipment::DropTickFunction(float Value)
+{
+	SetActorLocation(DropSpline->GetLocationAtTime(Value, ESplineCoordinateSpace::World));
+	float pitch = UKismetMathLibrary::DegCos(Value * 360 * RotationCount)* RotationAngle;
+	float yaw = 0;
+	float roll = UKismetMathLibrary::DegSin(Value * 360 * RotationCount)* RotationAngle;
+	for (auto i : MeshComponents)
+		i->SetRelativeRotation(FRotator(pitch, 0, roll));
+}
+
+void AEqquipment::AssignUniqueID(FString NewUniqueID)
+{
+	CheckTrue(UniqueID != FString());
+	UniqueID = NewUniqueID;
+}
+
+void AEqquipment::UpdateState(const FEquipmentStateUpdateParameters& UpdateParameters)
+{
+	if (UpdateParameters.State == EItemMode::Loot)//Visible,Interactable,NoOwner
+		SetLootMode(UpdateParameters);
+	else if (UpdateParameters.State == EItemMode::Inventory)//Invisible,NotInteractable,HasOwner
+		SetInventoryMode(UpdateParameters);
+	else if (UpdateParameters.State == EItemMode::Equip)//Visible,NotInteractable,HasOwner
+		SetEquipMode(UpdateParameters);
+	else if (UpdateParameters.State == EItemMode::Drop)//Visible,Interactable After DropSequence,NoOwner
+		SetDropMode(UpdateParameters);
+}
+
+void AEqquipment::UpdateStatus(const FItemStatusData& UpdateData)
+{
+	//TODO::TEST
+	ItemStatus = UpdateData;
+}
+
 void AEqquipment::Load(const FItemStatusData& InData)
 {
-	ItemStatus = InData;
+	UpdateStatus(InData);
 }
 
 const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
@@ -517,26 +527,31 @@ const TArray<FItemAppearanceData>& AEqquipment::GetAppearanceDatas()const
 	return HelmsAppearanceDatas;
 }
 
+FEquipmentStateUpdateParameters AEqquipment::GetEquipmentState() const
+{
+	FEquipmentStateUpdateParameters result;
+	result.State = Mode;
+	result.NewOwner = OwnerCharacter;
+	result.Location = GetActorLocation();
+	result.DropStart = DropStart;
+	result.DropEnd = DropEnd;
+	return result;
+}
+
 void AEqquipment::GetDimensions(int32& X, int32& Y)
 {
 	X = DimensionX;
 	Y = DimensionY;
 }
 
-void AEqquipment::GetUniqueEffectDescriptions(TArray<FString>& Descriptions)const
+void AEqquipment::GetAllEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
 {
 	// TODO::Check
-	for (auto effect : UniqueEffectClasses)
-	{
-		UGE_UniqueItemEffect* unique = Cast<UGE_UniqueItemEffect>(effect.GetDefaultObject());
-		if (!unique)continue;
-		Descriptions.Add(unique->GetDescription());
-	}
-}
-
-void AEqquipment::GetAllEffectEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
-{
-	// TODO::Check
-	for(auto i : Classes)Classes.Add(i);
 	if (CommonEffectClass)Classes.Add(CommonEffectClass);
 }
+
+/*
+* 유니크아이디 쥐고있기
+* 드롭 시작, 종료지점 쥐고있기
+*/
+

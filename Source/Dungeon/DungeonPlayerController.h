@@ -10,9 +10,9 @@ class UNiagaraSystem;
 class APlayerCharacter;
 class AEnemy;
 class ANPC;
-class AItemManager;
 class AEqquipment;
 class UConfirmPopupComponent;
+class UEquipmentManagementComponent;
 class IIInteractable;
 class UUW_Main;
 class UUW_Dialog;
@@ -43,7 +43,6 @@ private:
 	float FollowTime;
 
 	AEnemy* Target;
-	UPROPERTY(ReplicatedUsing = "OnRep_ItemManager")AItemManager* ItemManager;//Load::
 	IIInteractable* Iteractable;
 
 	IIInteractable* CursorIteractable;
@@ -53,14 +52,14 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		UConfirmPopupComponent* ConfirmPopup;
 
+	UPROPERTY(VisibleDefaultsOnly)
+		UEquipmentManagementComponent* EquipmentManagement;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		float ShortPressThreshold;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 		UNiagaraSystem* FXCursor;
-
-	UPROPERTY(EditDefaultsOnly, Category = "ItemManager")
-		TSubclassOf<AItemManager> ItemManagerClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 		TSubclassOf<UUW_Main> MainWidgetClass;
@@ -79,8 +78,6 @@ public:
 
 	//function
 private:
-	UFUNCTION() void OnRep_ItemManager();
-
 	UFUNCTION(Client, Reliable)void Client_CreateMainWidget();
 
 	UFUNCTION(Reliable, Server)void Server_ReplicateRotation(FRotator NewRotation, ADungeonPlayerController* Exception);
@@ -137,7 +134,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FORCEINLINE int32 GetIndex() const { return Index; }
 	FORCEINLINE UUW_Main* GetMainWidget() const { return MainWidget; }
-	FORCEINLINE AItemManager* GetItemManager() const { return ItemManager; }
 };
 
 

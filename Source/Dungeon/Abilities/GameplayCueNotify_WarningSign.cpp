@@ -16,7 +16,7 @@ bool UGameplayCueNotify_WarningSign::OnExecute_Implementation(AActor* MyTarget, 
 
     AWarningSign* sign = GetWorld()->SpawnActorDeferred<AWarningSign>(effectContext->Class, effectContext->Transform, effectContext->Owner,
         Cast<APawn>(effectContext->GetInstigator()), effectContext->CollisionHandlingOverride);
-    sign->Activate(effectContext->Duration, effectContext->ExtraDuration);
+    sign->Activate(effectContext->StartServerTime, effectContext->Duration, effectContext->ExtraDuration);
     sign->FinishSpawning(effectContext->Transform);
 
 	return false;
