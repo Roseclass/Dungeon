@@ -22,6 +22,7 @@ public:
 	UPROPERTY()FString UniqueID;
 	UPROPERTY()FString EquipmentName;
 	UPROPERTY()FEquipmentStateUpdateParameters State;
+	UPROPERTY()FItemStatusData Status;
 };
 
 USTRUCT()
@@ -32,6 +33,7 @@ public:
 	UPROPERTY()FString UniqueID;
 	UPROPERTY()TSubclassOf<AEqquipment> EquipmentClass;
 	UPROPERTY()FEquipmentStateUpdateParameters State;
+	UPROPERTY()FItemStatusData Status;
 };
 
 USTRUCT()
@@ -122,6 +124,7 @@ public:
 	//function
 private:
 	void Init();
+	UFUNCTION(Reliable, Server)void Server_Init();
 	UFUNCTION(Client, Reliable)void Client_InitPlaced(const TArray<FPlacedInitialData>& Datas);
 	UFUNCTION(Client, Reliable)void Client_InitSpawned(const TArray<FSpawnedInitialData>& Datas);
 

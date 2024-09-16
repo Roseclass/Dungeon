@@ -84,7 +84,9 @@ void ADungeonPlayerController::PlayerTick(float DeltaTime)
 		if (myPawn->IsOverlappingActor(inter))
 		{
 			StopPawnImmediately();
-			Server_Interaction(inter);
+			AEqquipment* equipment = Cast<AEqquipment>(inter);
+			if (equipment)Server_Interaction_Equipment(equipment->GetUniqueID());
+			else Server_Interaction(inter);
 			Iteractable = nullptr;
 		}
 		return;
@@ -211,6 +213,12 @@ void ADungeonPlayerController::Server_Interaction_Implementation(AActor* InInter
 	IIInteractable* const interactable = Cast<IIInteractable>(InInteractable);
 	CheckNull(interactable);
 	interactable->StartInteract(this);
+}
+
+void ADungeonPlayerController::Server_Interaction_Equipment_Implementation(const FString& UniqueID)
+{
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(),UniqueID);
+	equipment->StartInteract(this);
 }
 
 void ADungeonPlayerController::Server_SelectReply_Implementation(AActor* InInteractable, int32 NextPoint)

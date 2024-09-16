@@ -118,6 +118,7 @@ public:
 	bool IsWidgetVisible();
 	void OnWidget();
 	void OffWidget();
+	void RefreshGrid();
 	
 	//for save
 	void SaveData(USaveGameData* SaveData);

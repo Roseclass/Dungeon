@@ -85,6 +85,7 @@ private:
 	UFUNCTION(Client, Reliable)void Client_ReplicateRotation(FRotator NewRotation);
 
 	UFUNCTION(Reliable, Server)void Server_Interaction(AActor* InInteractable);
+	UFUNCTION(Reliable, Server)void Server_Interaction_Equipment(const FString& UniqueID);
 	UFUNCTION(Reliable, Server)void Server_SelectReply(AActor* InInteractable, int32 NextPoint);
 
 protected:

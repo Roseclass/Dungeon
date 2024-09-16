@@ -24,9 +24,10 @@ AEqquipment* UEquipmentManagementComponent::SpawnEquipment(UWorld* CurrentWorld,
 {
 	/*
 	* 1.서버체크
-	* 2.스폰 및 uniqueid부여
-	* 3.모든 플레이어 목록에 등록
-	* 4.모든 플레이어 클라이언트에 스테이터스 동기화
+	* 2.유효성검사
+	* 3.스폰 및 uniqueid부여
+	* 4.모든 플레이어 목록에 등록
+	* 5.모든 플레이어 클라이언트에 스테이터스 동기화
 	*
 	* TODO::아이템 스탯 동기화
 	*/
@@ -38,24 +39,35 @@ AEqquipment* UEquipmentManagementComponent::SpawnEquipment(UWorld* CurrentWorld,
 		return nullptr;
 	}
 
-	// 2.스폰 및 uniqueid부여	
+	// 2.유효성검사
+	if (!Class)return nullptr;
+
+	// 3.스폰 및 uniqueid부여	
 	FEquipmentUniqueID newID;
 	newID.UniqueID = GenerateUniqueID(Class);
 	newID.Equipment = CurrentWorld->SpawnActor<AEqquipment>(Class);
 	newID.Equipment->AssignUniqueID(newID.UniqueID);
 	newID.Equipment->UpdateState(StateParameters);
 
-	// 3.모든 플레이어 목록에 등록
+	// 서버 예외 처리
+	{
+		APlayerController* pc = CurrentWorld->GetFirstPlayerController();
+		UEquipmentManagementComponent* comp = CHelpers::GetComponent<UEquipmentManagementComponent>(pc);
+		if (comp)
+			comp->Equipments.AddEquipmentUniqueID(newID);
+	}
+
+	// 4.모든 플레이어 목록에 등록
 	for (auto it = CurrentWorld->GetPlayerControllerIterator(); it; ++it)
 	{
 		APlayerController* pc = it->Get();
-		if (!pc)continue;
+		if (!pc || pc == CurrentWorld->GetFirstPlayerController())continue;
 		UEquipmentManagementComponent* comp = CHelpers::GetComponent<UEquipmentManagementComponent>(pc);
 		if (!comp)continue;
 		comp->Client_SpawnEquipment(Class, StateParameters, newID.UniqueID);
 	}
 
-	//4.모든 플레이어 클라이언트에 스테이터스 동기화
+	// 5.모든 플레이어 클라이언트에 스테이터스 동기화
 	if (UpadteStatus)
 		UEquipmentManagementComponent::UpadteStatus(CurrentWorld, newID.UniqueID, newID.Equipment->GetItemStatus());
 
@@ -290,37 +302,42 @@ void UEquipmentManagementComponent::Init()
 	* 1-1.서버의 호스트인 경우
 	* placed된 액터 정리
 	* (spawned 액터들은 스폰시에 등록될 예정)
-	* 1-2.호스트가 아닌경우
-	* firstcontroller로 부터 데이터 동기화
+	* 2.클라이언트?
+	* 2-1.동기화요청
 	*/
 
 	//1.서버인가?
-	CheckFalse(GetOwnerRole() == ENetRole::ROLE_Authority);
-	
-	ADungeonPlayerController* owner = Cast<ADungeonPlayerController>(GetOwner());
-	CheckNull(owner);
-
-	//1-1.서버의 호스트인 경우
-	if (owner == GetWorld()->GetFirstPlayerController())
+	if (GetOwnerRole() == ENetRole::ROLE_Authority)
 	{
-		//placed된 액터 정리
-		TArray<AActor*> actors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEqquipment::StaticClass(), actors);
-		for (auto i : actors)
+		ADungeonPlayerController* owner = Cast<ADungeonPlayerController>(GetOwner());
+		CheckNull(owner);
+
+		//1-1.서버의 호스트인 경우
+		if (owner == GetWorld()->GetFirstPlayerController())
 		{
-			AEqquipment* equipment = Cast<AEqquipment>(i);
-			if (!equipment)continue;
-			if(equipment->GetInitType() == EEquipmentInitType::Spawned)continue;
-			
-			//Equipments에 등록
-			FEquipmentUniqueID newID;
-			newID.UniqueID = GenerateUniqueID(equipment->GetClass());
-			newID.Equipment = equipment;
-			Equipments.AddEquipmentUniqueID(newID);
+			//placed된 액터 정리
+			TArray<AActor*> actors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEqquipment::StaticClass(), actors);
+			for (auto i : actors)
+			{
+				AEqquipment* equipment = Cast<AEqquipment>(i);
+				if (!equipment)continue;
+				if (equipment->GetInitType() == EEquipmentInitType::Spawned)continue;
+
+				//Equipments에 등록
+				FEquipmentUniqueID newID;
+				newID.UniqueID = GenerateUniqueID(equipment->GetClass());
+				newID.Equipment = equipment;
+				Equipments.AddEquipmentUniqueID(newID);
+			}
 		}
 	}
-	//1-2.호스트가 아닌경우
-	else
+	//2.클라이언트?
+	else Server_Init();//2-1.동기화요청
+}
+
+void UEquipmentManagementComponent::Server_Init_Implementation()
+{
 	{
 		//firstcontroller로 부터 데이터 동기화
 		UEquipmentManagementComponent* firstComp = CHelpers::GetComponent<UEquipmentManagementComponent>(GetWorld()->GetFirstPlayerController());
@@ -333,25 +350,29 @@ void UEquipmentManagementComponent::Init()
 		//Equipments 복사
 		Equipments = firstComp->GetEquipments();
 
-		TArray<FPlacedInitialData> placedDatas;
 		TArray<FSpawnedInitialData> spawnedDatas;
+		TArray<FPlacedInitialData> placedDatas;
 		for (auto item : Equipments.Items)
 		{
 			//배열 탐색후 placed와 spawned를 구분해 배열 생성
 			AEqquipment* equipment = item.Equipment;
-			if(equipment->GetInitType() == EEquipmentInitType::Spawned)
+			if (equipment->GetInitType() == EEquipmentInitType::Spawned)
 			{
 				FSpawnedInitialData data;
 				data.UniqueID = item.UniqueID;
 				data.EquipmentClass = equipment->GetClass();
 				data.State = equipment->GetEquipmentState();
+				data.Status = equipment->GetItemStatus();
+				spawnedDatas.Add(data);
 			}
-			else if(equipment->GetInitType() == EEquipmentInitType::Placed)
+			else if (equipment->GetInitType() == EEquipmentInitType::Placed)
 			{
 				FPlacedInitialData data;
 				data.UniqueID = item.UniqueID;
 				data.EquipmentName = equipment->GetName();
 				data.State = equipment->GetEquipmentState();
+				data.Status = equipment->GetItemStatus();
+				placedDatas.Add(data);
 			}
 		}
 
@@ -396,6 +417,7 @@ void UEquipmentManagementComponent::Client_InitPlaced_Implementation(const TArra
 			newID.UniqueID = data.UniqueID;
 			newID.Equipment = equipment;
 			newID.Equipment->UpdateState(data.State);
+			newID.Equipment->UpdateStatus(data.Status);
 			Equipments.AddEquipmentUniqueID(newID);
 		}
 
@@ -435,6 +457,7 @@ void UEquipmentManagementComponent::Client_InitSpawned_Implementation(const TArr
 		newID.Equipment = equipment;
 		newID.Equipment->AssignUniqueID(newID.UniqueID);
 		newID.Equipment->UpdateState(data.State);
+		newID.Equipment->UpdateStatus(data.Status);
 		Equipments.AddEquipmentUniqueID(newID);
 	}
 }
@@ -592,22 +615,5 @@ bool UEquipmentManagementComponent::IsValidEquipment(AEqquipment* Equipment, FSt
 * inittype에 대한 몇가지가 더 필요할듯 싶음
 * 전투 스테이지에서 스폰된 상황의 아이템은 스테이지 종료시에 인벤토리에 없다면 삭제해야댐
 * 그냥 스테이지 종료시에 인벤토리에 없으면 삭제하면 되는거 아닌가? ㅋ;
-* 
-* 아이템 스테이터스는 어떻게 복제?
-* 일단 다른거 먼저 구현하고 해보자
-* 처리는 서버가하니 서버에서만 알고있어도 문제는 안될거같음
-* ui데이터만 잘 보이게 하면 문제 없지 않을까?
-* 
-* 인벤토리 로드?
-* 인벤토리 데이터를 어떻게 관리할지 생각해보자
-* equipment 배열을 unique id 배열로 수정
-* 
-* 플레이어 컨트롤러로 equip pickup drop 서버함수 이관
-* 여기서는 일반함수 호출
-* 
-* serverinteract(pc)->invcomp에서 가능하다고 판단되면 pickup호출하자
-* 이 컴포넌트는 장비의 상태를 동기화 시켜주고 리스트를 관리하는 목적이지 인벤토리 컴포넌트도 갱신하고 이러는 목적이 아님
-* 
-* 여타 위젯에서 상호작용할때도 컨트롤러를 이용해 상호작용하도록 변경
 * 
 */

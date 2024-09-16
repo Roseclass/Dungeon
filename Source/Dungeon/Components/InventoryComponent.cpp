@@ -65,7 +65,8 @@ void UInventoryComponent::InitDefault()
 			FEquipmentStateUpdateParameters state;
 			state.State = EItemMode::Equip;
 			state.NewOwner = owner;
-			UEquipmentManagementComponent::SpawnEquipment(GetWorld(), DefaultWeapon, state);
+			AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), DefaultWeapon, state);
+			if (equipment)Server_Equip(equipment->GetUniqueID());
 		}
 	}
 
@@ -75,7 +76,9 @@ void UInventoryComponent::InitDefault()
 		FEquipmentStateUpdateParameters state;
 		state.State = EItemMode::Inventory;
 		state.NewOwner = owner;
-		UEquipmentManagementComponent::SpawnEquipment(GetWorld(), DefaultWeapon, state);
+		AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), i, state);
+		if (!equipment)continue;
+		Server_TryAddItem(equipment->GetUniqueID());
 	}
 }
 
@@ -172,7 +175,7 @@ void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassO
 		AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), EquippedClasses[i], state);
 		if (!equipment)continue;
 		UEquipmentManagementComponent::UpadteStatus(GetWorld(), equipment->GetUniqueID(), EquippedDatas[i]);
-		UEquipmentManagementComponent::Equip(GetWorld(), equipment->GetUniqueID(), owner);
+		Server_Equip(equipment->GetUniqueID());
 	}
 
 	// spawn inventory items
@@ -184,7 +187,7 @@ void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassO
 		AEqquipment* equipment = UEquipmentManagementComponent::SpawnEquipment(GetWorld(), EquippedClasses[i], state);
 		if (!equipment)continue;
 		UEquipmentManagementComponent::UpadteStatus(GetWorld(), equipment->GetUniqueID(), EquippedDatas[i]);
-		UEquipmentManagementComponent::PickUp(GetWorld(), equipment->GetUniqueID(), owner);
+		Server_TryAddItem(equipment->GetUniqueID());
 	}
 }
 
@@ -290,7 +293,7 @@ bool UInventoryComponent::IsRoomAvailable(AEqquipment* InObject, int32 TopLeftIn
 			if (j < 0 || j >= Rows)return 0;
 			int32 idx = TileToIndex(i, j);
 			AEqquipment* obj = nullptr;
-			if (!GetItemAtIndex(idx, &obj))return 0;
+			if (GetItemAtIndex(idx, &obj))return 0;
 			if (obj)return 0;
 		}
 	}
@@ -355,9 +358,18 @@ bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 
 void UInventoryComponent::Server_TryAddItem_Implementation(const FString& InObject)
 {
-	CheckTrue(InObject == FString());
+	CLog::Print(InObject);
+	if (InObject == FString())
+	{
+		CLog::Print("UInventoryComponent::Server_TryAddItem_Implementation uniqueID Error", -1, 10, FColor::Red);
+		return;
+	}
 	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InObject);
-	CheckNull(equipment);
+	if (!equipment)
+	{
+		CLog::Print("UInventoryComponent::Server_TryAddItem_Implementation equipment Error", -1, 10, FColor::Red);
+		return;
+	}
 
 	if (equipment->HasOwnerCharacter())
 	{
@@ -456,6 +468,7 @@ void UInventoryComponent::GetAllItems(TMap<AEqquipment*, TTuple<int32, int32>>& 
 {
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
+		if (Items[i] == FString())continue;
 		AEqquipment* cur = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), Items[i]);
 		if (!cur)continue;
 		if (Map.Contains(cur))continue;
@@ -678,6 +691,13 @@ void UInventoryComponent::OnWidget()
 void UInventoryComponent::OffWidget()
 {
 	Widget->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UInventoryComponent::RefreshGrid()
+{
+	// refresh inv grid list
+	if (OnInventoryChanged.IsBound())
+		OnInventoryChanged.Broadcast();
 }
 
 void UInventoryComponent::SaveData(USaveGameData* SaveData)

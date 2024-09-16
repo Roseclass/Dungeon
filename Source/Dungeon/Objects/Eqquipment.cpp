@@ -15,6 +15,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Objects/ItemObject.h"
 #include "Widgets/UW_Item.h"
+#include "Components/InventoryComponent.h"
 
 #define RateMax 1.2f
 #define RateMin 0.8f
@@ -74,8 +75,9 @@ void AEqquipment::BeginPlay()
 	SpawnLootEffects();
 
 	// Randomize status
-	if (HasAuthority() && !ItemStatus.bRandomize)
+	if (GetWorld()->GetFirstPlayerController()->GetLocalRole() == ENetRole::ROLE_Authority && !ItemStatus.bRandomize)
 	{	
+		CLog::Print("IN");
 		for (auto i : TargetAttributes)
 		{
 			float rate = UKismetMathLibrary::RandomFloatInRange(RateMax, RateMin);
