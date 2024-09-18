@@ -25,6 +25,7 @@ void USkillTreeComponent::BeginPlay()
 void USkillTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	return;
 	if (!Widget)
 		for (int32 i = 0; i < SkillStates.Items.Num(); ++i)
 			if (SkillStates.Items[i].SkillState == ESkillTreeSkillState::Locked)CLog::Print(FString::Printf(TEXT("%i : Lock"), i), -1, 0, FColor::Purple);

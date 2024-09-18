@@ -151,7 +151,6 @@ public:
 	//property
 private:
 	FString UniqueID;
-	FItemStatusData ItemStatus;
 	TArray<UMeshComponent*> MeshComponents;
 	UPROPERTY()UShapeComponent* InteractCollisionComponent;
 	UPROPERTY()UItemObject* ItemObject;
@@ -215,6 +214,9 @@ private:
 	//Data
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 		EItemType ItemType;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		FItemStatusData ItemStatus;
 
 	UPROPERTY(EditAnywhere, Category = "Data")
 		EEquipmentInitType InitType;

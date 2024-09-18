@@ -8,6 +8,7 @@
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 
+#include "Components/EquipmentManagementComponent.h"
 #include "Objects/ItemObject.h"
 #include "Objects/Weapon.h"
 #include "Abilities/AttributeSetBase.h"
@@ -88,7 +89,8 @@ FString UUW_InventoryPopup::MakeEhancementText(const FSkillEnhancement& Data, EI
 
 void UUW_InventoryPopup::On(UItemObject* InObject)
 {
-	const FItemStatusData& data = InObject->GetEqquipment()->GetItemStatus();
+	AEqquipment* equipment = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), InObject->GetEqquipment()->GetUniqueID());
+	const FItemStatusData& data = equipment->GetItemStatus();
 
 	RefreshLocation();
 

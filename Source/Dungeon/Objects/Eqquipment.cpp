@@ -1,4 +1,4 @@
-#include "Objects/Eqquipment.h"
+﻿#include "Objects/Eqquipment.h"
 #include "Global.h"
 #include "Components/ShapeComponent.h"
 #include "Components/MeshComponent.h"
@@ -172,6 +172,30 @@ void AEqquipment::Tick(float DeltaTime)
 	{
 		ParticlePickEffect->SetWorldRotation(LootEffectWorldRotation);
 	}
+
+	return;
+	for (int32 i = 0; i < ItemStatus.EnhancementDatas.Num(); ++i)
+	{
+		FString result = "";
+		FString statusValue = FString::Printf(TEXT("%.2f"), ItemStatus.EnhancementDatas[i].EnhanceStatus);
+
+		if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Cost.Additive"))
+			result += TEXT("마나 소모량 ") + statusValue + TEXT("감소");
+		else if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Cost.Multiplicitive"))
+			result += TEXT("마나 소모량 ") + statusValue + TEXT("%만큼 감소");
+		else if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Cooldown.Additive"))
+			result += TEXT("재사용 대기시간 ") + statusValue + TEXT("초 감소");
+		else if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Cooldown.Multiplicitive"))
+			result += TEXT("재사용 대기시간 ") + statusValue + TEXT("%만큼 감소");
+		else if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Damage.Additive"))
+			result += TEXT("데미지 ") + statusValue + TEXT("증가");
+		else if (ItemStatus.EnhancementDatas[i].EnhanceStatusTag == FGameplayTag::RequestGameplayTag("Skill.Damage.Multiplicitive"))
+			result += TEXT("데미지 ") + statusValue + TEXT("%만큼 증가");
+
+		CLog::Print(result, -1, 0);
+	}
+	CLog::Print(GetName(), -1, 0);
+
 }
 
 void AEqquipment::StartInteract(ADungeonPlayerController* InPlayer)
@@ -433,6 +457,9 @@ void AEqquipment::SetOwnerCharacter(ADungeonCharacterBase* InCharacter)
 {
 	OwnerCharacter = InCharacter;
 
+	for (auto i : MeshComponents)
+		i->SetRelativeRotation(FRotator(0, 0, 0));
+
 	if (!OwnerCharacter)
 	{
 		FDetachmentTransformRules f = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, 1);
@@ -553,7 +580,7 @@ void AEqquipment::GetAllEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Clas
 }
 
 /*
-* ����ũ���̵� ����ֱ�
-* ��� ����, �������� ����ֱ�
+* 유니크아이디 쥐고있기
+* 드롭 시작, 종료지점 쥐고있기
 */
 

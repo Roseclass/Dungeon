@@ -349,7 +349,7 @@ bool UInventoryComponent::IsRoomGreen(AEqquipment* InObject, int32 TopLeftIndex)
 			if (j < 0 || j >= Rows)return 0;
 			int32 idx = TileToIndex(i, j);
 			AEqquipment* obj = nullptr;
-			if (!GetItemAtIndex(idx, &obj))return 0;
+			if (GetItemAtIndex(idx, &obj))return 0;
 			if (obj && obj != InObject)return 0;
 		}
 	}
