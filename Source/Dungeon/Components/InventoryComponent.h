@@ -123,7 +123,4 @@ public:
 	//for save
 	void SaveData(USaveGameData* SaveData);
 	void LoadData(USaveGameData* const ReadData);
-
-	//for ability
-	void GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
 };

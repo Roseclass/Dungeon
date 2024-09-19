@@ -60,6 +60,8 @@ public:
 	UPROPERTY()float CostMultiplicitive = 100;
 	UPROPERTY()float CooldownAdditive = 0;
 	UPROPERTY()float CooldownMultiplicitive = 100;
+	UPROPERTY()float DamageAdditive = 0;
+	UPROPERTY()float DamageMultiplicitive = 100;
 };
 
 USTRUCT()
@@ -157,6 +159,12 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
 		FGameplayTag CooldownMultiplicitiveTag;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
+		FGameplayTag DamageAdditiveTag;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Skills|Tags")
+		FGameplayTag DamageMultiplicitiveTag;
 
 public:
 	FQuickSlotDataChanged OnQuickSlotDataChanged;

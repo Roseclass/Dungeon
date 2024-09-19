@@ -38,8 +38,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Essential")
 		uint8 TeamID = 0;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = "Essential")
-		float Damage;
+	UPROPERTY(EditDefaultsOnly, Category = "Essential")
+		TSubclassOf<UGameplayEffect> OverlapEffectClass;
 
 public:
 
@@ -58,7 +58,6 @@ public:
 	void ResetHitActors();
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
-	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }
 
 	FORCEINLINE FTransform GetAttachTransform() { return AttachTransform; }
 	FORCEINLINE virtual FName GetSocketName() const override{ return SocketName; }

@@ -27,10 +27,10 @@ void AProjectile_ChainLightning::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AProjectile_ChainLightning::SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult)
+void AProjectile_ChainLightning::SendDamage(TSubclassOf<UGameplayEffect> EffectClass, AActor* Target, const FHitResult& SweepResult)
 {
 	CheckTrue(Target == GetCurrentDamagedActor());
-	Super::SendDamage(EffectClass, InForce, InDamage, Target, SweepResult);
+	Super::SendDamage(EffectClass, Target, SweepResult);
 
 	//decrease count
 	--Count;

@@ -28,8 +28,6 @@ AEqquipment* UEquipmentManagementComponent::SpawnEquipment(UWorld* CurrentWorld,
 	* 3.스폰 및 uniqueid부여
 	* 4.모든 플레이어 목록에 등록
 	* 5.모든 플레이어 클라이언트에 스테이터스 동기화
-	*
-	* TODO::아이템 스탯 동기화
 	*/
 
 	// 1.서버체크

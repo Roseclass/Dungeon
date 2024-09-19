@@ -62,7 +62,7 @@ void AWeapon::SetOwnerCharacter(ADungeonCharacterBase* InCharacter)
 
 void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	CheckFalse(HasAuthority());
+	CheckFalse(OtherActor->GetLocalRole() == ENetRole::ROLE_Authority);
 	CheckTrue(HitActors.Contains(OtherActor));
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 	CheckNull(owner);
@@ -78,35 +78,22 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 	// ignore alliance
 	CheckTrue(other->GetGenericTeamId() == TeamID);
 
-	// 다른 장비들의 effect를 가져옴
-	// 어트리뷰트에서 합산데미지를 가져옴
-	// 데미지 적용
-
-
-	TArray<TSubclassOf<UGameplayEffect>> effects;
-	if(CommonEffectClass)effects.Add(CommonEffectClass);
-
-	// get owner's equpment effects
-	{	
-		UInventoryComponent* inv = CHelpers::GetComponent<UInventoryComponent>(owner);
-		if (inv)inv->GetEquipmentEffectClasses(effects);
-	}
-
+	// TODO::TEST
 	// Apply Damage Effect
 	{
 		// Set instigator asc
-		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
 		USkillComponent* instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+		USkillComponent* hitASC = Cast<USkillComponent>(otherCh->GetAbilitySystemComponent());
 
 		// Make effectcontext handle
 		FDamageEffectContext* context = new FDamageEffectContext();
 		FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
-		EffectContextHandle.AddInstigator(owner->GetController(), this);
+		EffectContextHandle.AddInstigator(owner ? owner->GetController() : nullptr, this);
 		EffectContextHandle.AddHitResult(SweepResult);
-
 		context->BaseDamage = instigatorASC->GetPower();
 		context->CalculatedDamage = context->BaseDamage;
 
+		// Enhance from skill
 		if (DamageData)
 		{
 			context->CalculatedDamage += DamageData->Additive;
@@ -114,18 +101,12 @@ void AWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, 
 		}
 		else CLog::Print("AWeapon::OnComponentBeginOverlap DamageData is nullptr");
 
-		ADungeonPlayerController* pc = Cast<ADungeonPlayerController>(owner->GetController());
-		for (auto effct : effects)
-		{
-			if (pc)
-			{	
-				// Pre-calculate MMC value and setting DamageText datas
-				UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
-				instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, OtherActor->GetActorLocation());
-			}
-			// Must use EffectToTarget for auto mmc
-			instigatorASC->ApplyGameplayEffectToTarget(effct.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
-		}
+		// Pre-calculate MMC value and setting DamageText datas
+		UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());
+		instigatorASC->Cient_DamageText(MyMMC->CalculateDamageTextValue(context, hitASC), 0, otherCh->GetActorLocation());
+
+		// Must use EffectToTarget for auto mmc
+		instigatorASC->ApplyGameplayEffectToTarget(OverlapEffectClass.GetDefaultObject(), hitASC, UGameplayEffect::INVALID_LEVEL, EffectContextHandle);
 	}
 }
 

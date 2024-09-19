@@ -101,6 +101,9 @@ void UGA_Skill::SpawnDamageDealer(FGameplayTag EventTag)
 	ADungeonCharacterBase* ch = Cast<ADungeonCharacterBase>(GetAvatarActorFromActorInfo());
 	if (!ch)
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	USkillComponent* skill = Cast<USkillComponent>(ch->GetAbilitySystemComponent());
+	if (!skill)
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 
 	FTransform transform = ch->GetMesh()->GetSocketTransform(DamageDealerDataMap[EventTag].SocketName);
 	transform.SetScale3D(FVector(1.0f));
@@ -118,12 +121,14 @@ void UGA_Skill::SpawnDamageDealer(FGameplayTag EventTag)
 		transform.SetRotation(FQuat4d(rot + DamageDealerDataMap[EventTag].Rotation));
 	}
 
+	//TODO::TEST
+	FSkillEhancementData data = skill->GetEhancementData(AbilityTags.First());
 	ADamageDealer* dealer = GetWorld()->SpawnActorDeferred<ADamageDealer>(DamageDealerDataMap[EventTag].Class, transform, GetOwningActorFromActorInfo(),
 		ch, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	//dealer->DamageEffectSpecHandle = DamageEffectSpecHandle;
-	//dealer->Range = Range;
 	dealer->SetOwner(ch);
 	dealer->SetTeamID(ch->GetGenericTeamId());
+	dealer->SetDamageAdditive(data.DamageAdditive);
+	dealer->SetDamageMultiplicitive(data.DamageMultiplicitive);
 	dealer->Activate();
 	dealer->FinishSpawning(transform);
 }
@@ -234,3 +239,11 @@ float UGA_Skill::GetCost(const FGameplayAbilityActorInfo* ActorInfo) const
 
 	return -result;
 }
+
+/*
+* 장비장착,변경,해제시에 어빌리티의 강화수치를 조절한다
+* 기본적으로 적용되어야하는 이펙트는 어떻게 설정할것인?
+* 1.장착,해제시에 이펙트를 적용한다. (완)
+* 2.데미지계산시에 캐릭터의 어트리뷰트를 캡쳐해 사용한다.
+* 2-1.실시간으로할지 시전시로할지는 추후에 결정
+*/

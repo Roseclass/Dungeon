@@ -118,9 +118,7 @@ bool UUW_InventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		}
 		else
 		{
-			//TODO::TEST
-			/*if (!OwnerComponent->IsRoomAvailable(item->GetEqquipment()))DropItem(item);
-			else */OwnerComponent->Server_TryAddItem(item->GetEqquipment()->GetUniqueID());
+			OwnerComponent->Server_TryAddItem(item->GetEqquipment()->GetUniqueID());
 		}
 	}
 

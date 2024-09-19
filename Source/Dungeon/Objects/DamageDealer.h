@@ -40,9 +40,6 @@ protected:
 		TSubclassOf<UGameplayEffect> GamePlayEffectClass;
 
 	UPROPERTY(EditAnywhere, Category = "Datas")
-		float Damage;
-
-	UPROPERTY(EditAnywhere, Category = "Datas")
 		float Force;
 
 	UPROPERTY(EditAnywhere, Category = "Datas")
@@ -50,16 +47,24 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Datas")
 		FName OverlapComponentTag = FName("OverlapCollision");
+
+	UPROPERTY(BlueprintReadOnly)
+		float DamageAdditive;
+
+	UPROPERTY(BlueprintReadOnly)
+		float DamageMultiplicitive;
+
 public:
 
 	//function
 private:
 protected:
+	UFUNCTION(BlueprintImplementableEvent)float CalculateDamage(float InPower);
 	UFUNCTION()virtual void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()virtual void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	virtual void ResetDamagedActors();
 	virtual void FindCollision();
-	virtual void SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult);
+	virtual void SendDamage(TSubclassOf<UGameplayEffect> EffectClass, AActor* Target, const FHitResult& SweepResult);
 
 	FORCEINLINE const TArray<UShapeComponent*>& GetCollisionComponents()const { return CollisionComponents; }
 	FORCEINLINE const TArray<AActor*>& GetOverlappedActors()const { return OverlappedActors; }
@@ -71,7 +76,7 @@ public:
 	virtual void Deactivate();
 
 	FORCEINLINE void SetTeamID(uint8 InID) { TeamID = InID; }
-	FORCEINLINE void SetDamage(float InDamage) { Damage = InDamage; }
-	FORCEINLINE float GetDamage()const { return Damage; }
+	FORCEINLINE void SetDamageAdditive(float InDamageAdditive) { DamageAdditive = InDamageAdditive; }
+	FORCEINLINE void SetDamageMultiplicitive(float InDamageMultiplicitive) { DamageMultiplicitive = InDamageMultiplicitive; }
 	FORCEINLINE bool IsActivated()const { return bAct; }
 };

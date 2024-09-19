@@ -56,7 +56,6 @@ void UInventoryComponent::InitDefault()
 	Items.Init(FString(), Columns * Rows);
 	EquippedItems.Init(FString(), int32(EItemType::Max));
 
-	//TODO::TEST
 	if (DefaultWeapon)
 	{
 		int32 idx = int32(EItemType::Weapon);
@@ -70,7 +69,6 @@ void UInventoryComponent::InitDefault()
 		}
 	}
 
-	//TODO::TEST
 	for (auto i : DefaultItems)
 	{
 		FEquipmentStateUpdateParameters state;
@@ -109,7 +107,6 @@ void UInventoryComponent::OnRep_EquippedItems()
 	// refresh inv slot
 	int32 t = EquippedItems.Num() > OnInventoryEquippedDataChanged.Num() ? OnInventoryEquippedDataChanged.Num() : EquippedItems.Num();
 
-	//TODO::TEST
 	for (int32 i = 0; i < t; ++i)
 	{
 		if (EquippedItems[i] == FString())continue;
@@ -165,7 +162,6 @@ void UInventoryComponent::Server_LoadData_Implementation(const TArray<TSubclassO
 {
 	ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 
-	//TODO::TEST
 	// spawn equipped items		
 	for (int32 i = 0; i < EquippedClasses.Num(); ++i)
 	{
@@ -212,7 +208,6 @@ void UInventoryComponent::Server_Buy_Implementation(const FString& InObject)
 	//check room
 	CheckFalse(IsRoomAvailable(equipment));
 
-	//TODO::TEST
 	// spawn,tryadd,reducegold->client:refresh
 	FEquipmentStateUpdateParameters state;
 	state.State = EItemMode::Loot;
@@ -382,7 +377,6 @@ void UInventoryComponent::Server_TryAddItem_Implementation(const FString& InObje
 	}
 	if (!IsRoomAvailable(equipment))
 	{
-		//TODO::TEST
 		ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
 		// check location
 		if (!ownerCharacter)
@@ -429,7 +423,6 @@ void UInventoryComponent::Server_AddItemAt_Implementation(const FString& InObjec
 		}
 	}
 
-	//TODO::TEST
 	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
 	UEquipmentManagementComponent::PickUp(GetWorld(), InObject, ownerCharacter);
 	equipment->GetItemObject()->SetInventoryComp(this);
@@ -443,7 +436,6 @@ void UInventoryComponent::Server_RemoveItem_Implementation(const FString& InObje
 	for (int32 i = 0; i < Items.Num(); i++)
 		if (Items[i] == InObject)Items[i] = nullptr;
 
-	//TODO::TEST
 	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
 	// check location
 	if (!ownerCharacter)
@@ -488,7 +480,6 @@ void UInventoryComponent::Server_Sell_Implementation(const FString& InObject)
 {
 	// TODO::add gold
 
-	// TODO::TEST	
 	//destroy item
 	UEquipmentManagementComponent::DestroyEquipment(GetWorld(), InObject);
 
@@ -531,10 +522,6 @@ void UInventoryComponent::Server_Equip_Implementation(const FString& InData)
 	int32 idx = int32(item->GetType());
 
 	EquippedItems[idx] = InData;
-	//EquippedItems[idx]->SetOwner(owner);
-	//EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
-
-	//TODO::TEST
 	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
 	UEquipmentManagementComponent::Equip(GetWorld(), InData, ownerCharacter);
 
@@ -546,7 +533,6 @@ void UInventoryComponent::Server_Equip_Implementation(const FString& InData)
 			weapon->OffCollision();
 			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
 			weapon->SetTeamID(owner->GetGenericTeamId());
-			//weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
 		}
 	}
 }
@@ -573,24 +559,22 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 	if (IsRoomAvailable(equipped))Server_TryAddItem(EquippedItems[idx]);
 
 	// remove item effect
-	if(EquippedItems[idx] != FString())
+	if(equipped)
 	{
 		const TArray<FSkillEnhancement>& enhancementDatas = equipped->GetItemStatus().GetEnhancementDatas();
 		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
 		if (skill)
 		{
+			//remove enhancement
 			skill->EnhanceAbility(enhancementDatas, -1);
 			for (auto i : equipped->GetTargetAttributes())
 				skill->ApplyModToAttribute(i.Key, EGameplayModOp::Additive, -i.Value);
 		}
 	}
 
-	//TODO::TEST
 	ADungeonCharacterBase* ownerCharacter = Cast<ADungeonCharacterBase>(GetOwner());
 	UEquipmentManagementComponent::Equip(GetWorld(), InData, ownerCharacter);
 	EquippedItems[idx] = InData;
-	//EquippedItems[idx]->SetOwner(owner);
-	//EquippedItems[idx]->ChangeVisibility(EItemMode::Equip);
 
 	if (item->GetType() == EItemType::Weapon)
 	{
@@ -600,7 +584,6 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 			weapon->OffCollision();
 			FAttachmentTransformRules f = { EAttachmentRule::SnapToTarget, 1 };
 			weapon->SetTeamID(owner->GetGenericTeamId());
-			//weapon->AttachItemToComponent(owner->GetMesh(), f, weapon->GetSocketName());
 		}
 	}
 
@@ -634,9 +617,9 @@ void UInventoryComponent::Server_ChangeEquippedData_Implementation(int32 InIdx, 
 
 void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 {
-	AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[InIdx]);
+	AEqquipment* equipped = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[InIdx]);
 
-	if (EquippedItems[InIdx] == FString() || !item)
+	if (EquippedItems[InIdx] == FString() || !equipped)
 	{
 		CLog::Print("UInventoryComponent::Equip InData is nullptr", -1, 10, FColor::Red);
 		return;
@@ -647,27 +630,27 @@ void UInventoryComponent::Server_RemoveEquipped_Drag_Implementation(int32 InIdx)
 	APlayerCharacter* owner = Cast<APlayerCharacter>(GetOwner());
 
 	// remove item effect
-	if(EquippedItems[InIdx] != FString())
+	if(equipped)
 	{
-		const TArray<FSkillEnhancement>& enhancementDatas = item->GetItemStatus().GetEnhancementDatas();
+		const TArray<FSkillEnhancement>& enhancementDatas = equipped->GetItemStatus().GetEnhancementDatas();
 		USkillComponent* skill = CHelpers::GetComponent<USkillComponent>(owner);
 		if (skill)
 		{
 			skill->EnhanceAbility(enhancementDatas, -1);
-			for (auto i : item->GetTargetAttributes())
+			for (auto i : equipped->GetTargetAttributes())
 				skill->ApplyModToAttribute(i.Key, EGameplayModOp::Additive, -i.Value);
 		}
 	}
 
 	// reset to default
-	if (OnInventoryEquippedChanged.IsBound() && item->GetType() != EItemType::Weapon)
+	if (OnInventoryEquippedChanged.IsBound() && equipped->GetType() != EItemType::Weapon)
 	{
-		const TArray<FItemAppearanceData>& datas = item->GetAppearanceDatas();
+		const TArray<FItemAppearanceData>& datas = equipped->GetAppearanceDatas();
 		for (auto i : datas)	
 			OnInventoryEquippedChanged.Broadcast(i.PartType, 0);
 	}
 	
-	if (OnChangeHairVisiblity.IsBound() && item->GetType() == EItemType::Helms)
+	if (OnChangeHairVisiblity.IsBound() && equipped->GetType() == EItemType::Helms)
 		OnChangeHairVisiblity.Broadcast(1);
 
 	EquippedItems[InIdx] = FString();
@@ -751,15 +734,4 @@ void UInventoryComponent::LoadData(USaveGameData* const ReadData)
 		inventoryDatas.Add(i);
 
 	Server_LoadData(equippedClasses, equippedDatas, locations, inventoryClasses, inventoryDatas);
-}
-
-void UInventoryComponent::GetEquipmentEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
-{
-	for (int32 i = int(EItemType::Helms); i<int(EItemType::Max); ++i)
-	{
-		if (EquippedItems[i] == FString())continue;
-		AEqquipment* item = UEquipmentManagementComponent::GetEquipmentFromUniqueID(GetWorld(), EquippedItems[i]);
-		if (!item)continue;
-		item->GetAllEffectClasses(Classes);
-	}
 }

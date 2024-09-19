@@ -98,7 +98,7 @@ void AProjectile_ThunderStorm::SpawnThunderAndSendDamage()
 	//SendDamage
 	for (auto i : arr)
 	{
-		SendDamage(GamePlayEffectClass, Force, Damage, i, FHitResult());
+		SendDamage(GamePlayEffectClass, i, FHitResult());
 		skill->Multicast_FXEffect_Transform(ThunderFX, i->GetActorTransform());
 	}
 }

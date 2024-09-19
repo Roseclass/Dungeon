@@ -223,10 +223,13 @@ void USkillComponent::EnhanceAbility(const TArray<FSkillEnhancement>& InDatas, f
 
 			FSkillEhancementData& data = EnhancementDatas.Items[spec->InputID];
 
+			//TODO::TEST
 			if (CostAdditiveTag == i.EnhanceStatusTag)data.CostAdditive += i.EnhanceStatus * Rate;
 			if (CostMultiplicitiveTag == i.EnhanceStatusTag)data.CostMultiplicitive -= i.EnhanceStatus * Rate;
 			if (CooldownAdditiveTag == i.EnhanceStatusTag)data.CooldownAdditive += i.EnhanceStatus * Rate;
 			if (CooldownMultiplicitiveTag == i.EnhanceStatusTag)data.CooldownMultiplicitive -= i.EnhanceStatus * Rate;
+			if (DamageAdditiveTag == i.EnhanceStatusTag)data.DamageAdditive += i.EnhanceStatus * Rate;
+			if (DamageMultiplicitiveTag == i.EnhanceStatusTag)data.DamageMultiplicitive -= i.EnhanceStatus * Rate;
 		}
 	}
 }

@@ -43,7 +43,6 @@ void ULootComponent::GenerateItems()
 	AEnemy* owner = Cast<AEnemy>(GetOwner());
 	for (auto i : Datas)
 	{
-		//TODO::TEST
 		double max = 1e5;
 		float rate = i->Rate;
 		int32 num = UKismetMathLibrary::RandomIntegerInRange(0, max);
@@ -58,7 +57,6 @@ void ULootComponent::GenerateItems()
 
 void ULootComponent::DropItems()
 {
-	//TODO::TEST
 	CheckTrue(GetOwnerRole() != ENetRole::ROLE_Authority);
 	AEnemy* owner = Cast<AEnemy>(GetOwner());
 	//drop item

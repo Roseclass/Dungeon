@@ -56,8 +56,9 @@ void AProjectile_FlameStrike::SendDotDamage()
 {
 	for (auto i : DotActors)
 	{
+		//TODO::CHECK
 		//SendDamage
-		SendDamage(DotGamePlayEffectClass, 0, DotDamage, i, FHitResult());
+		//SendDamage(DotGamePlayEffectClass, 0, DotDamage, i, FHitResult());
 	}
 }
 

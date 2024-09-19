@@ -58,7 +58,7 @@ void ADamageDealer::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedCompo
 
 	// send Damage
 	if (OtherActor && OtherActor != this)
-		SendDamage(GamePlayEffectClass, Force, Damage, OtherActor, SweepResult);
+		SendDamage(GamePlayEffectClass, OtherActor, SweepResult);
 }
 
 void ADamageDealer::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -101,28 +101,26 @@ void ADamageDealer::FindCollision()
 	}
 }
 
-void ADamageDealer::SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult)
+void ADamageDealer::SendDamage(TSubclassOf<UGameplayEffect> EffectClass, AActor* Target, const FHitResult& SweepResult)
 {
+	// TODO::TEST
 	// Check hit actor
 	IAbilitySystemInterface* hitCharacter = Cast<IAbilitySystemInterface>(Target);
 	if (hitCharacter)
 	{
 		// Get asc
-		UAbilitySystemComponent* hitASC = hitCharacter->GetAbilitySystemComponent();
-		if (hitASC && EffectClass)
+		ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
+		USkillComponent* hitASC = Cast<USkillComponent>(hitCharacter->GetAbilitySystemComponent());
+		USkillComponent* instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+		if (hitASC && instigatorASC  && EffectClass)
 		{
 			// Make effectcontext handle
 			FDamageEffectContext* context = new FDamageEffectContext();
 			FGameplayEffectContextHandle EffectContextHandle = FGameplayEffectContextHandle(context);
-			ADungeonCharacterBase* owner = Cast<ADungeonCharacterBase>(GetOwner());
 			EffectContextHandle.AddInstigator(owner ? owner->GetController() : nullptr, this);
 			EffectContextHandle.AddHitResult(SweepResult);
-			context->BaseDamage = InDamage;
-			context->Force = InForce;
-
-			// Set instigator asc
-			USkillComponent* instigatorASC = Cast<USkillComponent>(hitASC);
-			if (owner)instigatorASC = Cast<USkillComponent>(owner->GetAbilitySystemComponent());
+			context->BaseDamage = CalculateDamage(instigatorASC->GetPower());
+			context->Force = Force;
 
 			// Pre-calculate MMC value and setting DamageText datas
 			UMMC_Damage* MyMMC = Cast<UMMC_Damage>(UMMC_Damage::StaticClass()->GetDefaultObject());

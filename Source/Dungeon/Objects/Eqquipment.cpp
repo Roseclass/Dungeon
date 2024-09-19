@@ -77,7 +77,6 @@ void AEqquipment::BeginPlay()
 	// Randomize status
 	if (GetWorld()->GetFirstPlayerController()->GetLocalRole() == ENetRole::ROLE_Authority && !ItemStatus.bRandomize)
 	{	
-		CLog::Print("IN");
 		for (auto i : TargetAttributes)
 		{
 			float rate = UKismetMathLibrary::RandomFloatInRange(RateMax, RateMin);
@@ -86,7 +85,6 @@ void AEqquipment::BeginPlay()
 			ItemStatus.TargetAttributeGrades.Add(CheckGrade(rate));
 		}
 
-		//TODO::Check
 		if (EnhancementDataTable)
 		{
 			TArray<FSkillEnhancement*> enhancementDatas;
@@ -530,7 +528,6 @@ void AEqquipment::UpdateState(const FEquipmentStateUpdateParameters& UpdateParam
 
 void AEqquipment::UpdateStatus(const FItemStatusData& UpdateData)
 {
-	//TODO::TEST
 	ItemStatus = UpdateData;
 }
 
@@ -572,15 +569,3 @@ void AEqquipment::GetDimensions(int32& X, int32& Y)
 	X = DimensionX;
 	Y = DimensionY;
 }
-
-void AEqquipment::GetAllEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const
-{
-	// TODO::Check
-	if (CommonEffectClass)Classes.Add(CommonEffectClass);
-}
-
-/*
-* 유니크아이디 쥐고있기
-* 드롭 시작, 종료지점 쥐고있기
-*/
-

@@ -242,9 +242,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, EditFixedSize, Category = "Data", meta = (EditCondition = "ItemType == EItemType::Gloves", EditConditionHides,DisplayName = "Datas"))
 		TArray<FItemAppearanceData> GlovesAppearanceDatas;
 protected:
-	UPROPERTY(EditAnywhere, Category = "GameplayEffect")
-		TSubclassOf<UGameplayEffect> CommonEffectClass;
-
 public:
 
 	//function
@@ -286,5 +283,4 @@ public:
 	const TArray<FItemAppearanceData>& GetAppearanceDatas()const;
 	FEquipmentStateUpdateParameters GetEquipmentState() const;
 	void GetDimensions(int32& X, int32& Y);
-	void GetAllEffectClasses(TArray<TSubclassOf<UGameplayEffect>>& Classes)const;
 };

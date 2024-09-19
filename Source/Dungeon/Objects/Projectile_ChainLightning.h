@@ -45,6 +45,6 @@ public:
 	//function
 private:
 protected:
-	virtual void SendDamage(TSubclassOf<UGameplayEffect> EffectClass, float InForce, float InDamage, AActor* Target, const FHitResult& SweepResult)override;
+	virtual void SendDamage(TSubclassOf<UGameplayEffect> EffectClass, AActor* Target, const FHitResult& SweepResult)override;
 public:
 };
